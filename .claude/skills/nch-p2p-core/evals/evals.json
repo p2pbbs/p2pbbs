@@ -1,0 +1,96 @@
+{
+  "skill_name": "nch-p2p-core",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "nchプロジェクトで ReceiveMessageUseCase を実装してください。受信した GossipMessage に対して、署名検証→ハッシュ検証→重複排除→保存→ファンアウトのパイプラインを行います。src/usecase/ReceiveMessageUseCase.ts として出力してください。CryptoService に依存し、Adapter の実装クラスは直接 import しないこと。",
+      "expected_output": "ReceiveMessageUseCase が DIP に従って実装されていること。CryptoService.verifySignature / verifyPostHash を使い、seen Set で重複排除し、TTL デクリメントと path 追記をしてファンアウトする。署名検証を重複判定より先に行う。コメントは日本語。",
+      "assertions": [
+        {
+          "name": "adapter_not_imported",
+          "description": "UseCase ファイルが adapter/ を直接 import していない",
+          "type": "code_check"
+        },
+        {
+          "name": "crypto_service_dependency",
+          "description": "verifySignature と verifyPostHash を CryptoService 経由で呼んでいる（個別 service を直接 import しない）",
+          "type": "code_check"
+        },
+        {
+          "name": "pipeline_order_correct",
+          "description": "署名検証 → ハッシュ検証 → 重複判定の順になっている（dedup が先になっていない）",
+          "type": "code_check"
+        },
+        {
+          "name": "seen_set_dedup",
+          "description": "seen Set による O(1) 重複排除がある",
+          "type": "code_check"
+        },
+        {
+          "name": "ttl_decrement_and_path",
+          "description": "転送時に ttl - 1 かつ path に selfId を追加している",
+          "type": "code_check"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "nchプロジェクトで WebCryptoSigner を実装してください。ISigner インターフェース（generateKeyPair, sign, deriveOdId）を Web Crypto API で実装します。src/adapter/crypto/WebCryptoSigner.ts として出力してください。ステートレスな verifySignature は CryptoService が担当するため、このクラスには含めないこと。",
+      "expected_output": "WebCryptoSigner が ISigner を implements し、generateKeyPair / sign / deriveOdId の3メソッドを実装。crypto.subtle.generateKey / sign を使用。verifySignature は含まない。秘密鍵は extractable: false。",
+      "assertions": [
+        {
+          "name": "implements_isigner",
+          "description": "ISigner を implements している",
+          "type": "code_check"
+        },
+        {
+          "name": "has_generate_and_sign",
+          "description": "crypto.subtle.generateKey と crypto.subtle.sign を使っている",
+          "type": "code_check"
+        },
+        {
+          "name": "no_verify_method",
+          "description": "verifySignature / crypto.subtle.verify メソッドを含まない（ステートレス検証は CryptoService の責務）",
+          "type": "code_check"
+        },
+        {
+          "name": "private_key_not_extractable",
+          "description": "generateKey の extractable が false",
+          "type": "code_check"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "nchプロジェクトで ReceiveMessageUseCase のユニットテストを書いてください。Vitest を使い、以下の3ケースをカバーしてください: (1) 正常な GossipMessage → 保存+ファンアウト、(2) 不正な署名 → 拒否、(3) 重複したハッシュ → スキップ。テスト命名規則は test_Action_Condition_Result に従い、CryptoService を vi.spyOn でモックしてください。",
+      "expected_output": "3つのテストが test_Action_Condition_Result 命名。ReceiveMessageUseCase を src/ から import。CryptoService.verifySignature / verifyPostHash を vi.spyOn でモック。テスト内でクラスを再定義しない。",
+      "assertions": [
+        {
+          "name": "imports_from_src",
+          "description": "ReceiveMessageUseCase を src/ から import している（テスト内で再定義していない）",
+          "type": "code_check"
+        },
+        {
+          "name": "three_test_cases",
+          "description": "it() ブロックが3つ以上ある",
+          "type": "code_check"
+        },
+        {
+          "name": "naming_convention",
+          "description": "テスト名が test_Action_Condition_Result パターンに従っている",
+          "type": "code_check"
+        },
+        {
+          "name": "spy_on_crypto_service",
+          "description": "CryptoService のメソッド（verifySignature か verifyPostHash）を vi.spyOn でモックしている",
+          "type": "code_check"
+        },
+        {
+          "name": "peer_type_no_webrtc",
+          "description": "peerRepo.getConnected() が返すピアフィクスチャに RTCDataChannel / RTCPeerConnection / channel / connection フィールドが含まれていない（Peer は id + connectedAt のみ）",
+          "type": "code_check"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "skill_name": "nch-testing",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "nchプロジェクトで ReceiveMessageUseCase の DataChannel 経由受信テストを書いてください。createMockDataChannel() スタブを使い、DataChannel の onmessage 経由でメッセージを受信したとき、保存とファンアウトが行われることを検証してください。テスト命名は test_Action_Condition_Result に従い、CryptoService を vi.spyOn でモックしてください。",
+      "expected_output": "RTCDataChannel モックを使ったテストが書かれていること。simulateReceive か同等のヘルパーを使い、DataChannel 経由の受信をシミュレートする。postRepo.save と sendToChannel が呼ばれることを検証。vi.waitFor で非同期処理を待つ（simulateReceive はイベントを同期発火するため、async ハンドラの完了を待つには vi.waitFor が必要）。",
+      "assertions": [
+        {
+          "name": "uses_mock_channel",
+          "description": "RTCDataChannel のモック/スタブを使っている（createMockDataChannel または同等の実装）",
+          "type": "code_check"
+        },
+        {
+          "name": "spy_on_crypto",
+          "description": "CryptoService のメソッドを vi.spyOn でモックしている",
+          "type": "code_check"
+        },
+        {
+          "name": "async_wait_vi_waitfor",
+          "description": "vi.waitFor を使って非同期処理の完了を待っている（simulateReceive が同期発火するため必須）",
+          "type": "code_check"
+        },
+        {
+          "name": "naming_convention",
+          "description": "テスト名が test_Action_Condition_Result パターンに従っている",
+          "type": "code_check"
+        },
+        {
+          "name": "peer_type_no_webrtc",
+          "description": "peerRepo.getConnected() が返す Peer フィクスチャに RTCDataChannel / RTCPeerConnection / channel / connection フィールドが含まれていない（Peer は id + connectedAt のみ）",
+          "type": "code_check"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "nchプロジェクトで 3ノード構成のゴシップ伝播テストを書いてください。ノードA→B→C の順でメッセージが届くことを検証します。各ノードは ReceiveMessageUseCase インスタンスとして表現し、sendToChannel の mock を使って隣接ノードの execute() を呼ぶことでメッセージを繋いでください。テスト命名は test_Action_Condition_Result に従ってください。",
+      "expected_output": "3つの ReceiveMessageUseCase インスタンスが作られ、sendToChannel.mockImplementation で隣接ノードを繋いでいること。nodeB.postRepo.save と nodeC.postRepo.save の両方が呼ばれることを検証。ReceiveMessageUseCase は src/ からインポートし、テストファイル内でクラスを再実装しない。",
+      "assertions": [
+        {
+          "name": "three_nodes",
+          "description": "ReceiveMessageUseCase インスタンスが3つ（またはそれを表す構造が3つ）作られている",
+          "type": "code_check"
+        },
+        {
+          "name": "chained_via_mock",
+          "description": "sendToChannel.mockImplementation で隣接ノードの execute() を呼んでいる",
+          "type": "code_check"
+        },
+        {
+          "name": "all_nodes_save",
+          "description": "B と C の postRepo.save が呼ばれることを検証している",
+          "type": "code_check"
+        },
+        {
+          "name": "imports_from_src",
+          "description": "ReceiveMessageUseCase を src/ からインポートしている（テストファイル内でクラスを再定義・再実装していない）",
+          "type": "code_check"
+        },
+        {
+          "name": "no_inline_reimplementation",
+          "description": "テストファイル内に ReceiveMessageUseCase や同等のクラス定義が存在しない",
+          "type": "code_check"
+        },
+        {
+          "name": "naming_convention",
+          "description": "テスト名が test_Action_Condition_Result パターンに従っている",
+          "type": "code_check"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "nchプロジェクトで以下のエッジケーステストを書いてください: (1) TTL=0 のメッセージ — 保存はされるが転送しない、(2) path に自ノードIDが含まれるメッセージ — そのピアへの転送をスキップする、(3) ピア未接続 — ファンアウトが0件になる。テスト命名は test_Action_Condition_Result に従い、CryptoService を vi.spyOn でモックしてください。",
+      "expected_output": "3つ以上のエッジケーステストが書かれていること。TTL=0 ではsendToChannel が呼ばれない。path メンバーへは転送しない。ピア未接続では sendToChannel が呼ばれない。追加のエッジケース（自ノードIDのループ防止、例外非発生など）があればさらに良い。",
+      "assertions": [
+        {
+          "name": "ttl_zero_case",
+          "description": "TTL=0 のケースで sendToChannel が呼ばれないことを検証",
+          "type": "code_check"
+        },
+        {
+          "name": "path_exclusion_case",
+          "description": "path に含まれるピアへの転送をスキップするケースがある",
+          "type": "code_check"
+        },
+        {
+          "name": "no_peers_case",
+          "description": "ピア未接続（getConnected が空）のケースでファンアウトが0件になることを検証",
+          "type": "code_check"
+        },
+        {
+          "name": "min_test_count",
+          "description": "テストケースが5件以上ある（追加エッジケースを含む充実したテストスイート）",
+          "type": "code_check"
+        },
+        {
+          "name": "naming_convention",
+          "description": "テスト名が test_Action_Condition_Result パターンに従っている",
+          "type": "code_check"
+        }
+      ]
+    }
+  ]
+}
