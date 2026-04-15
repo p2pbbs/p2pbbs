@@ -9,6 +9,6 @@ export interface IPostStore {
 	getSnapshot(threadId: string): Post[];
 	/** 投稿一覧の変更を購読する。戻り値はアンサブスクライブ関数。 */
 	subscribe(threadId: string, callback: () => void): () => void;
-	/** 投稿を保存する。 */
-	save(post: Post, threadId: string, boardId: string): Promise<void>;
+	/** 投稿を保存する。保存先は post.threadId で決定する。 */
+	save(post: Post): Promise<void>;
 }

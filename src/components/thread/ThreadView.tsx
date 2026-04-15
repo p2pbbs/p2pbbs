@@ -1,9 +1,9 @@
-import type { Post } from "@/domain/model/Post";
+import type { DisplayPost } from "@/hooks/usePosts";
 import { PostItem } from "./PostItem";
 
 type Props = {
 	title: string;
-	posts: Post[];
+	posts: DisplayPost[];
 };
 
 export function ThreadView({ title, posts }: Props) {

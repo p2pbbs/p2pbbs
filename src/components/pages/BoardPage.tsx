@@ -1,13 +1,59 @@
+import { useCallback, useMemo } from "react";
+import { PostForm } from "@/components/thread/PostForm";
 import { ThreadView } from "@/components/thread/ThreadView";
-import { DEFAULT_THREAD_ID, DEFAULT_THREAD_TITLE } from "@/config/constants";
+import {
+	DEFAULT_BOARD_ID,
+	DEFAULT_THREAD_ID,
+	DEFAULT_THREAD_TITLE,
+} from "@/config/constants";
 import type { IPostStore } from "@/domain/port/IPostStore";
+import type { CryptoService } from "@/domain/service/CryptoService";
+import type { LamportClock } from "@/domain/service/LamportClock";
 import { usePosts } from "@/hooks/usePosts";
+import { PostMessageUseCase } from "@/usecase/PostMessageUseCase";
 
 type Props = {
 	store: IPostStore;
+	cryptoService: CryptoService;
+	clock: LamportClock;
+	publicKey: string;
+	odId: string;
 };
 
-export function BoardPage({ store }: Props) {
+export function BoardPage({
+	store,
+	cryptoService,
+	clock,
+	publicKey,
+	odId,
+}: Props) {
 	const posts = usePosts(store, DEFAULT_THREAD_ID);
-	return <ThreadView title={DEFAULT_THREAD_TITLE} posts={posts} />;
+
+	const usecase = useMemo(
+		() =>
+			new PostMessageUseCase(
+				store,
+				cryptoService,
+				clock,
+				publicKey,
+				odId,
+				DEFAULT_THREAD_ID,
+				DEFAULT_BOARD_ID,
+			),
+		[store, cryptoService, clock, publicKey, odId],
+	);
+
+	const handleSubmit = useCallback(
+		(name: string, body: string) => {
+			void usecase.execute({ name, body });
+		},
+		[usecase],
+	);
+
+	return (
+		<>
+			<ThreadView title={DEFAULT_THREAD_TITLE} posts={posts} />
+			<PostForm onSubmit={handleSubmit} />
+		</>
+	);
 }

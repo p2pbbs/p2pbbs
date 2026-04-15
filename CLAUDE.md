@@ -17,7 +17,7 @@ P2P 匿名掲示板。ブラウザ完結。
 ## Tech Stack
 
 - **Language:** TypeScript (strict)
-- **UI:** React 19 + Vite + Tailwind CSS
+- **UI:** React + Vite + Tailwind CSS
 - **P2P:** WebRTC DataChannel
 - **Signaling:** WebSocket
 - **Crypto:** Web Crypto API (Ed25519, SHA-256)
@@ -60,6 +60,24 @@ Node.js で動くヘッドレスピア。24時間稼働し過去ログを保持�
 
 UseCase は CryptoService のみに依存する。
 
+### 投稿順序（Lamport clock）
+
+スレ内の投稿順序は Lamport clock で決定する。各ノードがスレ単位で整数カウンタを持つ。
+
+- 投稿時: `max(自カウンタ, 受信済み最大値) + 1` を投稿の lamport に設定
+- 受信時: `max(自カウンタ, 受信した投稿の lamport)` でカウンタ更新。+1 しない
+- 表示順: lamport 昇順。同値の場合は post.id（コンテンツハッシュ）昇順で安定ソート
+
+lamport は署名ペイロードおよびコンテンツハッシュの計算に含める。timestamp（Unix ms）は表示用のみで、順序保証には使わない。
+
+### ドメインモデル
+
+- Post は boardId, threadId を持つ（「このレスはこのスレに属する」はドメインルール）
+- Post は displayNumber を持たない。displayNumber は UI 層で lamport ソート後のインデックスから派生する表示ラベル。つまり、UI層にて`type DisplayPost = Post & { readonly displayNumber: number };`のような形で付与する。
+- 安価（`>>5`）の表示上の数字は displayNumber だが、リンク先は post.id（コンテンツハッシュ）で解決する。P2P ではノード間で displayNumber がズレうるため
+- GossipMessage は Post を運ぶ封筒。boardId/threadId は持たない（Post が持つ）
+- IPostStore.save(post) は post.threadId で保存先を決定する
+
 ## ユビキタス言語
 
 コード上の命名はこの用語に従う。新規用語が必要になったら本セクションに追記すること。
@@ -69,12 +87,13 @@ UseCase は CryptoService のみに依存する。
 | 板 | Board | スレッドの集合 |
 | スレ | Thread | レスの集合 |
 | レス | Post | 1つの書き込み |
-| ピア | Peer | 接続中の他ノード |
+| ピア | Peer | 接続中の他ノAード |
 | ファンアウト | Fanout | 転送先の数（固定5） |
 | ゴシップ | Gossip | レスの伝播プロトコル |
 | シグナリング | Signaling | ピア発見（WebSocket） |
 | OD ID | OD ID | セッション鍵由来の表示用ID |
-| エンベロープ | GossipMessage | Post を運ぶネットワーク上の包み |
+| Lamport クロック | LamportClock | lamport カウンタを管理する domain service。 |
+| エンベロープ | GossipMessage | Post を運ぶ封筒。 |
 | シードノード | Seed Node | 常駐するヘッドレスピア。他のピアと対等 |
 | 暗号サービス | CryptoService | crypto 系操作の統合ファサード |
 | 署名者 | ISigner / WebCryptoSigner | 秘密鍵を保持しステートフルな暗号操作を行う |

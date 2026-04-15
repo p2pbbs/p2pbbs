@@ -1,4137 +1,1322 @@
-diff --git a/.node-version b/.node-version
-new file mode 100644
-index 0000000..a45fd52
---- /dev/null
-+++ b/.node-version
-@@ -0,0 +1 @@
-+24
-diff --git a/biome.json b/biome.json
-new file mode 100644
-index 0000000..a2ae53c
---- /dev/null
-+++ b/biome.json
-@@ -0,0 +1,38 @@
-+{
-+	"$schema": "https://biomejs.dev/schemas/2.4.11/schema.json",
-+	"vcs": {
-+		"enabled": true,
-+		"clientKind": "git",
-+		"useIgnoreFile": true
-+	},
-+	"files": {
-+		"ignoreUnknown": false,
-+		"includes": ["**", "!node_modules", "!dist", "!.claude", "!.claire"]
-+	},
-+	"formatter": {
-+		"enabled": true,
-+		"indentStyle": "tab"
-+	},
-+	"linter": {
-+		"enabled": true,
-+		"rules": {
-+			"recommended": true,
-+			"suspicious": {
-+				"noExplicitAny": "error"
-+			}
-+		}
-+	},
-+	"javascript": {
-+		"formatter": {
-+			"quoteStyle": "double"
-+		}
-+	},
-+	"assist": {
-+		"enabled": true,
-+		"actions": {
-+			"source": {
-+				"organizeImports": "on"
-+			}
-+		}
-+	}
-+}
-diff --git a/index.html b/index.html
-new file mode 100644
-index 0000000..6ef9cf4
---- /dev/null
-+++ b/index.html
-@@ -0,0 +1,13 @@
-+<!doctype html>
-+<html lang="en">
-+  <head>
-+    <meta charset="UTF-8" />
-+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-+    <title>nch</title>
-+  </head>
-+  <body>
-+    <div id="root"></div>
-+    <script type="module" src="/src/main.tsx"></script>
-+  </body>
-+</html>
-diff --git a/package-lock.json b/package-lock.json
-new file mode 100644
-index 0000000..afc5248
---- /dev/null
-+++ b/package-lock.json
-@@ -0,0 +1,3275 @@
-+{
-+	"name": "nch",
-+	"version": "0.0.0",
-+	"lockfileVersion": 3,
-+	"requires": true,
-+	"packages": {
-+		"": {
-+			"name": "nch",
-+			"version": "0.0.0",
-+			"dependencies": {
-+				"@tailwindcss/vite": "^4.2.2",
-+				"react": "^19.2.4",
-+				"react-dom": "^19.2.4",
-+				"tailwindcss": "^4.2.2"
-+			},
-+			"devDependencies": {
-+				"@biomejs/biome": "^2.4.11",
-+				"@biomejs/cli-darwin-arm64": "^2.4.11",
-+				"@testing-library/react": "^16.3.2",
-+				"@types/node": "^24.12.0",
-+				"@types/react": "^19.2.14",
-+				"@types/react-dom": "^19.2.3",
-+				"@vitejs/plugin-react": "^6.0.1",
-+				"@vitest/coverage-v8": "^4.1.4",
-+				"husky": "^9.1.7",
-+				"jsdom": "^29.0.2",
-+				"lint-staged": "^16.4.0",
-+				"typescript": "~5.9.3",
-+				"vite": "^8.0.1",
-+				"vitest": "^4.1.4"
-+			}
-+		},
-+		"node_modules/@asamuzakjp/css-color": {
-+			"version": "5.1.10",
-+			"resolved": "https://registry.npmjs.org/@asamuzakjp/css-color/-/css-color-5.1.10.tgz",
-+			"integrity": "sha512-02OhhkKtgNRuicQ/nF3TRnGsxL9wp0r3Y7VlKWyOHHGmGyvXv03y+PnymU8FKFJMTjIr1Bk8U2g1HWSLrpAHww==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@csstools/css-calc": "^3.1.1",
-+				"@csstools/css-color-parser": "^4.0.2",
-+				"@csstools/css-parser-algorithms": "^4.0.0",
-+				"@csstools/css-tokenizer": "^4.0.0"
-+			},
-+			"engines": {
-+				"node": "^20.19.0 || ^22.12.0 || >=24.0.0"
-+			}
-+		},
-+		"node_modules/@asamuzakjp/dom-selector": {
-+			"version": "7.0.9",
-+			"resolved": "https://registry.npmjs.org/@asamuzakjp/dom-selector/-/dom-selector-7.0.9.tgz",
-+			"integrity": "sha512-r3ElRr7y8ucyN2KdICwGsmj19RoN13CLCa/pvGydghWK6ZzeKQ+TcDjVdtEZz2ElpndM5jXw//B9CEee0mWnVg==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@asamuzakjp/nwsapi": "^2.3.9",
-+				"bidi-js": "^1.0.3",
-+				"css-tree": "^3.2.1",
-+				"is-potential-custom-element-name": "^1.0.1"
-+			},
-+			"engines": {
-+				"node": "^20.19.0 || ^22.12.0 || >=24.0.0"
-+			}
-+		},
-+		"node_modules/@asamuzakjp/nwsapi": {
-+			"version": "2.3.9",
-+			"resolved": "https://registry.npmjs.org/@asamuzakjp/nwsapi/-/nwsapi-2.3.9.tgz",
-+			"integrity": "sha512-n8GuYSrI9bF7FFZ/SjhwevlHc8xaVlb/7HmHelnc/PZXBD2ZR49NnN9sMMuDdEGPeeRQ5d0hqlSlEpgCX3Wl0Q==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/@babel/code-frame": {
-+			"version": "7.29.0",
-+			"resolved": "https://registry.npmjs.org/@babel/code-frame/-/code-frame-7.29.0.tgz",
-+			"integrity": "sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"peer": true,
-+			"dependencies": {
-+				"@babel/helper-validator-identifier": "^7.28.5",
-+				"js-tokens": "^4.0.0",
-+				"picocolors": "^1.1.1"
-+			},
-+			"engines": {
-+				"node": ">=6.9.0"
-+			}
-+		},
-+		"node_modules/@babel/helper-string-parser": {
-+			"version": "7.27.1",
-+			"resolved": "https://registry.npmjs.org/@babel/helper-string-parser/-/helper-string-parser-7.27.1.tgz",
-+			"integrity": "sha512-qMlSxKbpRlAridDExk92nSobyDdpPijUq2DW6oDnUqd0iOGxmQjyqhMIihI9+zv4LPyZdRje2cavWPbCbWm3eA==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=6.9.0"
-+			}
-+		},
-+		"node_modules/@babel/helper-validator-identifier": {
-+			"version": "7.28.5",
-+			"resolved": "https://registry.npmjs.org/@babel/helper-validator-identifier/-/helper-validator-identifier-7.28.5.tgz",
-+			"integrity": "sha512-qSs4ifwzKJSV39ucNjsvc6WVHs6b7S03sOh2OcHF9UHfVPqWWALUsNUVzhSBiItjRZoLHx7nIarVjqKVusUZ1Q==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=6.9.0"
-+			}
-+		},
-+		"node_modules/@babel/parser": {
-+			"version": "7.29.2",
-+			"resolved": "https://registry.npmjs.org/@babel/parser/-/parser-7.29.2.tgz",
-+			"integrity": "sha512-4GgRzy/+fsBa72/RZVJmGKPmZu9Byn8o4MoLpmNe1m8ZfYnz5emHLQz3U4gLud6Zwl0RZIcgiLD7Uq7ySFuDLA==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@babel/types": "^7.29.0"
-+			},
-+			"bin": {
-+				"parser": "bin/babel-parser.js"
-+			},
-+			"engines": {
-+				"node": ">=6.0.0"
-+			}
-+		},
-+		"node_modules/@babel/runtime": {
-+			"version": "7.29.2",
-+			"resolved": "https://registry.npmjs.org/@babel/runtime/-/runtime-7.29.2.tgz",
-+			"integrity": "sha512-JiDShH45zKHWyGe4ZNVRrCjBz8Nh9TMmZG1kh4QTK8hCBTWBi8Da+i7s1fJw7/lYpM4ccepSNfqzZ/QvABBi5g==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=6.9.0"
-+			}
-+		},
-+		"node_modules/@babel/types": {
-+			"version": "7.29.0",
-+			"resolved": "https://registry.npmjs.org/@babel/types/-/types-7.29.0.tgz",
-+			"integrity": "sha512-LwdZHpScM4Qz8Xw2iKSzS+cfglZzJGvofQICy7W7v4caru4EaAmyUuO6BGrbyQ2mYV11W0U8j5mBhd14dd3B0A==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@babel/helper-string-parser": "^7.27.1",
-+				"@babel/helper-validator-identifier": "^7.28.5"
-+			},
-+			"engines": {
-+				"node": ">=6.9.0"
-+			}
-+		},
-+		"node_modules/@bcoe/v8-coverage": {
-+			"version": "1.0.2",
-+			"resolved": "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-1.0.2.tgz",
-+			"integrity": "sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=18"
-+			}
-+		},
-+		"node_modules/@biomejs/biome": {
-+			"version": "2.4.11",
-+			"resolved": "https://registry.npmjs.org/@biomejs/biome/-/biome-2.4.11.tgz",
-+			"integrity": "sha512-nWxHX8tf3Opb/qRgZpBbsTOqOodkbrkJ7S+JxJAruxOReaDPPmPuLBAGQ8vigyUgo0QBB+oQltNEAvalLcjggA==",
-+			"dev": true,
-+			"license": "MIT OR Apache-2.0",
-+			"bin": {
-+				"biome": "bin/biome"
-+			},
-+			"engines": {
-+				"node": ">=14.21.3"
-+			},
-+			"funding": {
-+				"type": "opencollective",
-+				"url": "https://opencollective.com/biome"
-+			},
-+			"optionalDependencies": {
-+				"@biomejs/cli-darwin-arm64": "2.4.11",
-+				"@biomejs/cli-darwin-x64": "2.4.11",
-+				"@biomejs/cli-linux-arm64": "2.4.11",
-+				"@biomejs/cli-linux-arm64-musl": "2.4.11",
-+				"@biomejs/cli-linux-x64": "2.4.11",
-+				"@biomejs/cli-linux-x64-musl": "2.4.11",
-+				"@biomejs/cli-win32-arm64": "2.4.11",
-+				"@biomejs/cli-win32-x64": "2.4.11"
-+			}
-+		},
-+		"node_modules/@biomejs/cli-darwin-arm64": {
-+			"version": "2.4.11",
-+			"resolved": "https://registry.npmjs.org/@biomejs/cli-darwin-arm64/-/cli-darwin-arm64-2.4.11.tgz",
-+			"integrity": "sha512-wOt+ed+L2dgZanWyL6i29qlXMc088N11optzpo10peayObBaAshbTcxKUchzEMp9QSY8rh5h6VfAFE3WTS1rqg==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"dev": true,
-+			"license": "MIT OR Apache-2.0",
-+			"os": [
-+				"darwin"
-+			],
-+			"engines": {
-+				"node": ">=14.21.3"
-+			}
-+		},
-+		"node_modules/@biomejs/cli-darwin-x64": {
-+			"version": "2.4.11",
-+			"resolved": "https://registry.npmjs.org/@biomejs/cli-darwin-x64/-/cli-darwin-x64-2.4.11.tgz",
-+			"integrity": "sha512-gZ6zR8XmZlExfi/Pz/PffmdpWOQ8Qhy7oBztgkR8/ylSRyLwfRPSadmiVCV8WQ8PoJ2MWUy2fgID9zmtgUUJmw==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"dev": true,
-+			"license": "MIT OR Apache-2.0",
-+			"optional": true,
-+			"os": [
-+				"darwin"
-+			],
-+			"engines": {
-+				"node": ">=14.21.3"
-+			}
-+		},
-+		"node_modules/@biomejs/cli-linux-arm64": {
-+			"version": "2.4.11",
-+			"resolved": "https://registry.npmjs.org/@biomejs/cli-linux-arm64/-/cli-linux-arm64-2.4.11.tgz",
-+			"integrity": "sha512-avdJaEElXrKceK0va9FkJ4P5ci3N01TGkc6ni3P8l3BElqbOz42Wg2IyX3gbh0ZLEd4HVKEIrmuVu/AMuSeFFA==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"dev": true,
-+			"libc": [
-+				"glibc"
-+			],
-+			"license": "MIT OR Apache-2.0",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": ">=14.21.3"
-+			}
-+		},
-+		"node_modules/@biomejs/cli-linux-arm64-musl": {
-+			"version": "2.4.11",
-+			"resolved": "https://registry.npmjs.org/@biomejs/cli-linux-arm64-musl/-/cli-linux-arm64-musl-2.4.11.tgz",
-+			"integrity": "sha512-+Sbo1OAmlegtdwqFE8iOxFIWLh1B3OEgsuZfBpyyN/kWuqZ8dx9ZEes6zVnDMo+zRHF2wLynRVhoQmV7ohxl2Q==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"dev": true,
-+			"libc": [
-+				"musl"
-+			],
-+			"license": "MIT OR Apache-2.0",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": ">=14.21.3"
-+			}
-+		},
-+		"node_modules/@biomejs/cli-linux-x64": {
-+			"version": "2.4.11",
-+			"resolved": "https://registry.npmjs.org/@biomejs/cli-linux-x64/-/cli-linux-x64-2.4.11.tgz",
-+			"integrity": "sha512-TagWV0iomp5LnEnxWFg4nQO+e52Fow349vaX0Q/PIcX6Zhk4GGBgp3qqZ8PVkpC+cuehRctMf3+6+FgQ8jCEFQ==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"dev": true,
-+			"libc": [
-+				"glibc"
-+			],
-+			"license": "MIT OR Apache-2.0",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": ">=14.21.3"
-+			}
-+		},
-+		"node_modules/@biomejs/cli-linux-x64-musl": {
-+			"version": "2.4.11",
-+			"resolved": "https://registry.npmjs.org/@biomejs/cli-linux-x64-musl/-/cli-linux-x64-musl-2.4.11.tgz",
-+			"integrity": "sha512-bexd2IklK7ZgPhrz6jXzpIL6dEAH9MlJU1xGTrypx+FICxrXUp4CqtwfiuoDKse+UlgAlWtzML3jrMqeEAHEhA==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"dev": true,
-+			"libc": [
-+				"musl"
-+			],
-+			"license": "MIT OR Apache-2.0",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": ">=14.21.3"
-+			}
-+		},
-+		"node_modules/@biomejs/cli-win32-arm64": {
-+			"version": "2.4.11",
-+			"resolved": "https://registry.npmjs.org/@biomejs/cli-win32-arm64/-/cli-win32-arm64-2.4.11.tgz",
-+			"integrity": "sha512-RJhaTnY8byzxDt4bDVb7AFPHkPcjOPK3xBip4ZRTrN3TEfyhjLRm3r3mqknqydgVTB74XG8l4jMLwEACEeihVg==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"dev": true,
-+			"license": "MIT OR Apache-2.0",
-+			"optional": true,
-+			"os": [
-+				"win32"
-+			],
-+			"engines": {
-+				"node": ">=14.21.3"
-+			}
-+		},
-+		"node_modules/@biomejs/cli-win32-x64": {
-+			"version": "2.4.11",
-+			"resolved": "https://registry.npmjs.org/@biomejs/cli-win32-x64/-/cli-win32-x64-2.4.11.tgz",
-+			"integrity": "sha512-A8D3JM/00C2KQgUV3oj8Ba15EHEYwebAGCy5Sf9GAjr5Y3+kJIYOiESoqRDeuRZueuMdCsbLZIUqmPhpYXJE9A==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"dev": true,
-+			"license": "MIT OR Apache-2.0",
-+			"optional": true,
-+			"os": [
-+				"win32"
-+			],
-+			"engines": {
-+				"node": ">=14.21.3"
-+			}
-+		},
-+		"node_modules/@bramus/specificity": {
-+			"version": "2.4.2",
-+			"resolved": "https://registry.npmjs.org/@bramus/specificity/-/specificity-2.4.2.tgz",
-+			"integrity": "sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"css-tree": "^3.0.0"
-+			},
-+			"bin": {
-+				"specificity": "bin/cli.js"
-+			}
-+		},
-+		"node_modules/@csstools/color-helpers": {
-+			"version": "6.0.2",
-+			"resolved": "https://registry.npmjs.org/@csstools/color-helpers/-/color-helpers-6.0.2.tgz",
-+			"integrity": "sha512-LMGQLS9EuADloEFkcTBR3BwV/CGHV7zyDxVRtVDTwdI2Ca4it0CCVTT9wCkxSgokjE5Ho41hEPgb8OEUwoXr6Q==",
-+			"dev": true,
-+			"funding": [
-+				{
-+					"type": "github",
-+					"url": "https://github.com/sponsors/csstools"
-+				},
-+				{
-+					"type": "opencollective",
-+					"url": "https://opencollective.com/csstools"
-+				}
-+			],
-+			"license": "MIT-0",
-+			"engines": {
-+				"node": ">=20.19.0"
-+			}
-+		},
-+		"node_modules/@csstools/css-calc": {
-+			"version": "3.2.0",
-+			"resolved": "https://registry.npmjs.org/@csstools/css-calc/-/css-calc-3.2.0.tgz",
-+			"integrity": "sha512-bR9e6o2BDB12jzN/gIbjHa5wLJ4UjD1CB9pM7ehlc0ddk6EBz+yYS1EV2MF55/HUxrHcB/hehAyt5vhsA3hx7w==",
-+			"dev": true,
-+			"funding": [
-+				{
-+					"type": "github",
-+					"url": "https://github.com/sponsors/csstools"
-+				},
-+				{
-+					"type": "opencollective",
-+					"url": "https://opencollective.com/csstools"
-+				}
-+			],
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=20.19.0"
-+			},
-+			"peerDependencies": {
-+				"@csstools/css-parser-algorithms": "^4.0.0",
-+				"@csstools/css-tokenizer": "^4.0.0"
-+			}
-+		},
-+		"node_modules/@csstools/css-color-parser": {
-+			"version": "4.1.0",
-+			"resolved": "https://registry.npmjs.org/@csstools/css-color-parser/-/css-color-parser-4.1.0.tgz",
-+			"integrity": "sha512-U0KhLYmy2GVj6q4T3WaAe6NPuFYCPQoE3b0dRGxejWDgcPp8TP7S5rVdM5ZrFaqu4N67X8YaPBw14dQSYx3IyQ==",
-+			"dev": true,
-+			"funding": [
-+				{
-+					"type": "github",
-+					"url": "https://github.com/sponsors/csstools"
-+				},
-+				{
-+					"type": "opencollective",
-+					"url": "https://opencollective.com/csstools"
-+				}
-+			],
-+			"license": "MIT",
-+			"dependencies": {
-+				"@csstools/color-helpers": "^6.0.2",
-+				"@csstools/css-calc": "^3.2.0"
-+			},
-+			"engines": {
-+				"node": ">=20.19.0"
-+			},
-+			"peerDependencies": {
-+				"@csstools/css-parser-algorithms": "^4.0.0",
-+				"@csstools/css-tokenizer": "^4.0.0"
-+			}
-+		},
-+		"node_modules/@csstools/css-parser-algorithms": {
-+			"version": "4.0.0",
-+			"resolved": "https://registry.npmjs.org/@csstools/css-parser-algorithms/-/css-parser-algorithms-4.0.0.tgz",
-+			"integrity": "sha512-+B87qS7fIG3L5h3qwJ/IFbjoVoOe/bpOdh9hAjXbvx0o8ImEmUsGXN0inFOnk2ChCFgqkkGFQ+TpM5rbhkKe4w==",
-+			"dev": true,
-+			"funding": [
-+				{
-+					"type": "github",
-+					"url": "https://github.com/sponsors/csstools"
-+				},
-+				{
-+					"type": "opencollective",
-+					"url": "https://opencollective.com/csstools"
-+				}
-+			],
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=20.19.0"
-+			},
-+			"peerDependencies": {
-+				"@csstools/css-tokenizer": "^4.0.0"
-+			}
-+		},
-+		"node_modules/@csstools/css-syntax-patches-for-csstree": {
-+			"version": "1.1.3",
-+			"resolved": "https://registry.npmjs.org/@csstools/css-syntax-patches-for-csstree/-/css-syntax-patches-for-csstree-1.1.3.tgz",
-+			"integrity": "sha512-SH60bMfrRCJF3morcdk57WklujF4Jr/EsQUzqkarfHXEFcAR1gg7fS/chAE922Sehgzc1/+Tz5H3Ypa1HiEKrg==",
-+			"dev": true,
-+			"funding": [
-+				{
-+					"type": "github",
-+					"url": "https://github.com/sponsors/csstools"
-+				},
-+				{
-+					"type": "opencollective",
-+					"url": "https://opencollective.com/csstools"
-+				}
-+			],
-+			"license": "MIT-0",
-+			"peerDependencies": {
-+				"css-tree": "^3.2.1"
-+			},
-+			"peerDependenciesMeta": {
-+				"css-tree": {
-+					"optional": true
-+				}
-+			}
-+		},
-+		"node_modules/@csstools/css-tokenizer": {
-+			"version": "4.0.0",
-+			"resolved": "https://registry.npmjs.org/@csstools/css-tokenizer/-/css-tokenizer-4.0.0.tgz",
-+			"integrity": "sha512-QxULHAm7cNu72w97JUNCBFODFaXpbDg+dP8b/oWFAZ2MTRppA3U00Y2L1HqaS4J6yBqxwa/Y3nMBaxVKbB/NsA==",
-+			"dev": true,
-+			"funding": [
-+				{
-+					"type": "github",
-+					"url": "https://github.com/sponsors/csstools"
-+				},
-+				{
-+					"type": "opencollective",
-+					"url": "https://opencollective.com/csstools"
-+				}
-+			],
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=20.19.0"
-+			}
-+		},
-+		"node_modules/@emnapi/core": {
-+			"version": "1.9.2",
-+			"resolved": "https://registry.npmjs.org/@emnapi/core/-/core-1.9.2.tgz",
-+			"integrity": "sha512-UC+ZhH3XtczQYfOlu3lNEkdW/p4dsJ1r/bP7H8+rhao3TTTMO1ATq/4DdIi23XuGoFY+Cz0JmCbdVl0hz9jZcA==",
-+			"license": "MIT",
-+			"optional": true,
-+			"dependencies": {
-+				"@emnapi/wasi-threads": "1.2.1",
-+				"tslib": "^2.4.0"
-+			}
-+		},
-+		"node_modules/@emnapi/runtime": {
-+			"version": "1.9.2",
-+			"resolved": "https://registry.npmjs.org/@emnapi/runtime/-/runtime-1.9.2.tgz",
-+			"integrity": "sha512-3U4+MIWHImeyu1wnmVygh5WlgfYDtyf0k8AbLhMFxOipihf6nrWC4syIm/SwEeec0mNSafiiNnMJwbza/Is6Lw==",
-+			"license": "MIT",
-+			"optional": true,
-+			"dependencies": {
-+				"tslib": "^2.4.0"
-+			}
-+		},
-+		"node_modules/@emnapi/wasi-threads": {
-+			"version": "1.2.1",
-+			"resolved": "https://registry.npmjs.org/@emnapi/wasi-threads/-/wasi-threads-1.2.1.tgz",
-+			"integrity": "sha512-uTII7OYF+/Mes/MrcIOYp5yOtSMLBWSIoLPpcgwipoiKbli6k322tcoFsxoIIxPDqW01SQGAgko4EzZi2BNv2w==",
-+			"license": "MIT",
-+			"optional": true,
-+			"dependencies": {
-+				"tslib": "^2.4.0"
-+			}
-+		},
-+		"node_modules/@exodus/bytes": {
-+			"version": "1.15.0",
-+			"resolved": "https://registry.npmjs.org/@exodus/bytes/-/bytes-1.15.0.tgz",
-+			"integrity": "sha512-UY0nlA+feH81UGSHv92sLEPLCeZFjXOuHhrIo0HQydScuQc8s0A7kL/UdgwgDq8g8ilksmuoF35YVTNphV2aBQ==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": "^20.19.0 || ^22.12.0 || >=24.0.0"
-+			},
-+			"peerDependencies": {
-+				"@noble/hashes": "^1.8.0 || ^2.0.0"
-+			},
-+			"peerDependenciesMeta": {
-+				"@noble/hashes": {
-+					"optional": true
-+				}
-+			}
-+		},
-+		"node_modules/@jridgewell/gen-mapping": {
-+			"version": "0.3.13",
-+			"resolved": "https://registry.npmjs.org/@jridgewell/gen-mapping/-/gen-mapping-0.3.13.tgz",
-+			"integrity": "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==",
-+			"license": "MIT",
-+			"dependencies": {
-+				"@jridgewell/sourcemap-codec": "^1.5.0",
-+				"@jridgewell/trace-mapping": "^0.3.24"
-+			}
-+		},
-+		"node_modules/@jridgewell/remapping": {
-+			"version": "2.3.5",
-+			"resolved": "https://registry.npmjs.org/@jridgewell/remapping/-/remapping-2.3.5.tgz",
-+			"integrity": "sha512-LI9u/+laYG4Ds1TDKSJW2YPrIlcVYOwi2fUC6xB43lueCjgxV4lffOCZCtYFiH6TNOX+tQKXx97T4IKHbhyHEQ==",
-+			"license": "MIT",
-+			"dependencies": {
-+				"@jridgewell/gen-mapping": "^0.3.5",
-+				"@jridgewell/trace-mapping": "^0.3.24"
-+			}
-+		},
-+		"node_modules/@jridgewell/resolve-uri": {
-+			"version": "3.1.2",
-+			"resolved": "https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz",
-+			"integrity": "sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==",
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=6.0.0"
-+			}
-+		},
-+		"node_modules/@jridgewell/sourcemap-codec": {
-+			"version": "1.5.5",
-+			"resolved": "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz",
-+			"integrity": "sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==",
-+			"license": "MIT"
-+		},
-+		"node_modules/@jridgewell/trace-mapping": {
-+			"version": "0.3.31",
-+			"resolved": "https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.31.tgz",
-+			"integrity": "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==",
-+			"license": "MIT",
-+			"dependencies": {
-+				"@jridgewell/resolve-uri": "^3.1.0",
-+				"@jridgewell/sourcemap-codec": "^1.4.14"
-+			}
-+		},
-+		"node_modules/@napi-rs/wasm-runtime": {
-+			"version": "1.1.2",
-+			"resolved": "https://registry.npmjs.org/@napi-rs/wasm-runtime/-/wasm-runtime-1.1.2.tgz",
-+			"integrity": "sha512-sNXv5oLJ7ob93xkZ1XnxisYhGYXfaG9f65/ZgYuAu3qt7b3NadcOEhLvx28hv31PgX8SZJRYrAIPQilQmFpLVw==",
-+			"license": "MIT",
-+			"optional": true,
-+			"dependencies": {
-+				"@tybys/wasm-util": "^0.10.1"
-+			},
-+			"funding": {
-+				"type": "github",
-+				"url": "https://github.com/sponsors/Brooooooklyn"
-+			},
-+			"peerDependencies": {
-+				"@emnapi/core": "^1.7.1",
-+				"@emnapi/runtime": "^1.7.1"
-+			}
-+		},
-+		"node_modules/@oxc-project/types": {
-+			"version": "0.122.0",
-+			"resolved": "https://registry.npmjs.org/@oxc-project/types/-/types-0.122.0.tgz",
-+			"integrity": "sha512-oLAl5kBpV4w69UtFZ9xqcmTi+GENWOcPF7FCrczTiBbmC0ibXxCwyvZGbO39rCVEuLGAZM84DH0pUIyyv/YJzA==",
-+			"license": "MIT",
-+			"funding": {
-+				"url": "https://github.com/sponsors/Boshen"
-+			}
-+		},
-+		"node_modules/@rolldown/binding-android-arm64": {
-+			"version": "1.0.0-rc.12",
-+			"resolved": "https://registry.npmjs.org/@rolldown/binding-android-arm64/-/binding-android-arm64-1.0.0-rc.12.tgz",
-+			"integrity": "sha512-pv1y2Fv0JybcykuiiD3qBOBdz6RteYojRFY1d+b95WVuzx211CRh+ytI/+9iVyWQ6koTh5dawe4S/yRfOFjgaA==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"android"
-+			],
-+			"engines": {
-+				"node": "^20.19.0 || >=22.12.0"
-+			}
-+		},
-+		"node_modules/@rolldown/binding-darwin-arm64": {
-+			"version": "1.0.0-rc.12",
-+			"resolved": "https://registry.npmjs.org/@rolldown/binding-darwin-arm64/-/binding-darwin-arm64-1.0.0-rc.12.tgz",
-+			"integrity": "sha512-cFYr6zTG/3PXXF3pUO+umXxt1wkRK/0AYT8lDwuqvRC+LuKYWSAQAQZjCWDQpAH172ZV6ieYrNnFzVVcnSflAg==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"darwin"
-+			],
-+			"engines": {
-+				"node": "^20.19.0 || >=22.12.0"
-+			}
-+		},
-+		"node_modules/@rolldown/binding-darwin-x64": {
-+			"version": "1.0.0-rc.12",
-+			"resolved": "https://registry.npmjs.org/@rolldown/binding-darwin-x64/-/binding-darwin-x64-1.0.0-rc.12.tgz",
-+			"integrity": "sha512-ZCsYknnHzeXYps0lGBz8JrF37GpE9bFVefrlmDrAQhOEi4IOIlcoU1+FwHEtyXGx2VkYAvhu7dyBf75EJQffBw==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"darwin"
-+			],
-+			"engines": {
-+				"node": "^20.19.0 || >=22.12.0"
-+			}
-+		},
-+		"node_modules/@rolldown/binding-freebsd-x64": {
-+			"version": "1.0.0-rc.12",
-+			"resolved": "https://registry.npmjs.org/@rolldown/binding-freebsd-x64/-/binding-freebsd-x64-1.0.0-rc.12.tgz",
-+			"integrity": "sha512-dMLeprcVsyJsKolRXyoTH3NL6qtsT0Y2xeuEA8WQJquWFXkEC4bcu1rLZZSnZRMtAqwtrF/Ib9Ddtpa/Gkge9Q==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"freebsd"
-+			],
-+			"engines": {
-+				"node": "^20.19.0 || >=22.12.0"
-+			}
-+		},
-+		"node_modules/@rolldown/binding-linux-arm-gnueabihf": {
-+			"version": "1.0.0-rc.12",
-+			"resolved": "https://registry.npmjs.org/@rolldown/binding-linux-arm-gnueabihf/-/binding-linux-arm-gnueabihf-1.0.0-rc.12.tgz",
-+			"integrity": "sha512-YqWjAgGC/9M1lz3GR1r1rP79nMgo3mQiiA+Hfo+pvKFK1fAJ1bCi0ZQVh8noOqNacuY1qIcfyVfP6HoyBRZ85Q==",
-+			"cpu": [
-+				"arm"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": "^20.19.0 || >=22.12.0"
-+			}
-+		},
-+		"node_modules/@rolldown/binding-linux-arm64-gnu": {
-+			"version": "1.0.0-rc.12",
-+			"resolved": "https://registry.npmjs.org/@rolldown/binding-linux-arm64-gnu/-/binding-linux-arm64-gnu-1.0.0-rc.12.tgz",
-+			"integrity": "sha512-/I5AS4cIroLpslsmzXfwbe5OmWvSsrFuEw3mwvbQ1kDxJ822hFHIx+vsN/TAzNVyepI/j/GSzrtCIwQPeKCLIg==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"libc": [
-+				"glibc"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": "^20.19.0 || >=22.12.0"
-+			}
-+		},
-+		"node_modules/@rolldown/binding-linux-arm64-musl": {
-+			"version": "1.0.0-rc.12",
-+			"resolved": "https://registry.npmjs.org/@rolldown/binding-linux-arm64-musl/-/binding-linux-arm64-musl-1.0.0-rc.12.tgz",
-+			"integrity": "sha512-V6/wZztnBqlx5hJQqNWwFdxIKN0m38p8Jas+VoSfgH54HSj9tKTt1dZvG6JRHcjh6D7TvrJPWFGaY9UBVOaWPw==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"libc": [
-+				"musl"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": "^20.19.0 || >=22.12.0"
-+			}
-+		},
-+		"node_modules/@rolldown/binding-linux-ppc64-gnu": {
-+			"version": "1.0.0-rc.12",
-+			"resolved": "https://registry.npmjs.org/@rolldown/binding-linux-ppc64-gnu/-/binding-linux-ppc64-gnu-1.0.0-rc.12.tgz",
-+			"integrity": "sha512-AP3E9BpcUYliZCxa3w5Kwj9OtEVDYK6sVoUzy4vTOJsjPOgdaJZKFmN4oOlX0Wp0RPV2ETfmIra9x1xuayFB7g==",
-+			"cpu": [
-+				"ppc64"
-+			],
-+			"libc": [
-+				"glibc"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": "^20.19.0 || >=22.12.0"
-+			}
-+		},
-+		"node_modules/@rolldown/binding-linux-s390x-gnu": {
-+			"version": "1.0.0-rc.12",
-+			"resolved": "https://registry.npmjs.org/@rolldown/binding-linux-s390x-gnu/-/binding-linux-s390x-gnu-1.0.0-rc.12.tgz",
-+			"integrity": "sha512-nWwpvUSPkoFmZo0kQazZYOrT7J5DGOJ/+QHHzjvNlooDZED8oH82Yg67HvehPPLAg5fUff7TfWFHQS8IV1n3og==",
-+			"cpu": [
-+				"s390x"
-+			],
-+			"libc": [
-+				"glibc"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": "^20.19.0 || >=22.12.0"
-+			}
-+		},
-+		"node_modules/@rolldown/binding-linux-x64-gnu": {
-+			"version": "1.0.0-rc.12",
-+			"resolved": "https://registry.npmjs.org/@rolldown/binding-linux-x64-gnu/-/binding-linux-x64-gnu-1.0.0-rc.12.tgz",
-+			"integrity": "sha512-RNrafz5bcwRy+O9e6P8Z/OCAJW/A+qtBczIqVYwTs14pf4iV1/+eKEjdOUta93q2TsT/FI0XYDP3TCky38LMAg==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"libc": [
-+				"glibc"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": "^20.19.0 || >=22.12.0"
-+			}
-+		},
-+		"node_modules/@rolldown/binding-linux-x64-musl": {
-+			"version": "1.0.0-rc.12",
-+			"resolved": "https://registry.npmjs.org/@rolldown/binding-linux-x64-musl/-/binding-linux-x64-musl-1.0.0-rc.12.tgz",
-+			"integrity": "sha512-Jpw/0iwoKWx3LJ2rc1yjFrj+T7iHZn2JDg1Yny1ma0luviFS4mhAIcd1LFNxK3EYu3DHWCps0ydXQ5i/rrJ2ig==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"libc": [
-+				"musl"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": "^20.19.0 || >=22.12.0"
-+			}
-+		},
-+		"node_modules/@rolldown/binding-openharmony-arm64": {
-+			"version": "1.0.0-rc.12",
-+			"resolved": "https://registry.npmjs.org/@rolldown/binding-openharmony-arm64/-/binding-openharmony-arm64-1.0.0-rc.12.tgz",
-+			"integrity": "sha512-vRugONE4yMfVn0+7lUKdKvN4D5YusEiPilaoO2sgUWpCvrncvWgPMzK00ZFFJuiPgLwgFNP5eSiUlv2tfc+lpA==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"openharmony"
-+			],
-+			"engines": {
-+				"node": "^20.19.0 || >=22.12.0"
-+			}
-+		},
-+		"node_modules/@rolldown/binding-wasm32-wasi": {
-+			"version": "1.0.0-rc.12",
-+			"resolved": "https://registry.npmjs.org/@rolldown/binding-wasm32-wasi/-/binding-wasm32-wasi-1.0.0-rc.12.tgz",
-+			"integrity": "sha512-ykGiLr/6kkiHc0XnBfmFJuCjr5ZYKKofkx+chJWDjitX+KsJuAmrzWhwyOMSHzPhzOHOy7u9HlFoa5MoAOJ/Zg==",
-+			"cpu": [
-+				"wasm32"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"dependencies": {
-+				"@napi-rs/wasm-runtime": "^1.1.1"
-+			},
-+			"engines": {
-+				"node": ">=14.0.0"
-+			}
-+		},
-+		"node_modules/@rolldown/binding-win32-arm64-msvc": {
-+			"version": "1.0.0-rc.12",
-+			"resolved": "https://registry.npmjs.org/@rolldown/binding-win32-arm64-msvc/-/binding-win32-arm64-msvc-1.0.0-rc.12.tgz",
-+			"integrity": "sha512-5eOND4duWkwx1AzCxadcOrNeighiLwMInEADT0YM7xeEOOFcovWZCq8dadXgcRHSf3Ulh1kFo/qvzoFiCLOL1Q==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"win32"
-+			],
-+			"engines": {
-+				"node": "^20.19.0 || >=22.12.0"
-+			}
-+		},
-+		"node_modules/@rolldown/binding-win32-x64-msvc": {
-+			"version": "1.0.0-rc.12",
-+			"resolved": "https://registry.npmjs.org/@rolldown/binding-win32-x64-msvc/-/binding-win32-x64-msvc-1.0.0-rc.12.tgz",
-+			"integrity": "sha512-PyqoipaswDLAZtot351MLhrlrh6lcZPo2LSYE+VDxbVk24LVKAGOuE4hb8xZQmrPAuEtTZW8E6D2zc5EUZX4Lw==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"win32"
-+			],
-+			"engines": {
-+				"node": "^20.19.0 || >=22.12.0"
-+			}
-+		},
-+		"node_modules/@rolldown/pluginutils": {
-+			"version": "1.0.0-rc.7",
-+			"resolved": "https://registry.npmjs.org/@rolldown/pluginutils/-/pluginutils-1.0.0-rc.7.tgz",
-+			"integrity": "sha512-qujRfC8sFVInYSPPMLQByRh7zhwkGFS4+tyMQ83srV1qrxL4g8E2tyxVVyxd0+8QeBM1mIk9KbWxkegRr76XzA==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/@standard-schema/spec": {
-+			"version": "1.1.0",
-+			"resolved": "https://registry.npmjs.org/@standard-schema/spec/-/spec-1.1.0.tgz",
-+			"integrity": "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/@tailwindcss/node": {
-+			"version": "4.2.2",
-+			"resolved": "https://registry.npmjs.org/@tailwindcss/node/-/node-4.2.2.tgz",
-+			"integrity": "sha512-pXS+wJ2gZpVXqFaUEjojq7jzMpTGf8rU6ipJz5ovJV6PUGmlJ+jvIwGrzdHdQ80Sg+wmQxUFuoW1UAAwHNEdFA==",
-+			"license": "MIT",
-+			"dependencies": {
-+				"@jridgewell/remapping": "^2.3.5",
-+				"enhanced-resolve": "^5.19.0",
-+				"jiti": "^2.6.1",
-+				"lightningcss": "1.32.0",
-+				"magic-string": "^0.30.21",
-+				"source-map-js": "^1.2.1",
-+				"tailwindcss": "4.2.2"
-+			}
-+		},
-+		"node_modules/@tailwindcss/oxide": {
-+			"version": "4.2.2",
-+			"resolved": "https://registry.npmjs.org/@tailwindcss/oxide/-/oxide-4.2.2.tgz",
-+			"integrity": "sha512-qEUA07+E5kehxYp9BVMpq9E8vnJuBHfJEC0vPC5e7iL/hw7HR61aDKoVoKzrG+QKp56vhNZe4qwkRmMC0zDLvg==",
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">= 20"
-+			},
-+			"optionalDependencies": {
-+				"@tailwindcss/oxide-android-arm64": "4.2.2",
-+				"@tailwindcss/oxide-darwin-arm64": "4.2.2",
-+				"@tailwindcss/oxide-darwin-x64": "4.2.2",
-+				"@tailwindcss/oxide-freebsd-x64": "4.2.2",
-+				"@tailwindcss/oxide-linux-arm-gnueabihf": "4.2.2",
-+				"@tailwindcss/oxide-linux-arm64-gnu": "4.2.2",
-+				"@tailwindcss/oxide-linux-arm64-musl": "4.2.2",
-+				"@tailwindcss/oxide-linux-x64-gnu": "4.2.2",
-+				"@tailwindcss/oxide-linux-x64-musl": "4.2.2",
-+				"@tailwindcss/oxide-wasm32-wasi": "4.2.2",
-+				"@tailwindcss/oxide-win32-arm64-msvc": "4.2.2",
-+				"@tailwindcss/oxide-win32-x64-msvc": "4.2.2"
-+			}
-+		},
-+		"node_modules/@tailwindcss/oxide-android-arm64": {
-+			"version": "4.2.2",
-+			"resolved": "https://registry.npmjs.org/@tailwindcss/oxide-android-arm64/-/oxide-android-arm64-4.2.2.tgz",
-+			"integrity": "sha512-dXGR1n+P3B6748jZO/SvHZq7qBOqqzQ+yFrXpoOWWALWndF9MoSKAT3Q0fYgAzYzGhxNYOoysRvYlpixRBBoDg==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"android"
-+			],
-+			"engines": {
-+				"node": ">= 20"
-+			}
-+		},
-+		"node_modules/@tailwindcss/oxide-darwin-arm64": {
-+			"version": "4.2.2",
-+			"resolved": "https://registry.npmjs.org/@tailwindcss/oxide-darwin-arm64/-/oxide-darwin-arm64-4.2.2.tgz",
-+			"integrity": "sha512-iq9Qjr6knfMpZHj55/37ouZeykwbDqF21gPFtfnhCCKGDcPI/21FKC9XdMO/XyBM7qKORx6UIhGgg6jLl7BZlg==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"darwin"
-+			],
-+			"engines": {
-+				"node": ">= 20"
-+			}
-+		},
-+		"node_modules/@tailwindcss/oxide-darwin-x64": {
-+			"version": "4.2.2",
-+			"resolved": "https://registry.npmjs.org/@tailwindcss/oxide-darwin-x64/-/oxide-darwin-x64-4.2.2.tgz",
-+			"integrity": "sha512-BlR+2c3nzc8f2G639LpL89YY4bdcIdUmiOOkv2GQv4/4M0vJlpXEa0JXNHhCHU7VWOKWT/CjqHdTP8aUuDJkuw==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"darwin"
-+			],
-+			"engines": {
-+				"node": ">= 20"
-+			}
-+		},
-+		"node_modules/@tailwindcss/oxide-freebsd-x64": {
-+			"version": "4.2.2",
-+			"resolved": "https://registry.npmjs.org/@tailwindcss/oxide-freebsd-x64/-/oxide-freebsd-x64-4.2.2.tgz",
-+			"integrity": "sha512-YUqUgrGMSu2CDO82hzlQ5qSb5xmx3RUrke/QgnoEx7KvmRJHQuZHZmZTLSuuHwFf0DJPybFMXMYf+WJdxHy/nQ==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"freebsd"
-+			],
-+			"engines": {
-+				"node": ">= 20"
-+			}
-+		},
-+		"node_modules/@tailwindcss/oxide-linux-arm-gnueabihf": {
-+			"version": "4.2.2",
-+			"resolved": "https://registry.npmjs.org/@tailwindcss/oxide-linux-arm-gnueabihf/-/oxide-linux-arm-gnueabihf-4.2.2.tgz",
-+			"integrity": "sha512-FPdhvsW6g06T9BWT0qTwiVZYE2WIFo2dY5aCSpjG/S/u1tby+wXoslXS0kl3/KXnULlLr1E3NPRRw0g7t2kgaQ==",
-+			"cpu": [
-+				"arm"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": ">= 20"
-+			}
-+		},
-+		"node_modules/@tailwindcss/oxide-linux-arm64-gnu": {
-+			"version": "4.2.2",
-+			"resolved": "https://registry.npmjs.org/@tailwindcss/oxide-linux-arm64-gnu/-/oxide-linux-arm64-gnu-4.2.2.tgz",
-+			"integrity": "sha512-4og1V+ftEPXGttOO7eCmW7VICmzzJWgMx+QXAJRAhjrSjumCwWqMfkDrNu1LXEQzNAwz28NCUpucgQPrR4S2yw==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"libc": [
-+				"glibc"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": ">= 20"
-+			}
-+		},
-+		"node_modules/@tailwindcss/oxide-linux-arm64-musl": {
-+			"version": "4.2.2",
-+			"resolved": "https://registry.npmjs.org/@tailwindcss/oxide-linux-arm64-musl/-/oxide-linux-arm64-musl-4.2.2.tgz",
-+			"integrity": "sha512-oCfG/mS+/+XRlwNjnsNLVwnMWYH7tn/kYPsNPh+JSOMlnt93mYNCKHYzylRhI51X+TbR+ufNhhKKzm6QkqX8ag==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"libc": [
-+				"musl"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": ">= 20"
-+			}
-+		},
-+		"node_modules/@tailwindcss/oxide-linux-x64-gnu": {
-+			"version": "4.2.2",
-+			"resolved": "https://registry.npmjs.org/@tailwindcss/oxide-linux-x64-gnu/-/oxide-linux-x64-gnu-4.2.2.tgz",
-+			"integrity": "sha512-rTAGAkDgqbXHNp/xW0iugLVmX62wOp2PoE39BTCGKjv3Iocf6AFbRP/wZT/kuCxC9QBh9Pu8XPkv/zCZB2mcMg==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"libc": [
-+				"glibc"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": ">= 20"
-+			}
-+		},
-+		"node_modules/@tailwindcss/oxide-linux-x64-musl": {
-+			"version": "4.2.2",
-+			"resolved": "https://registry.npmjs.org/@tailwindcss/oxide-linux-x64-musl/-/oxide-linux-x64-musl-4.2.2.tgz",
-+			"integrity": "sha512-XW3t3qwbIwiSyRCggeO2zxe3KWaEbM0/kW9e8+0XpBgyKU4ATYzcVSMKteZJ1iukJ3HgHBjbg9P5YPRCVUxlnQ==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"libc": [
-+				"musl"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": ">= 20"
-+			}
-+		},
-+		"node_modules/@tailwindcss/oxide-wasm32-wasi": {
-+			"version": "4.2.2",
-+			"resolved": "https://registry.npmjs.org/@tailwindcss/oxide-wasm32-wasi/-/oxide-wasm32-wasi-4.2.2.tgz",
-+			"integrity": "sha512-eKSztKsmEsn1O5lJ4ZAfyn41NfG7vzCg496YiGtMDV86jz1q/irhms5O0VrY6ZwTUkFy/EKG3RfWgxSI3VbZ8Q==",
-+			"bundleDependencies": [
-+				"@napi-rs/wasm-runtime",
-+				"@emnapi/core",
-+				"@emnapi/runtime",
-+				"@tybys/wasm-util",
-+				"@emnapi/wasi-threads",
-+				"tslib"
-+			],
-+			"cpu": [
-+				"wasm32"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"dependencies": {
-+				"@emnapi/core": "^1.8.1",
-+				"@emnapi/runtime": "^1.8.1",
-+				"@emnapi/wasi-threads": "^1.1.0",
-+				"@napi-rs/wasm-runtime": "^1.1.1",
-+				"@tybys/wasm-util": "^0.10.1",
-+				"tslib": "^2.8.1"
-+			},
-+			"engines": {
-+				"node": ">=14.0.0"
-+			}
-+		},
-+		"node_modules/@tailwindcss/oxide-win32-arm64-msvc": {
-+			"version": "4.2.2",
-+			"resolved": "https://registry.npmjs.org/@tailwindcss/oxide-win32-arm64-msvc/-/oxide-win32-arm64-msvc-4.2.2.tgz",
-+			"integrity": "sha512-qPmaQM4iKu5mxpsrWZMOZRgZv1tOZpUm+zdhhQP0VhJfyGGO3aUKdbh3gDZc/dPLQwW4eSqWGrrcWNBZWUWaXQ==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"win32"
-+			],
-+			"engines": {
-+				"node": ">= 20"
-+			}
-+		},
-+		"node_modules/@tailwindcss/oxide-win32-x64-msvc": {
-+			"version": "4.2.2",
-+			"resolved": "https://registry.npmjs.org/@tailwindcss/oxide-win32-x64-msvc/-/oxide-win32-x64-msvc-4.2.2.tgz",
-+			"integrity": "sha512-1T/37VvI7WyH66b+vqHj/cLwnCxt7Qt3WFu5Q8hk65aOvlwAhs7rAp1VkulBJw/N4tMirXjVnylTR72uI0HGcA==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"win32"
-+			],
-+			"engines": {
-+				"node": ">= 20"
-+			}
-+		},
-+		"node_modules/@tailwindcss/vite": {
-+			"version": "4.2.2",
-+			"resolved": "https://registry.npmjs.org/@tailwindcss/vite/-/vite-4.2.2.tgz",
-+			"integrity": "sha512-mEiF5HO1QqCLXoNEfXVA1Tzo+cYsrqV7w9Juj2wdUFyW07JRenqMG225MvPwr3ZD9N1bFQj46X7r33iHxLUW0w==",
-+			"license": "MIT",
-+			"dependencies": {
-+				"@tailwindcss/node": "4.2.2",
-+				"@tailwindcss/oxide": "4.2.2",
-+				"tailwindcss": "4.2.2"
-+			},
-+			"peerDependencies": {
-+				"vite": "^5.2.0 || ^6 || ^7 || ^8"
-+			}
-+		},
-+		"node_modules/@testing-library/dom": {
-+			"version": "10.4.1",
-+			"resolved": "https://registry.npmjs.org/@testing-library/dom/-/dom-10.4.1.tgz",
-+			"integrity": "sha512-o4PXJQidqJl82ckFaXUeoAW+XysPLauYI43Abki5hABd853iMhitooc6znOnczgbTYmEP6U6/y1ZyKAIsvMKGg==",
-+			"dev": true,
-+			"license": "MIT",
-+			"peer": true,
-+			"dependencies": {
-+				"@babel/code-frame": "^7.10.4",
-+				"@babel/runtime": "^7.12.5",
-+				"@types/aria-query": "^5.0.1",
-+				"aria-query": "5.3.0",
-+				"dom-accessibility-api": "^0.5.9",
-+				"lz-string": "^1.5.0",
-+				"picocolors": "1.1.1",
-+				"pretty-format": "^27.0.2"
-+			},
-+			"engines": {
-+				"node": ">=18"
-+			}
-+		},
-+		"node_modules/@testing-library/react": {
-+			"version": "16.3.2",
-+			"resolved": "https://registry.npmjs.org/@testing-library/react/-/react-16.3.2.tgz",
-+			"integrity": "sha512-XU5/SytQM+ykqMnAnvB2umaJNIOsLF3PVv//1Ew4CTcpz0/BRyy/af40qqrt7SjKpDdT1saBMc42CUok5gaw+g==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@babel/runtime": "^7.12.5"
-+			},
-+			"engines": {
-+				"node": ">=18"
-+			},
-+			"peerDependencies": {
-+				"@testing-library/dom": "^10.0.0",
-+				"@types/react": "^18.0.0 || ^19.0.0",
-+				"@types/react-dom": "^18.0.0 || ^19.0.0",
-+				"react": "^18.0.0 || ^19.0.0",
-+				"react-dom": "^18.0.0 || ^19.0.0"
-+			},
-+			"peerDependenciesMeta": {
-+				"@types/react": {
-+					"optional": true
-+				},
-+				"@types/react-dom": {
-+					"optional": true
-+				}
-+			}
-+		},
-+		"node_modules/@tybys/wasm-util": {
-+			"version": "0.10.1",
-+			"resolved": "https://registry.npmjs.org/@tybys/wasm-util/-/wasm-util-0.10.1.tgz",
-+			"integrity": "sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==",
-+			"license": "MIT",
-+			"optional": true,
-+			"dependencies": {
-+				"tslib": "^2.4.0"
-+			}
-+		},
-+		"node_modules/@types/aria-query": {
-+			"version": "5.0.4",
-+			"resolved": "https://registry.npmjs.org/@types/aria-query/-/aria-query-5.0.4.tgz",
-+			"integrity": "sha512-rfT93uj5s0PRL7EzccGMs3brplhcrghnDoV26NqKhCAS1hVo+WdNsPvE/yb6ilfr5hi2MEk6d5EWJTKdxg8jVw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"peer": true
-+		},
-+		"node_modules/@types/chai": {
-+			"version": "5.2.3",
-+			"resolved": "https://registry.npmjs.org/@types/chai/-/chai-5.2.3.tgz",
-+			"integrity": "sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@types/deep-eql": "*",
-+				"assertion-error": "^2.0.1"
-+			}
-+		},
-+		"node_modules/@types/deep-eql": {
-+			"version": "4.0.2",
-+			"resolved": "https://registry.npmjs.org/@types/deep-eql/-/deep-eql-4.0.2.tgz",
-+			"integrity": "sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/@types/estree": {
-+			"version": "1.0.8",
-+			"resolved": "https://registry.npmjs.org/@types/estree/-/estree-1.0.8.tgz",
-+			"integrity": "sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/@types/node": {
-+			"version": "24.12.2",
-+			"resolved": "https://registry.npmjs.org/@types/node/-/node-24.12.2.tgz",
-+			"integrity": "sha512-A1sre26ke7HDIuY/M23nd9gfB+nrmhtYyMINbjI1zHJxYteKR6qSMX56FsmjMcDb3SMcjJg5BiRRgOCC/yBD0g==",
-+			"devOptional": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"undici-types": "~7.16.0"
-+			}
-+		},
-+		"node_modules/@types/react": {
-+			"version": "19.2.14",
-+			"resolved": "https://registry.npmjs.org/@types/react/-/react-19.2.14.tgz",
-+			"integrity": "sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"csstype": "^3.2.2"
-+			}
-+		},
-+		"node_modules/@types/react-dom": {
-+			"version": "19.2.3",
-+			"resolved": "https://registry.npmjs.org/@types/react-dom/-/react-dom-19.2.3.tgz",
-+			"integrity": "sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==",
-+			"dev": true,
-+			"license": "MIT",
-+			"peerDependencies": {
-+				"@types/react": "^19.2.0"
-+			}
-+		},
-+		"node_modules/@vitejs/plugin-react": {
-+			"version": "6.0.1",
-+			"resolved": "https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-6.0.1.tgz",
-+			"integrity": "sha512-l9X/E3cDb+xY3SWzlG1MOGt2usfEHGMNIaegaUGFsLkb3RCn/k8/TOXBcab+OndDI4TBtktT8/9BwwW8Vi9KUQ==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@rolldown/pluginutils": "1.0.0-rc.7"
-+			},
-+			"engines": {
-+				"node": "^20.19.0 || >=22.12.0"
-+			},
-+			"peerDependencies": {
-+				"@rolldown/plugin-babel": "^0.1.7 || ^0.2.0",
-+				"babel-plugin-react-compiler": "^1.0.0",
-+				"vite": "^8.0.0"
-+			},
-+			"peerDependenciesMeta": {
-+				"@rolldown/plugin-babel": {
-+					"optional": true
-+				},
-+				"babel-plugin-react-compiler": {
-+					"optional": true
-+				}
-+			}
-+		},
-+		"node_modules/@vitest/coverage-v8": {
-+			"version": "4.1.4",
-+			"resolved": "https://registry.npmjs.org/@vitest/coverage-v8/-/coverage-v8-4.1.4.tgz",
-+			"integrity": "sha512-x7FptB5oDruxNPDNY2+S8tCh0pcq7ymCe1gTHcsp733jYjrJl8V1gMUlVysuCD9Kz46Xz9t1akkv08dPcYDs1w==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@bcoe/v8-coverage": "^1.0.2",
-+				"@vitest/utils": "4.1.4",
-+				"ast-v8-to-istanbul": "^1.0.0",
-+				"istanbul-lib-coverage": "^3.2.2",
-+				"istanbul-lib-report": "^3.0.1",
-+				"istanbul-reports": "^3.2.0",
-+				"magicast": "^0.5.2",
-+				"obug": "^2.1.1",
-+				"std-env": "^4.0.0-rc.1",
-+				"tinyrainbow": "^3.1.0"
-+			},
-+			"funding": {
-+				"url": "https://opencollective.com/vitest"
-+			},
-+			"peerDependencies": {
-+				"@vitest/browser": "4.1.4",
-+				"vitest": "4.1.4"
-+			},
-+			"peerDependenciesMeta": {
-+				"@vitest/browser": {
-+					"optional": true
-+				}
-+			}
-+		},
-+		"node_modules/@vitest/expect": {
-+			"version": "4.1.4",
-+			"resolved": "https://registry.npmjs.org/@vitest/expect/-/expect-4.1.4.tgz",
-+			"integrity": "sha512-iPBpra+VDuXmBFI3FMKHSFXp3Gx5HfmSCE8X67Dn+bwephCnQCaB7qWK2ldHa+8ncN8hJU8VTMcxjPpyMkUjww==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@standard-schema/spec": "^1.1.0",
-+				"@types/chai": "^5.2.2",
-+				"@vitest/spy": "4.1.4",
-+				"@vitest/utils": "4.1.4",
-+				"chai": "^6.2.2",
-+				"tinyrainbow": "^3.1.0"
-+			},
-+			"funding": {
-+				"url": "https://opencollective.com/vitest"
-+			}
-+		},
-+		"node_modules/@vitest/mocker": {
-+			"version": "4.1.4",
-+			"resolved": "https://registry.npmjs.org/@vitest/mocker/-/mocker-4.1.4.tgz",
-+			"integrity": "sha512-R9HTZBhW6yCSGbGQnDnH3QHfJxokKN4KB+Yvk9Q1le7eQNYwiCyKxmLmurSpFy6BzJanSLuEUDrD+j97Q+ZLPg==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@vitest/spy": "4.1.4",
-+				"estree-walker": "^3.0.3",
-+				"magic-string": "^0.30.21"
-+			},
-+			"funding": {
-+				"url": "https://opencollective.com/vitest"
-+			},
-+			"peerDependencies": {
-+				"msw": "^2.4.9",
-+				"vite": "^6.0.0 || ^7.0.0 || ^8.0.0"
-+			},
-+			"peerDependenciesMeta": {
-+				"msw": {
-+					"optional": true
-+				},
-+				"vite": {
-+					"optional": true
-+				}
-+			}
-+		},
-+		"node_modules/@vitest/pretty-format": {
-+			"version": "4.1.4",
-+			"resolved": "https://registry.npmjs.org/@vitest/pretty-format/-/pretty-format-4.1.4.tgz",
-+			"integrity": "sha512-ddmDHU0gjEUyEVLxtZa7xamrpIefdEETu3nZjWtHeZX4QxqJ7tRxSteHVXJOcr8jhiLoGAhkK4WJ3WqBpjx42A==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"tinyrainbow": "^3.1.0"
-+			},
-+			"funding": {
-+				"url": "https://opencollective.com/vitest"
-+			}
-+		},
-+		"node_modules/@vitest/runner": {
-+			"version": "4.1.4",
-+			"resolved": "https://registry.npmjs.org/@vitest/runner/-/runner-4.1.4.tgz",
-+			"integrity": "sha512-xTp7VZ5aXP5ZJrn15UtJUWlx6qXLnGtF6jNxHepdPHpMfz/aVPx+htHtgcAL2mDXJgKhpoo2e9/hVJsIeFbytQ==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@vitest/utils": "4.1.4",
-+				"pathe": "^2.0.3"
-+			},
-+			"funding": {
-+				"url": "https://opencollective.com/vitest"
-+			}
-+		},
-+		"node_modules/@vitest/snapshot": {
-+			"version": "4.1.4",
-+			"resolved": "https://registry.npmjs.org/@vitest/snapshot/-/snapshot-4.1.4.tgz",
-+			"integrity": "sha512-MCjCFgaS8aZz+m5nTcEcgk/xhWv0rEH4Yl53PPlMXOZ1/Ka2VcZU6CJ+MgYCZbcJvzGhQRjVrGQNZqkGPttIKw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@vitest/pretty-format": "4.1.4",
-+				"@vitest/utils": "4.1.4",
-+				"magic-string": "^0.30.21",
-+				"pathe": "^2.0.3"
-+			},
-+			"funding": {
-+				"url": "https://opencollective.com/vitest"
-+			}
-+		},
-+		"node_modules/@vitest/spy": {
-+			"version": "4.1.4",
-+			"resolved": "https://registry.npmjs.org/@vitest/spy/-/spy-4.1.4.tgz",
-+			"integrity": "sha512-XxNdAsKW7C+FLydqFJLb5KhJtl3PGCMmYwFRfhvIgxJvLSXhhVI1zM8f1qD3Zg7RCjTSzDVyct6sghs9UEgBEQ==",
-+			"dev": true,
-+			"license": "MIT",
-+			"funding": {
-+				"url": "https://opencollective.com/vitest"
-+			}
-+		},
-+		"node_modules/@vitest/utils": {
-+			"version": "4.1.4",
-+			"resolved": "https://registry.npmjs.org/@vitest/utils/-/utils-4.1.4.tgz",
-+			"integrity": "sha512-13QMT+eysM5uVGa1rG4kegGYNp6cnQcsTc67ELFbhNLQO+vgsygtYJx2khvdt4gVQqSSpC/KT5FZZxUpP3Oatw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@vitest/pretty-format": "4.1.4",
-+				"convert-source-map": "^2.0.0",
-+				"tinyrainbow": "^3.1.0"
-+			},
-+			"funding": {
-+				"url": "https://opencollective.com/vitest"
-+			}
-+		},
-+		"node_modules/ansi-escapes": {
-+			"version": "7.3.0",
-+			"resolved": "https://registry.npmjs.org/ansi-escapes/-/ansi-escapes-7.3.0.tgz",
-+			"integrity": "sha512-BvU8nYgGQBxcmMuEeUEmNTvrMVjJNSH7RgW24vXexN4Ven6qCvy4TntnvlnwnMLTVlcRQQdbRY8NKnaIoeWDNg==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"environment": "^1.0.0"
-+			},
-+			"engines": {
-+				"node": ">=18"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/sindresorhus"
-+			}
-+		},
-+		"node_modules/ansi-regex": {
-+			"version": "6.2.2",
-+			"resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-6.2.2.tgz",
-+			"integrity": "sha512-Bq3SmSpyFHaWjPk8If9yc6svM8c56dB5BAtW4Qbw5jHTwwXXcTLoRMkpDJp6VL0XzlWaCHTXrkFURMYmD0sLqg==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=12"
-+			},
-+			"funding": {
-+				"url": "https://github.com/chalk/ansi-regex?sponsor=1"
-+			}
-+		},
-+		"node_modules/ansi-styles": {
-+			"version": "5.2.0",
-+			"resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-5.2.0.tgz",
-+			"integrity": "sha512-Cxwpt2SfTzTtXcfOlzGEee8O+c+MmUgGrNiBcXnuWxuFJHe6a5Hz7qwhwe5OgaSYI0IJvkLqWX1ASG+cJOkEiA==",
-+			"dev": true,
-+			"license": "MIT",
-+			"peer": true,
-+			"engines": {
-+				"node": ">=10"
-+			},
-+			"funding": {
-+				"url": "https://github.com/chalk/ansi-styles?sponsor=1"
-+			}
-+		},
-+		"node_modules/aria-query": {
-+			"version": "5.3.0",
-+			"resolved": "https://registry.npmjs.org/aria-query/-/aria-query-5.3.0.tgz",
-+			"integrity": "sha512-b0P0sZPKtyu8HkeRAfCq0IfURZK+SuwMjY1UXGBU27wpAiTwQAIlq56IbIO+ytk/JjS1fMR14ee5WBBfKi5J6A==",
-+			"dev": true,
-+			"license": "Apache-2.0",
-+			"peer": true,
-+			"dependencies": {
-+				"dequal": "^2.0.3"
-+			}
-+		},
-+		"node_modules/assertion-error": {
-+			"version": "2.0.1",
-+			"resolved": "https://registry.npmjs.org/assertion-error/-/assertion-error-2.0.1.tgz",
-+			"integrity": "sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=12"
-+			}
-+		},
-+		"node_modules/ast-v8-to-istanbul": {
-+			"version": "1.0.0",
-+			"resolved": "https://registry.npmjs.org/ast-v8-to-istanbul/-/ast-v8-to-istanbul-1.0.0.tgz",
-+			"integrity": "sha512-1fSfIwuDICFA4LKkCzRPO7F0hzFf0B7+Xqrl27ynQaa+Rh0e1Es0v6kWHPott3lU10AyAr7oKHa65OppjLn3Rg==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@jridgewell/trace-mapping": "^0.3.31",
-+				"estree-walker": "^3.0.3",
-+				"js-tokens": "^10.0.0"
-+			}
-+		},
-+		"node_modules/ast-v8-to-istanbul/node_modules/js-tokens": {
-+			"version": "10.0.0",
-+			"resolved": "https://registry.npmjs.org/js-tokens/-/js-tokens-10.0.0.tgz",
-+			"integrity": "sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/bidi-js": {
-+			"version": "1.0.3",
-+			"resolved": "https://registry.npmjs.org/bidi-js/-/bidi-js-1.0.3.tgz",
-+			"integrity": "sha512-RKshQI1R3YQ+n9YJz2QQ147P66ELpa1FQEg20Dk8oW9t2KgLbpDLLp9aGZ7y8WHSshDknG0bknqGw5/tyCs5tw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"require-from-string": "^2.0.2"
-+			}
-+		},
-+		"node_modules/chai": {
-+			"version": "6.2.2",
-+			"resolved": "https://registry.npmjs.org/chai/-/chai-6.2.2.tgz",
-+			"integrity": "sha512-NUPRluOfOiTKBKvWPtSD4PhFvWCqOi0BGStNWs57X9js7XGTprSmFoz5F0tWhR4WPjNeR9jXqdC7/UpSJTnlRg==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=18"
-+			}
-+		},
-+		"node_modules/cli-cursor": {
-+			"version": "5.0.0",
-+			"resolved": "https://registry.npmjs.org/cli-cursor/-/cli-cursor-5.0.0.tgz",
-+			"integrity": "sha512-aCj4O5wKyszjMmDT4tZj93kxyydN/K5zPWSCe6/0AV/AA1pqe5ZBIw0a2ZfPQV7lL5/yb5HsUreJ6UFAF1tEQw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"restore-cursor": "^5.0.0"
-+			},
-+			"engines": {
-+				"node": ">=18"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/sindresorhus"
-+			}
-+		},
-+		"node_modules/cli-truncate": {
-+			"version": "5.2.0",
-+			"resolved": "https://registry.npmjs.org/cli-truncate/-/cli-truncate-5.2.0.tgz",
-+			"integrity": "sha512-xRwvIOMGrfOAnM1JYtqQImuaNtDEv9v6oIYAs4LIHwTiKee8uwvIi363igssOC0O5U04i4AlENs79LQLu9tEMw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"slice-ansi": "^8.0.0",
-+				"string-width": "^8.2.0"
-+			},
-+			"engines": {
-+				"node": ">=20"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/sindresorhus"
-+			}
-+		},
-+		"node_modules/colorette": {
-+			"version": "2.0.20",
-+			"resolved": "https://registry.npmjs.org/colorette/-/colorette-2.0.20.tgz",
-+			"integrity": "sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/commander": {
-+			"version": "14.0.3",
-+			"resolved": "https://registry.npmjs.org/commander/-/commander-14.0.3.tgz",
-+			"integrity": "sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=20"
-+			}
-+		},
-+		"node_modules/convert-source-map": {
-+			"version": "2.0.0",
-+			"resolved": "https://registry.npmjs.org/convert-source-map/-/convert-source-map-2.0.0.tgz",
-+			"integrity": "sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/css-tree": {
-+			"version": "3.2.1",
-+			"resolved": "https://registry.npmjs.org/css-tree/-/css-tree-3.2.1.tgz",
-+			"integrity": "sha512-X7sjQzceUhu1u7Y/ylrRZFU2FS6LRiFVp6rKLPg23y3x3c3DOKAwuXGDp+PAGjh6CSnCjYeAul8pcT8bAl+lSA==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"mdn-data": "2.27.1",
-+				"source-map-js": "^1.2.1"
-+			},
-+			"engines": {
-+				"node": "^10 || ^12.20.0 || ^14.13.0 || >=15.0.0"
-+			}
-+		},
-+		"node_modules/csstype": {
-+			"version": "3.2.3",
-+			"resolved": "https://registry.npmjs.org/csstype/-/csstype-3.2.3.tgz",
-+			"integrity": "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/data-urls": {
-+			"version": "7.0.0",
-+			"resolved": "https://registry.npmjs.org/data-urls/-/data-urls-7.0.0.tgz",
-+			"integrity": "sha512-23XHcCF+coGYevirZceTVD7NdJOqVn+49IHyxgszm+JIiHLoB2TkmPtsYkNWT1pvRSGkc35L6NHs0yHkN2SumA==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"whatwg-mimetype": "^5.0.0",
-+				"whatwg-url": "^16.0.0"
-+			},
-+			"engines": {
-+				"node": "^20.19.0 || ^22.12.0 || >=24.0.0"
-+			}
-+		},
-+		"node_modules/decimal.js": {
-+			"version": "10.6.0",
-+			"resolved": "https://registry.npmjs.org/decimal.js/-/decimal.js-10.6.0.tgz",
-+			"integrity": "sha512-YpgQiITW3JXGntzdUmyUR1V812Hn8T1YVXhCu+wO3OpS4eU9l4YdD3qjyiKdV6mvV29zapkMeD390UVEf2lkUg==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/dequal": {
-+			"version": "2.0.3",
-+			"resolved": "https://registry.npmjs.org/dequal/-/dequal-2.0.3.tgz",
-+			"integrity": "sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA==",
-+			"dev": true,
-+			"license": "MIT",
-+			"peer": true,
-+			"engines": {
-+				"node": ">=6"
-+			}
-+		},
-+		"node_modules/detect-libc": {
-+			"version": "2.1.2",
-+			"resolved": "https://registry.npmjs.org/detect-libc/-/detect-libc-2.1.2.tgz",
-+			"integrity": "sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==",
-+			"license": "Apache-2.0",
-+			"engines": {
-+				"node": ">=8"
-+			}
-+		},
-+		"node_modules/dom-accessibility-api": {
-+			"version": "0.5.16",
-+			"resolved": "https://registry.npmjs.org/dom-accessibility-api/-/dom-accessibility-api-0.5.16.tgz",
-+			"integrity": "sha512-X7BJ2yElsnOJ30pZF4uIIDfBEVgF4XEBxL9Bxhy6dnrm5hkzqmsWHGTiHqRiITNhMyFLyAiWndIJP7Z1NTteDg==",
-+			"dev": true,
-+			"license": "MIT",
-+			"peer": true
-+		},
-+		"node_modules/emoji-regex": {
-+			"version": "10.6.0",
-+			"resolved": "https://registry.npmjs.org/emoji-regex/-/emoji-regex-10.6.0.tgz",
-+			"integrity": "sha512-toUI84YS5YmxW219erniWD0CIVOo46xGKColeNQRgOzDorgBi1v4D71/OFzgD9GO2UGKIv1C3Sp8DAn0+j5w7A==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/enhanced-resolve": {
-+			"version": "5.20.1",
-+			"resolved": "https://registry.npmjs.org/enhanced-resolve/-/enhanced-resolve-5.20.1.tgz",
-+			"integrity": "sha512-Qohcme7V1inbAfvjItgw0EaxVX5q2rdVEZHRBrEQdRZTssLDGsL8Lwrznl8oQ/6kuTJONLaDcGjkNP247XEhcA==",
-+			"license": "MIT",
-+			"dependencies": {
-+				"graceful-fs": "^4.2.4",
-+				"tapable": "^2.3.0"
-+			},
-+			"engines": {
-+				"node": ">=10.13.0"
-+			}
-+		},
-+		"node_modules/entities": {
-+			"version": "6.0.1",
-+			"resolved": "https://registry.npmjs.org/entities/-/entities-6.0.1.tgz",
-+			"integrity": "sha512-aN97NXWF6AWBTahfVOIrB/NShkzi5H7F9r1s9mD3cDj4Ko5f2qhhVoYMibXF7GlLveb/D2ioWay8lxI97Ven3g==",
-+			"dev": true,
-+			"license": "BSD-2-Clause",
-+			"engines": {
-+				"node": ">=0.12"
-+			},
-+			"funding": {
-+				"url": "https://github.com/fb55/entities?sponsor=1"
-+			}
-+		},
-+		"node_modules/environment": {
-+			"version": "1.1.0",
-+			"resolved": "https://registry.npmjs.org/environment/-/environment-1.1.0.tgz",
-+			"integrity": "sha512-xUtoPkMggbz0MPyPiIWr1Kp4aeWJjDZ6SMvURhimjdZgsRuDplF5/s9hcgGhyXMhs+6vpnuoiZ2kFiu3FMnS8Q==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=18"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/sindresorhus"
-+			}
-+		},
-+		"node_modules/es-module-lexer": {
-+			"version": "2.0.0",
-+			"resolved": "https://registry.npmjs.org/es-module-lexer/-/es-module-lexer-2.0.0.tgz",
-+			"integrity": "sha512-5POEcUuZybH7IdmGsD8wlf0AI55wMecM9rVBTI/qEAy2c1kTOm3DjFYjrBdI2K3BaJjJYfYFeRtM0t9ssnRuxw==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/estree-walker": {
-+			"version": "3.0.3",
-+			"resolved": "https://registry.npmjs.org/estree-walker/-/estree-walker-3.0.3.tgz",
-+			"integrity": "sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@types/estree": "^1.0.0"
-+			}
-+		},
-+		"node_modules/eventemitter3": {
-+			"version": "5.0.4",
-+			"resolved": "https://registry.npmjs.org/eventemitter3/-/eventemitter3-5.0.4.tgz",
-+			"integrity": "sha512-mlsTRyGaPBjPedk6Bvw+aqbsXDtoAyAzm5MO7JgU+yVRyMQ5O8bD4Kcci7BS85f93veegeCPkL8R4GLClnjLFw==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/expect-type": {
-+			"version": "1.3.0",
-+			"resolved": "https://registry.npmjs.org/expect-type/-/expect-type-1.3.0.tgz",
-+			"integrity": "sha512-knvyeauYhqjOYvQ66MznSMs83wmHrCycNEN6Ao+2AeYEfxUIkuiVxdEa1qlGEPK+We3n0THiDciYSsCcgW/DoA==",
-+			"dev": true,
-+			"license": "Apache-2.0",
-+			"engines": {
-+				"node": ">=12.0.0"
-+			}
-+		},
-+		"node_modules/fdir": {
-+			"version": "6.5.0",
-+			"resolved": "https://registry.npmjs.org/fdir/-/fdir-6.5.0.tgz",
-+			"integrity": "sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==",
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=12.0.0"
-+			},
-+			"peerDependencies": {
-+				"picomatch": "^3 || ^4"
-+			},
-+			"peerDependenciesMeta": {
-+				"picomatch": {
-+					"optional": true
-+				}
-+			}
-+		},
-+		"node_modules/fsevents": {
-+			"version": "2.3.3",
-+			"resolved": "https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz",
-+			"integrity": "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==",
-+			"hasInstallScript": true,
-+			"license": "MIT",
-+			"optional": true,
-+			"os": [
-+				"darwin"
-+			],
-+			"engines": {
-+				"node": "^8.16.0 || ^10.6.0 || >=11.0.0"
-+			}
-+		},
-+		"node_modules/get-east-asian-width": {
-+			"version": "1.5.0",
-+			"resolved": "https://registry.npmjs.org/get-east-asian-width/-/get-east-asian-width-1.5.0.tgz",
-+			"integrity": "sha512-CQ+bEO+Tva/qlmw24dCejulK5pMzVnUOFOijVogd3KQs07HnRIgp8TGipvCCRT06xeYEbpbgwaCxglFyiuIcmA==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=18"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/sindresorhus"
-+			}
-+		},
-+		"node_modules/graceful-fs": {
-+			"version": "4.2.11",
-+			"resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.2.11.tgz",
-+			"integrity": "sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==",
-+			"license": "ISC"
-+		},
-+		"node_modules/has-flag": {
-+			"version": "4.0.0",
-+			"resolved": "https://registry.npmjs.org/has-flag/-/has-flag-4.0.0.tgz",
-+			"integrity": "sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=8"
-+			}
-+		},
-+		"node_modules/html-encoding-sniffer": {
-+			"version": "6.0.0",
-+			"resolved": "https://registry.npmjs.org/html-encoding-sniffer/-/html-encoding-sniffer-6.0.0.tgz",
-+			"integrity": "sha512-CV9TW3Y3f8/wT0BRFc1/KAVQ3TUHiXmaAb6VW9vtiMFf7SLoMd1PdAc4W3KFOFETBJUb90KatHqlsZMWV+R9Gg==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@exodus/bytes": "^1.6.0"
-+			},
-+			"engines": {
-+				"node": "^20.19.0 || ^22.12.0 || >=24.0.0"
-+			}
-+		},
-+		"node_modules/html-escaper": {
-+			"version": "2.0.2",
-+			"resolved": "https://registry.npmjs.org/html-escaper/-/html-escaper-2.0.2.tgz",
-+			"integrity": "sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/husky": {
-+			"version": "9.1.7",
-+			"resolved": "https://registry.npmjs.org/husky/-/husky-9.1.7.tgz",
-+			"integrity": "sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA==",
-+			"dev": true,
-+			"license": "MIT",
-+			"bin": {
-+				"husky": "bin.js"
-+			},
-+			"engines": {
-+				"node": ">=18"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/typicode"
-+			}
-+		},
-+		"node_modules/is-fullwidth-code-point": {
-+			"version": "5.1.0",
-+			"resolved": "https://registry.npmjs.org/is-fullwidth-code-point/-/is-fullwidth-code-point-5.1.0.tgz",
-+			"integrity": "sha512-5XHYaSyiqADb4RnZ1Bdad6cPp8Toise4TzEjcOYDHZkTCbKgiUl7WTUCpNWHuxmDt91wnsZBc9xinNzopv3JMQ==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"get-east-asian-width": "^1.3.1"
-+			},
-+			"engines": {
-+				"node": ">=18"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/sindresorhus"
-+			}
-+		},
-+		"node_modules/is-potential-custom-element-name": {
-+			"version": "1.0.1",
-+			"resolved": "https://registry.npmjs.org/is-potential-custom-element-name/-/is-potential-custom-element-name-1.0.1.tgz",
-+			"integrity": "sha512-bCYeRA2rVibKZd+s2625gGnGF/t7DSqDs4dP7CrLA1m7jKWz6pps0LpYLJN8Q64HtmPKJ1hrN3nzPNKFEKOUiQ==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/istanbul-lib-coverage": {
-+			"version": "3.2.2",
-+			"resolved": "https://registry.npmjs.org/istanbul-lib-coverage/-/istanbul-lib-coverage-3.2.2.tgz",
-+			"integrity": "sha512-O8dpsF+r0WV/8MNRKfnmrtCWhuKjxrq2w+jpzBL5UZKTi2LeVWnWOmWRxFlesJONmc+wLAGvKQZEOanko0LFTg==",
-+			"dev": true,
-+			"license": "BSD-3-Clause",
-+			"engines": {
-+				"node": ">=8"
-+			}
-+		},
-+		"node_modules/istanbul-lib-report": {
-+			"version": "3.0.1",
-+			"resolved": "https://registry.npmjs.org/istanbul-lib-report/-/istanbul-lib-report-3.0.1.tgz",
-+			"integrity": "sha512-GCfE1mtsHGOELCU8e/Z7YWzpmybrx/+dSTfLrvY8qRmaY6zXTKWn6WQIjaAFw069icm6GVMNkgu0NzI4iPZUNw==",
-+			"dev": true,
-+			"license": "BSD-3-Clause",
-+			"dependencies": {
-+				"istanbul-lib-coverage": "^3.0.0",
-+				"make-dir": "^4.0.0",
-+				"supports-color": "^7.1.0"
-+			},
-+			"engines": {
-+				"node": ">=10"
-+			}
-+		},
-+		"node_modules/istanbul-reports": {
-+			"version": "3.2.0",
-+			"resolved": "https://registry.npmjs.org/istanbul-reports/-/istanbul-reports-3.2.0.tgz",
-+			"integrity": "sha512-HGYWWS/ehqTV3xN10i23tkPkpH46MLCIMFNCaaKNavAXTF1RkqxawEPtnjnGZ6XKSInBKkiOA5BKS+aZiY3AvA==",
-+			"dev": true,
-+			"license": "BSD-3-Clause",
-+			"dependencies": {
-+				"html-escaper": "^2.0.0",
-+				"istanbul-lib-report": "^3.0.0"
-+			},
-+			"engines": {
-+				"node": ">=8"
-+			}
-+		},
-+		"node_modules/jiti": {
-+			"version": "2.6.1",
-+			"resolved": "https://registry.npmjs.org/jiti/-/jiti-2.6.1.tgz",
-+			"integrity": "sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ==",
-+			"license": "MIT",
-+			"bin": {
-+				"jiti": "lib/jiti-cli.mjs"
-+			}
-+		},
-+		"node_modules/js-tokens": {
-+			"version": "4.0.0",
-+			"resolved": "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz",
-+			"integrity": "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==",
-+			"dev": true,
-+			"license": "MIT",
-+			"peer": true
-+		},
-+		"node_modules/jsdom": {
-+			"version": "29.0.2",
-+			"resolved": "https://registry.npmjs.org/jsdom/-/jsdom-29.0.2.tgz",
-+			"integrity": "sha512-9VnGEBosc/ZpwyOsJBCQ/3I5p7Q5ngOY14a9bf5btenAORmZfDse1ZEheMiWcJ3h81+Fv7HmJFdS0szo/waF2w==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@asamuzakjp/css-color": "^5.1.5",
-+				"@asamuzakjp/dom-selector": "^7.0.6",
-+				"@bramus/specificity": "^2.4.2",
-+				"@csstools/css-syntax-patches-for-csstree": "^1.1.1",
-+				"@exodus/bytes": "^1.15.0",
-+				"css-tree": "^3.2.1",
-+				"data-urls": "^7.0.0",
-+				"decimal.js": "^10.6.0",
-+				"html-encoding-sniffer": "^6.0.0",
-+				"is-potential-custom-element-name": "^1.0.1",
-+				"lru-cache": "^11.2.7",
-+				"parse5": "^8.0.0",
-+				"saxes": "^6.0.0",
-+				"symbol-tree": "^3.2.4",
-+				"tough-cookie": "^6.0.1",
-+				"undici": "^7.24.5",
-+				"w3c-xmlserializer": "^5.0.0",
-+				"webidl-conversions": "^8.0.1",
-+				"whatwg-mimetype": "^5.0.0",
-+				"whatwg-url": "^16.0.1",
-+				"xml-name-validator": "^5.0.0"
-+			},
-+			"engines": {
-+				"node": "^20.19.0 || ^22.13.0 || >=24.0.0"
-+			},
-+			"peerDependencies": {
-+				"canvas": "^3.0.0"
-+			},
-+			"peerDependenciesMeta": {
-+				"canvas": {
-+					"optional": true
-+				}
-+			}
-+		},
-+		"node_modules/lightningcss": {
-+			"version": "1.32.0",
-+			"resolved": "https://registry.npmjs.org/lightningcss/-/lightningcss-1.32.0.tgz",
-+			"integrity": "sha512-NXYBzinNrblfraPGyrbPoD19C1h9lfI/1mzgWYvXUTe414Gz/X1FD2XBZSZM7rRTrMA8JL3OtAaGifrIKhQ5yQ==",
-+			"license": "MPL-2.0",
-+			"dependencies": {
-+				"detect-libc": "^2.0.3"
-+			},
-+			"engines": {
-+				"node": ">= 12.0.0"
-+			},
-+			"funding": {
-+				"type": "opencollective",
-+				"url": "https://opencollective.com/parcel"
-+			},
-+			"optionalDependencies": {
-+				"lightningcss-android-arm64": "1.32.0",
-+				"lightningcss-darwin-arm64": "1.32.0",
-+				"lightningcss-darwin-x64": "1.32.0",
-+				"lightningcss-freebsd-x64": "1.32.0",
-+				"lightningcss-linux-arm-gnueabihf": "1.32.0",
-+				"lightningcss-linux-arm64-gnu": "1.32.0",
-+				"lightningcss-linux-arm64-musl": "1.32.0",
-+				"lightningcss-linux-x64-gnu": "1.32.0",
-+				"lightningcss-linux-x64-musl": "1.32.0",
-+				"lightningcss-win32-arm64-msvc": "1.32.0",
-+				"lightningcss-win32-x64-msvc": "1.32.0"
-+			}
-+		},
-+		"node_modules/lightningcss-android-arm64": {
-+			"version": "1.32.0",
-+			"resolved": "https://registry.npmjs.org/lightningcss-android-arm64/-/lightningcss-android-arm64-1.32.0.tgz",
-+			"integrity": "sha512-YK7/ClTt4kAK0vo6w3X+Pnm0D2cf2vPHbhOXdoNti1Ga0al1P4TBZhwjATvjNwLEBCnKvjJc2jQgHXH0NEwlAg==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"license": "MPL-2.0",
-+			"optional": true,
-+			"os": [
-+				"android"
-+			],
-+			"engines": {
-+				"node": ">= 12.0.0"
-+			},
-+			"funding": {
-+				"type": "opencollective",
-+				"url": "https://opencollective.com/parcel"
-+			}
-+		},
-+		"node_modules/lightningcss-darwin-arm64": {
-+			"version": "1.32.0",
-+			"resolved": "https://registry.npmjs.org/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.32.0.tgz",
-+			"integrity": "sha512-RzeG9Ju5bag2Bv1/lwlVJvBE3q6TtXskdZLLCyfg5pt+HLz9BqlICO7LZM7VHNTTn/5PRhHFBSjk5lc4cmscPQ==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"license": "MPL-2.0",
-+			"optional": true,
-+			"os": [
-+				"darwin"
-+			],
-+			"engines": {
-+				"node": ">= 12.0.0"
-+			},
-+			"funding": {
-+				"type": "opencollective",
-+				"url": "https://opencollective.com/parcel"
-+			}
-+		},
-+		"node_modules/lightningcss-darwin-x64": {
-+			"version": "1.32.0",
-+			"resolved": "https://registry.npmjs.org/lightningcss-darwin-x64/-/lightningcss-darwin-x64-1.32.0.tgz",
-+			"integrity": "sha512-U+QsBp2m/s2wqpUYT/6wnlagdZbtZdndSmut/NJqlCcMLTWp5muCrID+K5UJ6jqD2BFshejCYXniPDbNh73V8w==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"license": "MPL-2.0",
-+			"optional": true,
-+			"os": [
-+				"darwin"
-+			],
-+			"engines": {
-+				"node": ">= 12.0.0"
-+			},
-+			"funding": {
-+				"type": "opencollective",
-+				"url": "https://opencollective.com/parcel"
-+			}
-+		},
-+		"node_modules/lightningcss-freebsd-x64": {
-+			"version": "1.32.0",
-+			"resolved": "https://registry.npmjs.org/lightningcss-freebsd-x64/-/lightningcss-freebsd-x64-1.32.0.tgz",
-+			"integrity": "sha512-JCTigedEksZk3tHTTthnMdVfGf61Fky8Ji2E4YjUTEQX14xiy/lTzXnu1vwiZe3bYe0q+SpsSH/CTeDXK6WHig==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"license": "MPL-2.0",
-+			"optional": true,
-+			"os": [
-+				"freebsd"
-+			],
-+			"engines": {
-+				"node": ">= 12.0.0"
-+			},
-+			"funding": {
-+				"type": "opencollective",
-+				"url": "https://opencollective.com/parcel"
-+			}
-+		},
-+		"node_modules/lightningcss-linux-arm-gnueabihf": {
-+			"version": "1.32.0",
-+			"resolved": "https://registry.npmjs.org/lightningcss-linux-arm-gnueabihf/-/lightningcss-linux-arm-gnueabihf-1.32.0.tgz",
-+			"integrity": "sha512-x6rnnpRa2GL0zQOkt6rts3YDPzduLpWvwAF6EMhXFVZXD4tPrBkEFqzGowzCsIWsPjqSK+tyNEODUBXeeVHSkw==",
-+			"cpu": [
-+				"arm"
-+			],
-+			"license": "MPL-2.0",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": ">= 12.0.0"
-+			},
-+			"funding": {
-+				"type": "opencollective",
-+				"url": "https://opencollective.com/parcel"
-+			}
-+		},
-+		"node_modules/lightningcss-linux-arm64-gnu": {
-+			"version": "1.32.0",
-+			"resolved": "https://registry.npmjs.org/lightningcss-linux-arm64-gnu/-/lightningcss-linux-arm64-gnu-1.32.0.tgz",
-+			"integrity": "sha512-0nnMyoyOLRJXfbMOilaSRcLH3Jw5z9HDNGfT/gwCPgaDjnx0i8w7vBzFLFR1f6CMLKF8gVbebmkUN3fa/kQJpQ==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"libc": [
-+				"glibc"
-+			],
-+			"license": "MPL-2.0",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": ">= 12.0.0"
-+			},
-+			"funding": {
-+				"type": "opencollective",
-+				"url": "https://opencollective.com/parcel"
-+			}
-+		},
-+		"node_modules/lightningcss-linux-arm64-musl": {
-+			"version": "1.32.0",
-+			"resolved": "https://registry.npmjs.org/lightningcss-linux-arm64-musl/-/lightningcss-linux-arm64-musl-1.32.0.tgz",
-+			"integrity": "sha512-UpQkoenr4UJEzgVIYpI80lDFvRmPVg6oqboNHfoH4CQIfNA+HOrZ7Mo7KZP02dC6LjghPQJeBsvXhJod/wnIBg==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"libc": [
-+				"musl"
-+			],
-+			"license": "MPL-2.0",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": ">= 12.0.0"
-+			},
-+			"funding": {
-+				"type": "opencollective",
-+				"url": "https://opencollective.com/parcel"
-+			}
-+		},
-+		"node_modules/lightningcss-linux-x64-gnu": {
-+			"version": "1.32.0",
-+			"resolved": "https://registry.npmjs.org/lightningcss-linux-x64-gnu/-/lightningcss-linux-x64-gnu-1.32.0.tgz",
-+			"integrity": "sha512-V7Qr52IhZmdKPVr+Vtw8o+WLsQJYCTd8loIfpDaMRWGUZfBOYEJeyJIkqGIDMZPwPx24pUMfwSxxI8phr/MbOA==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"libc": [
-+				"glibc"
-+			],
-+			"license": "MPL-2.0",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": ">= 12.0.0"
-+			},
-+			"funding": {
-+				"type": "opencollective",
-+				"url": "https://opencollective.com/parcel"
-+			}
-+		},
-+		"node_modules/lightningcss-linux-x64-musl": {
-+			"version": "1.32.0",
-+			"resolved": "https://registry.npmjs.org/lightningcss-linux-x64-musl/-/lightningcss-linux-x64-musl-1.32.0.tgz",
-+			"integrity": "sha512-bYcLp+Vb0awsiXg/80uCRezCYHNg1/l3mt0gzHnWV9XP1W5sKa5/TCdGWaR/zBM2PeF/HbsQv/j2URNOiVuxWg==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"libc": [
-+				"musl"
-+			],
-+			"license": "MPL-2.0",
-+			"optional": true,
-+			"os": [
-+				"linux"
-+			],
-+			"engines": {
-+				"node": ">= 12.0.0"
-+			},
-+			"funding": {
-+				"type": "opencollective",
-+				"url": "https://opencollective.com/parcel"
-+			}
-+		},
-+		"node_modules/lightningcss-win32-arm64-msvc": {
-+			"version": "1.32.0",
-+			"resolved": "https://registry.npmjs.org/lightningcss-win32-arm64-msvc/-/lightningcss-win32-arm64-msvc-1.32.0.tgz",
-+			"integrity": "sha512-8SbC8BR40pS6baCM8sbtYDSwEVQd4JlFTOlaD3gWGHfThTcABnNDBda6eTZeqbofalIJhFx0qKzgHJmcPTnGdw==",
-+			"cpu": [
-+				"arm64"
-+			],
-+			"license": "MPL-2.0",
-+			"optional": true,
-+			"os": [
-+				"win32"
-+			],
-+			"engines": {
-+				"node": ">= 12.0.0"
-+			},
-+			"funding": {
-+				"type": "opencollective",
-+				"url": "https://opencollective.com/parcel"
-+			}
-+		},
-+		"node_modules/lightningcss-win32-x64-msvc": {
-+			"version": "1.32.0",
-+			"resolved": "https://registry.npmjs.org/lightningcss-win32-x64-msvc/-/lightningcss-win32-x64-msvc-1.32.0.tgz",
-+			"integrity": "sha512-Amq9B/SoZYdDi1kFrojnoqPLxYhQ4Wo5XiL8EVJrVsB8ARoC1PWW6VGtT0WKCemjy8aC+louJnjS7U18x3b06Q==",
-+			"cpu": [
-+				"x64"
-+			],
-+			"license": "MPL-2.0",
-+			"optional": true,
-+			"os": [
-+				"win32"
-+			],
-+			"engines": {
-+				"node": ">= 12.0.0"
-+			},
-+			"funding": {
-+				"type": "opencollective",
-+				"url": "https://opencollective.com/parcel"
-+			}
-+		},
-+		"node_modules/lint-staged": {
-+			"version": "16.4.0",
-+			"resolved": "https://registry.npmjs.org/lint-staged/-/lint-staged-16.4.0.tgz",
-+			"integrity": "sha512-lBWt8hujh/Cjysw5GYVmZpFHXDCgZzhrOm8vbcUdobADZNOK/bRshr2kM3DfgrrtR1DQhfupW9gnIXOfiFi+bw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"commander": "^14.0.3",
-+				"listr2": "^9.0.5",
-+				"picomatch": "^4.0.3",
-+				"string-argv": "^0.3.2",
-+				"tinyexec": "^1.0.4",
-+				"yaml": "^2.8.2"
-+			},
-+			"bin": {
-+				"lint-staged": "bin/lint-staged.js"
-+			},
-+			"engines": {
-+				"node": ">=20.17"
-+			},
-+			"funding": {
-+				"url": "https://opencollective.com/lint-staged"
-+			}
-+		},
-+		"node_modules/listr2": {
-+			"version": "9.0.5",
-+			"resolved": "https://registry.npmjs.org/listr2/-/listr2-9.0.5.tgz",
-+			"integrity": "sha512-ME4Fb83LgEgwNw96RKNvKV4VTLuXfoKudAmm2lP8Kk87KaMK0/Xrx/aAkMWmT8mDb+3MlFDspfbCs7adjRxA2g==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"cli-truncate": "^5.0.0",
-+				"colorette": "^2.0.20",
-+				"eventemitter3": "^5.0.1",
-+				"log-update": "^6.1.0",
-+				"rfdc": "^1.4.1",
-+				"wrap-ansi": "^9.0.0"
-+			},
-+			"engines": {
-+				"node": ">=20.0.0"
-+			}
-+		},
-+		"node_modules/log-update": {
-+			"version": "6.1.0",
-+			"resolved": "https://registry.npmjs.org/log-update/-/log-update-6.1.0.tgz",
-+			"integrity": "sha512-9ie8ItPR6tjY5uYJh8K/Zrv/RMZ5VOlOWvtZdEHYSTFKZfIBPQa9tOAEeAWhd+AnIneLJ22w5fjOYtoutpWq5w==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"ansi-escapes": "^7.0.0",
-+				"cli-cursor": "^5.0.0",
-+				"slice-ansi": "^7.1.0",
-+				"strip-ansi": "^7.1.0",
-+				"wrap-ansi": "^9.0.0"
-+			},
-+			"engines": {
-+				"node": ">=18"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/sindresorhus"
-+			}
-+		},
-+		"node_modules/log-update/node_modules/ansi-styles": {
-+			"version": "6.2.3",
-+			"resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-6.2.3.tgz",
-+			"integrity": "sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=12"
-+			},
-+			"funding": {
-+				"url": "https://github.com/chalk/ansi-styles?sponsor=1"
-+			}
-+		},
-+		"node_modules/log-update/node_modules/slice-ansi": {
-+			"version": "7.1.2",
-+			"resolved": "https://registry.npmjs.org/slice-ansi/-/slice-ansi-7.1.2.tgz",
-+			"integrity": "sha512-iOBWFgUX7caIZiuutICxVgX1SdxwAVFFKwt1EvMYYec/NWO5meOJ6K5uQxhrYBdQJne4KxiqZc+KptFOWFSI9w==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"ansi-styles": "^6.2.1",
-+				"is-fullwidth-code-point": "^5.0.0"
-+			},
-+			"engines": {
-+				"node": ">=18"
-+			},
-+			"funding": {
-+				"url": "https://github.com/chalk/slice-ansi?sponsor=1"
-+			}
-+		},
-+		"node_modules/lru-cache": {
-+			"version": "11.3.3",
-+			"resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-11.3.3.tgz",
-+			"integrity": "sha512-JvNw9Y81y33E+BEYPr0U7omo+U9AySnsMsEiXgwT6yqd31VQWTLNQqmT4ou5eqPFUrTfIDFta2wKhB1hyohtAQ==",
-+			"dev": true,
-+			"license": "BlueOak-1.0.0",
-+			"engines": {
-+				"node": "20 || >=22"
-+			}
-+		},
-+		"node_modules/lz-string": {
-+			"version": "1.5.0",
-+			"resolved": "https://registry.npmjs.org/lz-string/-/lz-string-1.5.0.tgz",
-+			"integrity": "sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==",
-+			"dev": true,
-+			"license": "MIT",
-+			"peer": true,
-+			"bin": {
-+				"lz-string": "bin/bin.js"
-+			}
-+		},
-+		"node_modules/magic-string": {
-+			"version": "0.30.21",
-+			"resolved": "https://registry.npmjs.org/magic-string/-/magic-string-0.30.21.tgz",
-+			"integrity": "sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==",
-+			"license": "MIT",
-+			"dependencies": {
-+				"@jridgewell/sourcemap-codec": "^1.5.5"
-+			}
-+		},
-+		"node_modules/magicast": {
-+			"version": "0.5.2",
-+			"resolved": "https://registry.npmjs.org/magicast/-/magicast-0.5.2.tgz",
-+			"integrity": "sha512-E3ZJh4J3S9KfwdjZhe2afj6R9lGIN5Pher1pF39UGrXRqq/VDaGVIGN13BjHd2u8B61hArAGOnso7nBOouW3TQ==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@babel/parser": "^7.29.0",
-+				"@babel/types": "^7.29.0",
-+				"source-map-js": "^1.2.1"
-+			}
-+		},
-+		"node_modules/make-dir": {
-+			"version": "4.0.0",
-+			"resolved": "https://registry.npmjs.org/make-dir/-/make-dir-4.0.0.tgz",
-+			"integrity": "sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"semver": "^7.5.3"
-+			},
-+			"engines": {
-+				"node": ">=10"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/sindresorhus"
-+			}
-+		},
-+		"node_modules/make-dir/node_modules/semver": {
-+			"version": "7.7.4",
-+			"resolved": "https://registry.npmjs.org/semver/-/semver-7.7.4.tgz",
-+			"integrity": "sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==",
-+			"dev": true,
-+			"license": "ISC",
-+			"bin": {
-+				"semver": "bin/semver.js"
-+			},
-+			"engines": {
-+				"node": ">=10"
-+			}
-+		},
-+		"node_modules/mdn-data": {
-+			"version": "2.27.1",
-+			"resolved": "https://registry.npmjs.org/mdn-data/-/mdn-data-2.27.1.tgz",
-+			"integrity": "sha512-9Yubnt3e8A0OKwxYSXyhLymGW4sCufcLG6VdiDdUGVkPhpqLxlvP5vl1983gQjJl3tqbrM731mjaZaP68AgosQ==",
-+			"dev": true,
-+			"license": "CC0-1.0"
-+		},
-+		"node_modules/mimic-function": {
-+			"version": "5.0.1",
-+			"resolved": "https://registry.npmjs.org/mimic-function/-/mimic-function-5.0.1.tgz",
-+			"integrity": "sha512-VP79XUPxV2CigYP3jWwAUFSku2aKqBH7uTAapFWCBqutsbmDo96KY5o8uh6U+/YSIn5OxJnXp73beVkpqMIGhA==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=18"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/sindresorhus"
-+			}
-+		},
-+		"node_modules/nanoid": {
-+			"version": "3.3.11",
-+			"resolved": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.11.tgz",
-+			"integrity": "sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==",
-+			"funding": [
-+				{
-+					"type": "github",
-+					"url": "https://github.com/sponsors/ai"
-+				}
-+			],
-+			"license": "MIT",
-+			"bin": {
-+				"nanoid": "bin/nanoid.cjs"
-+			},
-+			"engines": {
-+				"node": "^10 || ^12 || ^13.7 || ^14 || >=15.0.1"
-+			}
-+		},
-+		"node_modules/obug": {
-+			"version": "2.1.1",
-+			"resolved": "https://registry.npmjs.org/obug/-/obug-2.1.1.tgz",
-+			"integrity": "sha512-uTqF9MuPraAQ+IsnPf366RG4cP9RtUi7MLO1N3KEc+wb0a6yKpeL0lmk2IB1jY5KHPAlTc6T/JRdC/YqxHNwkQ==",
-+			"dev": true,
-+			"funding": [
-+				"https://github.com/sponsors/sxzz",
-+				"https://opencollective.com/debug"
-+			],
-+			"license": "MIT"
-+		},
-+		"node_modules/onetime": {
-+			"version": "7.0.0",
-+			"resolved": "https://registry.npmjs.org/onetime/-/onetime-7.0.0.tgz",
-+			"integrity": "sha512-VXJjc87FScF88uafS3JllDgvAm+c/Slfz06lorj2uAY34rlUu0Nt+v8wreiImcrgAjjIHp1rXpTDlLOGw29WwQ==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"mimic-function": "^5.0.0"
-+			},
-+			"engines": {
-+				"node": ">=18"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/sindresorhus"
-+			}
-+		},
-+		"node_modules/parse5": {
-+			"version": "8.0.0",
-+			"resolved": "https://registry.npmjs.org/parse5/-/parse5-8.0.0.tgz",
-+			"integrity": "sha512-9m4m5GSgXjL4AjumKzq1Fgfp3Z8rsvjRNbnkVwfu2ImRqE5D0LnY2QfDen18FSY9C573YU5XxSapdHZTZ2WolA==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"entities": "^6.0.0"
-+			},
-+			"funding": {
-+				"url": "https://github.com/inikulin/parse5?sponsor=1"
-+			}
-+		},
-+		"node_modules/pathe": {
-+			"version": "2.0.3",
-+			"resolved": "https://registry.npmjs.org/pathe/-/pathe-2.0.3.tgz",
-+			"integrity": "sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/picocolors": {
-+			"version": "1.1.1",
-+			"resolved": "https://registry.npmjs.org/picocolors/-/picocolors-1.1.1.tgz",
-+			"integrity": "sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==",
-+			"license": "ISC"
-+		},
-+		"node_modules/picomatch": {
-+			"version": "4.0.4",
-+			"resolved": "https://registry.npmjs.org/picomatch/-/picomatch-4.0.4.tgz",
-+			"integrity": "sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==",
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=12"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/jonschlinkert"
-+			}
-+		},
-+		"node_modules/postcss": {
-+			"version": "8.5.8",
-+			"resolved": "https://registry.npmjs.org/postcss/-/postcss-8.5.8.tgz",
-+			"integrity": "sha512-OW/rX8O/jXnm82Ey1k44pObPtdblfiuWnrd8X7GJ7emImCOstunGbXUpp7HdBrFQX6rJzn3sPT397Wp5aCwCHg==",
-+			"funding": [
-+				{
-+					"type": "opencollective",
-+					"url": "https://opencollective.com/postcss/"
-+				},
-+				{
-+					"type": "tidelift",
-+					"url": "https://tidelift.com/funding/github/npm/postcss"
-+				},
-+				{
-+					"type": "github",
-+					"url": "https://github.com/sponsors/ai"
-+				}
-+			],
-+			"license": "MIT",
-+			"dependencies": {
-+				"nanoid": "^3.3.11",
-+				"picocolors": "^1.1.1",
-+				"source-map-js": "^1.2.1"
-+			},
-+			"engines": {
-+				"node": "^10 || ^12 || >=14"
-+			}
-+		},
-+		"node_modules/pretty-format": {
-+			"version": "27.5.1",
-+			"resolved": "https://registry.npmjs.org/pretty-format/-/pretty-format-27.5.1.tgz",
-+			"integrity": "sha512-Qb1gy5OrP5+zDf2Bvnzdl3jsTf1qXVMazbvCoKhtKqVs4/YK4ozX4gKQJJVyNe+cajNPn0KoC0MC3FUmaHWEmQ==",
-+			"dev": true,
-+			"license": "MIT",
-+			"peer": true,
-+			"dependencies": {
-+				"ansi-regex": "^5.0.1",
-+				"ansi-styles": "^5.0.0",
-+				"react-is": "^17.0.1"
-+			},
-+			"engines": {
-+				"node": "^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0"
-+			}
-+		},
-+		"node_modules/pretty-format/node_modules/ansi-regex": {
-+			"version": "5.0.1",
-+			"resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-5.0.1.tgz",
-+			"integrity": "sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==",
-+			"dev": true,
-+			"license": "MIT",
-+			"peer": true,
-+			"engines": {
-+				"node": ">=8"
-+			}
-+		},
-+		"node_modules/punycode": {
-+			"version": "2.3.1",
-+			"resolved": "https://registry.npmjs.org/punycode/-/punycode-2.3.1.tgz",
-+			"integrity": "sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=6"
-+			}
-+		},
-+		"node_modules/react": {
-+			"version": "19.2.4",
-+			"resolved": "https://registry.npmjs.org/react/-/react-19.2.4.tgz",
-+			"integrity": "sha512-9nfp2hYpCwOjAN+8TZFGhtWEwgvWHXqESH8qT89AT/lWklpLON22Lc8pEtnpsZz7VmawabSU0gCjnj8aC0euHQ==",
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=0.10.0"
-+			}
-+		},
-+		"node_modules/react-dom": {
-+			"version": "19.2.4",
-+			"resolved": "https://registry.npmjs.org/react-dom/-/react-dom-19.2.4.tgz",
-+			"integrity": "sha512-AXJdLo8kgMbimY95O2aKQqsz2iWi9jMgKJhRBAxECE4IFxfcazB2LmzloIoibJI3C12IlY20+KFaLv+71bUJeQ==",
-+			"license": "MIT",
-+			"dependencies": {
-+				"scheduler": "^0.27.0"
-+			},
-+			"peerDependencies": {
-+				"react": "^19.2.4"
-+			}
-+		},
-+		"node_modules/react-is": {
-+			"version": "17.0.2",
-+			"resolved": "https://registry.npmjs.org/react-is/-/react-is-17.0.2.tgz",
-+			"integrity": "sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==",
-+			"dev": true,
-+			"license": "MIT",
-+			"peer": true
-+		},
-+		"node_modules/require-from-string": {
-+			"version": "2.0.2",
-+			"resolved": "https://registry.npmjs.org/require-from-string/-/require-from-string-2.0.2.tgz",
-+			"integrity": "sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=0.10.0"
-+			}
-+		},
-+		"node_modules/restore-cursor": {
-+			"version": "5.1.0",
-+			"resolved": "https://registry.npmjs.org/restore-cursor/-/restore-cursor-5.1.0.tgz",
-+			"integrity": "sha512-oMA2dcrw6u0YfxJQXm342bFKX/E4sG9rbTzO9ptUcR/e8A33cHuvStiYOwH7fszkZlZ1z/ta9AAoPk2F4qIOHA==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"onetime": "^7.0.0",
-+				"signal-exit": "^4.1.0"
-+			},
-+			"engines": {
-+				"node": ">=18"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/sindresorhus"
-+			}
-+		},
-+		"node_modules/rfdc": {
-+			"version": "1.4.1",
-+			"resolved": "https://registry.npmjs.org/rfdc/-/rfdc-1.4.1.tgz",
-+			"integrity": "sha512-q1b3N5QkRUWUl7iyylaaj3kOpIT0N2i9MqIEQXP73GVsN9cw3fdx8X63cEmWhJGi2PPCF23Ijp7ktmd39rawIA==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/rolldown": {
-+			"version": "1.0.0-rc.12",
-+			"resolved": "https://registry.npmjs.org/rolldown/-/rolldown-1.0.0-rc.12.tgz",
-+			"integrity": "sha512-yP4USLIMYrwpPHEFB5JGH1uxhcslv6/hL0OyvTuY+3qlOSJvZ7ntYnoWpehBxufkgN0cvXxppuTu5hHa/zPh+A==",
-+			"license": "MIT",
-+			"dependencies": {
-+				"@oxc-project/types": "=0.122.0",
-+				"@rolldown/pluginutils": "1.0.0-rc.12"
-+			},
-+			"bin": {
-+				"rolldown": "bin/cli.mjs"
-+			},
-+			"engines": {
-+				"node": "^20.19.0 || >=22.12.0"
-+			},
-+			"optionalDependencies": {
-+				"@rolldown/binding-android-arm64": "1.0.0-rc.12",
-+				"@rolldown/binding-darwin-arm64": "1.0.0-rc.12",
-+				"@rolldown/binding-darwin-x64": "1.0.0-rc.12",
-+				"@rolldown/binding-freebsd-x64": "1.0.0-rc.12",
-+				"@rolldown/binding-linux-arm-gnueabihf": "1.0.0-rc.12",
-+				"@rolldown/binding-linux-arm64-gnu": "1.0.0-rc.12",
-+				"@rolldown/binding-linux-arm64-musl": "1.0.0-rc.12",
-+				"@rolldown/binding-linux-ppc64-gnu": "1.0.0-rc.12",
-+				"@rolldown/binding-linux-s390x-gnu": "1.0.0-rc.12",
-+				"@rolldown/binding-linux-x64-gnu": "1.0.0-rc.12",
-+				"@rolldown/binding-linux-x64-musl": "1.0.0-rc.12",
-+				"@rolldown/binding-openharmony-arm64": "1.0.0-rc.12",
-+				"@rolldown/binding-wasm32-wasi": "1.0.0-rc.12",
-+				"@rolldown/binding-win32-arm64-msvc": "1.0.0-rc.12",
-+				"@rolldown/binding-win32-x64-msvc": "1.0.0-rc.12"
-+			}
-+		},
-+		"node_modules/rolldown/node_modules/@rolldown/pluginutils": {
-+			"version": "1.0.0-rc.12",
-+			"resolved": "https://registry.npmjs.org/@rolldown/pluginutils/-/pluginutils-1.0.0-rc.12.tgz",
-+			"integrity": "sha512-HHMwmarRKvoFsJorqYlFeFRzXZqCt2ETQlEDOb9aqssrnVBB1/+xgTGtuTrIk5vzLNX1MjMtTf7W9z3tsSbrxw==",
-+			"license": "MIT"
-+		},
-+		"node_modules/saxes": {
-+			"version": "6.0.0",
-+			"resolved": "https://registry.npmjs.org/saxes/-/saxes-6.0.0.tgz",
-+			"integrity": "sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA==",
-+			"dev": true,
-+			"license": "ISC",
-+			"dependencies": {
-+				"xmlchars": "^2.2.0"
-+			},
-+			"engines": {
-+				"node": ">=v12.22.7"
-+			}
-+		},
-+		"node_modules/scheduler": {
-+			"version": "0.27.0",
-+			"resolved": "https://registry.npmjs.org/scheduler/-/scheduler-0.27.0.tgz",
-+			"integrity": "sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q==",
-+			"license": "MIT"
-+		},
-+		"node_modules/siginfo": {
-+			"version": "2.0.0",
-+			"resolved": "https://registry.npmjs.org/siginfo/-/siginfo-2.0.0.tgz",
-+			"integrity": "sha512-ybx0WO1/8bSBLEWXZvEd7gMW3Sn3JFlW3TvX1nREbDLRNQNaeNN8WK0meBwPdAaOI7TtRRRJn/Es1zhrrCHu7g==",
-+			"dev": true,
-+			"license": "ISC"
-+		},
-+		"node_modules/signal-exit": {
-+			"version": "4.1.0",
-+			"resolved": "https://registry.npmjs.org/signal-exit/-/signal-exit-4.1.0.tgz",
-+			"integrity": "sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==",
-+			"dev": true,
-+			"license": "ISC",
-+			"engines": {
-+				"node": ">=14"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/isaacs"
-+			}
-+		},
-+		"node_modules/slice-ansi": {
-+			"version": "8.0.0",
-+			"resolved": "https://registry.npmjs.org/slice-ansi/-/slice-ansi-8.0.0.tgz",
-+			"integrity": "sha512-stxByr12oeeOyY2BlviTNQlYV5xOj47GirPr4yA1hE9JCtxfQN0+tVbkxwCtYDQWhEKWFHsEK48ORg5jrouCAg==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"ansi-styles": "^6.2.3",
-+				"is-fullwidth-code-point": "^5.1.0"
-+			},
-+			"engines": {
-+				"node": ">=20"
-+			},
-+			"funding": {
-+				"url": "https://github.com/chalk/slice-ansi?sponsor=1"
-+			}
-+		},
-+		"node_modules/slice-ansi/node_modules/ansi-styles": {
-+			"version": "6.2.3",
-+			"resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-6.2.3.tgz",
-+			"integrity": "sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=12"
-+			},
-+			"funding": {
-+				"url": "https://github.com/chalk/ansi-styles?sponsor=1"
-+			}
-+		},
-+		"node_modules/source-map-js": {
-+			"version": "1.2.1",
-+			"resolved": "https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.1.tgz",
-+			"integrity": "sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==",
-+			"license": "BSD-3-Clause",
-+			"engines": {
-+				"node": ">=0.10.0"
-+			}
-+		},
-+		"node_modules/stackback": {
-+			"version": "0.0.2",
-+			"resolved": "https://registry.npmjs.org/stackback/-/stackback-0.0.2.tgz",
-+			"integrity": "sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/std-env": {
-+			"version": "4.0.0",
-+			"resolved": "https://registry.npmjs.org/std-env/-/std-env-4.0.0.tgz",
-+			"integrity": "sha512-zUMPtQ/HBY3/50VbpkupYHbRroTRZJPRLvreamgErJVys0ceuzMkD44J/QjqhHjOzK42GQ3QZIeFG1OYfOtKqQ==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/string-argv": {
-+			"version": "0.3.2",
-+			"resolved": "https://registry.npmjs.org/string-argv/-/string-argv-0.3.2.tgz",
-+			"integrity": "sha512-aqD2Q0144Z+/RqG52NeHEkZauTAUWJO8c6yTftGJKO3Tja5tUgIfmIl6kExvhtxSDP7fXB6DvzkfMpCd/F3G+Q==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=0.6.19"
-+			}
-+		},
-+		"node_modules/string-width": {
-+			"version": "8.2.0",
-+			"resolved": "https://registry.npmjs.org/string-width/-/string-width-8.2.0.tgz",
-+			"integrity": "sha512-6hJPQ8N0V0P3SNmP6h2J99RLuzrWz2gvT7VnK5tKvrNqJoyS9W4/Fb8mo31UiPvy00z7DQXkP2hnKBVav76thw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"get-east-asian-width": "^1.5.0",
-+				"strip-ansi": "^7.1.2"
-+			},
-+			"engines": {
-+				"node": ">=20"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/sindresorhus"
-+			}
-+		},
-+		"node_modules/strip-ansi": {
-+			"version": "7.2.0",
-+			"resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-7.2.0.tgz",
-+			"integrity": "sha512-yDPMNjp4WyfYBkHnjIRLfca1i6KMyGCtsVgoKe/z1+6vukgaENdgGBZt+ZmKPc4gavvEZ5OgHfHdrazhgNyG7w==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"ansi-regex": "^6.2.2"
-+			},
-+			"engines": {
-+				"node": ">=12"
-+			},
-+			"funding": {
-+				"url": "https://github.com/chalk/strip-ansi?sponsor=1"
-+			}
-+		},
-+		"node_modules/supports-color": {
-+			"version": "7.2.0",
-+			"resolved": "https://registry.npmjs.org/supports-color/-/supports-color-7.2.0.tgz",
-+			"integrity": "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"has-flag": "^4.0.0"
-+			},
-+			"engines": {
-+				"node": ">=8"
-+			}
-+		},
-+		"node_modules/symbol-tree": {
-+			"version": "3.2.4",
-+			"resolved": "https://registry.npmjs.org/symbol-tree/-/symbol-tree-3.2.4.tgz",
-+			"integrity": "sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/tailwindcss": {
-+			"version": "4.2.2",
-+			"resolved": "https://registry.npmjs.org/tailwindcss/-/tailwindcss-4.2.2.tgz",
-+			"integrity": "sha512-KWBIxs1Xb6NoLdMVqhbhgwZf2PGBpPEiwOqgI4pFIYbNTfBXiKYyWoTsXgBQ9WFg/OlhnvHaY+AEpW7wSmFo2Q==",
-+			"license": "MIT"
-+		},
-+		"node_modules/tapable": {
-+			"version": "2.3.2",
-+			"resolved": "https://registry.npmjs.org/tapable/-/tapable-2.3.2.tgz",
-+			"integrity": "sha512-1MOpMXuhGzGL5TTCZFItxCc0AARf1EZFQkGqMm7ERKj8+Hgr5oLvJOVFcC+lRmR8hCe2S3jC4T5D7Vg/d7/fhA==",
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=6"
-+			},
-+			"funding": {
-+				"type": "opencollective",
-+				"url": "https://opencollective.com/webpack"
-+			}
-+		},
-+		"node_modules/tinybench": {
-+			"version": "2.9.0",
-+			"resolved": "https://registry.npmjs.org/tinybench/-/tinybench-2.9.0.tgz",
-+			"integrity": "sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/tinyexec": {
-+			"version": "1.1.1",
-+			"resolved": "https://registry.npmjs.org/tinyexec/-/tinyexec-1.1.1.tgz",
-+			"integrity": "sha512-VKS/ZaQhhkKFMANmAOhhXVoIfBXblQxGX1myCQ2faQrfmobMftXeJPcZGp0gS07ocvGJWDLZGyOZDadDBqYIJg==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=18"
-+			}
-+		},
-+		"node_modules/tinyglobby": {
-+			"version": "0.2.15",
-+			"resolved": "https://registry.npmjs.org/tinyglobby/-/tinyglobby-0.2.15.tgz",
-+			"integrity": "sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==",
-+			"license": "MIT",
-+			"dependencies": {
-+				"fdir": "^6.5.0",
-+				"picomatch": "^4.0.3"
-+			},
-+			"engines": {
-+				"node": ">=12.0.0"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/SuperchupuDev"
-+			}
-+		},
-+		"node_modules/tinyrainbow": {
-+			"version": "3.1.0",
-+			"resolved": "https://registry.npmjs.org/tinyrainbow/-/tinyrainbow-3.1.0.tgz",
-+			"integrity": "sha512-Bf+ILmBgretUrdJxzXM0SgXLZ3XfiaUuOj/IKQHuTXip+05Xn+uyEYdVg0kYDipTBcLrCVyUzAPz7QmArb0mmw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=14.0.0"
-+			}
-+		},
-+		"node_modules/tldts": {
-+			"version": "7.0.28",
-+			"resolved": "https://registry.npmjs.org/tldts/-/tldts-7.0.28.tgz",
-+			"integrity": "sha512-+Zg3vWhRUv8B1maGSTFdev9mjoo8Etn2Ayfs4cnjlD3CsGkxXX4QyW3j2WJ0wdjYcYmy7Lx2RDsZMhgCWafKIw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"tldts-core": "^7.0.28"
-+			},
-+			"bin": {
-+				"tldts": "bin/cli.js"
-+			}
-+		},
-+		"node_modules/tldts-core": {
-+			"version": "7.0.28",
-+			"resolved": "https://registry.npmjs.org/tldts-core/-/tldts-core-7.0.28.tgz",
-+			"integrity": "sha512-7W5Efjhsc3chVdFhqtaU0KtK32J37Zcr9RKtID54nG+tIpcY79CQK/veYPODxtD/LJ4Lue66jvrQzIX2Z2/pUQ==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/tough-cookie": {
-+			"version": "6.0.1",
-+			"resolved": "https://registry.npmjs.org/tough-cookie/-/tough-cookie-6.0.1.tgz",
-+			"integrity": "sha512-LktZQb3IeoUWB9lqR5EWTHgW/VTITCXg4D21M+lvybRVdylLrRMnqaIONLVb5mav8vM19m44HIcGq4qASeu2Qw==",
-+			"dev": true,
-+			"license": "BSD-3-Clause",
-+			"dependencies": {
-+				"tldts": "^7.0.5"
-+			},
-+			"engines": {
-+				"node": ">=16"
-+			}
-+		},
-+		"node_modules/tr46": {
-+			"version": "6.0.0",
-+			"resolved": "https://registry.npmjs.org/tr46/-/tr46-6.0.0.tgz",
-+			"integrity": "sha512-bLVMLPtstlZ4iMQHpFHTR7GAGj2jxi8Dg0s2h2MafAE4uSWF98FC/3MomU51iQAMf8/qDUbKWf5GxuvvVcXEhw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"punycode": "^2.3.1"
-+			},
-+			"engines": {
-+				"node": ">=20"
-+			}
-+		},
-+		"node_modules/tslib": {
-+			"version": "2.8.1",
-+			"resolved": "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz",
-+			"integrity": "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==",
-+			"license": "0BSD",
-+			"optional": true
-+		},
-+		"node_modules/typescript": {
-+			"version": "5.9.3",
-+			"resolved": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
-+			"integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
-+			"dev": true,
-+			"license": "Apache-2.0",
-+			"bin": {
-+				"tsc": "bin/tsc",
-+				"tsserver": "bin/tsserver"
-+			},
-+			"engines": {
-+				"node": ">=14.17"
-+			}
-+		},
-+		"node_modules/undici": {
-+			"version": "7.24.8",
-+			"resolved": "https://registry.npmjs.org/undici/-/undici-7.24.8.tgz",
-+			"integrity": "sha512-6KQ/+QxK49Z/p3HO6E5ZCZWNnCasyZLa5ExaVYyvPxUwKtbCPMKELJOqh7EqOle0t9cH/7d2TaaTRRa6Nhs4YQ==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=20.18.1"
-+			}
-+		},
-+		"node_modules/undici-types": {
-+			"version": "7.16.0",
-+			"resolved": "https://registry.npmjs.org/undici-types/-/undici-types-7.16.0.tgz",
-+			"integrity": "sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==",
-+			"devOptional": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/vite": {
-+			"version": "8.0.3",
-+			"resolved": "https://registry.npmjs.org/vite/-/vite-8.0.3.tgz",
-+			"integrity": "sha512-B9ifbFudT1TFhfltfaIPgjo9Z3mDynBTJSUYxTjOQruf/zHH+ezCQKcoqO+h7a9Pw9Nm/OtlXAiGT1axBgwqrQ==",
-+			"license": "MIT",
-+			"dependencies": {
-+				"lightningcss": "^1.32.0",
-+				"picomatch": "^4.0.4",
-+				"postcss": "^8.5.8",
-+				"rolldown": "1.0.0-rc.12",
-+				"tinyglobby": "^0.2.15"
-+			},
-+			"bin": {
-+				"vite": "bin/vite.js"
-+			},
-+			"engines": {
-+				"node": "^20.19.0 || >=22.12.0"
-+			},
-+			"funding": {
-+				"url": "https://github.com/vitejs/vite?sponsor=1"
-+			},
-+			"optionalDependencies": {
-+				"fsevents": "~2.3.3"
-+			},
-+			"peerDependencies": {
-+				"@types/node": "^20.19.0 || >=22.12.0",
-+				"@vitejs/devtools": "^0.1.0",
-+				"esbuild": "^0.27.0",
-+				"jiti": ">=1.21.0",
-+				"less": "^4.0.0",
-+				"sass": "^1.70.0",
-+				"sass-embedded": "^1.70.0",
-+				"stylus": ">=0.54.8",
-+				"sugarss": "^5.0.0",
-+				"terser": "^5.16.0",
-+				"tsx": "^4.8.1",
-+				"yaml": "^2.4.2"
-+			},
-+			"peerDependenciesMeta": {
-+				"@types/node": {
-+					"optional": true
-+				},
-+				"@vitejs/devtools": {
-+					"optional": true
-+				},
-+				"esbuild": {
-+					"optional": true
-+				},
-+				"jiti": {
-+					"optional": true
-+				},
-+				"less": {
-+					"optional": true
-+				},
-+				"sass": {
-+					"optional": true
-+				},
-+				"sass-embedded": {
-+					"optional": true
-+				},
-+				"stylus": {
-+					"optional": true
-+				},
-+				"sugarss": {
-+					"optional": true
-+				},
-+				"terser": {
-+					"optional": true
-+				},
-+				"tsx": {
-+					"optional": true
-+				},
-+				"yaml": {
-+					"optional": true
-+				}
-+			}
-+		},
-+		"node_modules/vitest": {
-+			"version": "4.1.4",
-+			"resolved": "https://registry.npmjs.org/vitest/-/vitest-4.1.4.tgz",
-+			"integrity": "sha512-tFuJqTxKb8AvfyqMfnavXdzfy3h3sWZRWwfluGbkeR7n0HUev+FmNgZ8SDrRBTVrVCjgH5cA21qGbCffMNtWvg==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@vitest/expect": "4.1.4",
-+				"@vitest/mocker": "4.1.4",
-+				"@vitest/pretty-format": "4.1.4",
-+				"@vitest/runner": "4.1.4",
-+				"@vitest/snapshot": "4.1.4",
-+				"@vitest/spy": "4.1.4",
-+				"@vitest/utils": "4.1.4",
-+				"es-module-lexer": "^2.0.0",
-+				"expect-type": "^1.3.0",
-+				"magic-string": "^0.30.21",
-+				"obug": "^2.1.1",
-+				"pathe": "^2.0.3",
-+				"picomatch": "^4.0.3",
-+				"std-env": "^4.0.0-rc.1",
-+				"tinybench": "^2.9.0",
-+				"tinyexec": "^1.0.2",
-+				"tinyglobby": "^0.2.15",
-+				"tinyrainbow": "^3.1.0",
-+				"vite": "^6.0.0 || ^7.0.0 || ^8.0.0",
-+				"why-is-node-running": "^2.3.0"
-+			},
-+			"bin": {
-+				"vitest": "vitest.mjs"
-+			},
-+			"engines": {
-+				"node": "^20.0.0 || ^22.0.0 || >=24.0.0"
-+			},
-+			"funding": {
-+				"url": "https://opencollective.com/vitest"
-+			},
-+			"peerDependencies": {
-+				"@edge-runtime/vm": "*",
-+				"@opentelemetry/api": "^1.9.0",
-+				"@types/node": "^20.0.0 || ^22.0.0 || >=24.0.0",
-+				"@vitest/browser-playwright": "4.1.4",
-+				"@vitest/browser-preview": "4.1.4",
-+				"@vitest/browser-webdriverio": "4.1.4",
-+				"@vitest/coverage-istanbul": "4.1.4",
-+				"@vitest/coverage-v8": "4.1.4",
-+				"@vitest/ui": "4.1.4",
-+				"happy-dom": "*",
-+				"jsdom": "*",
-+				"vite": "^6.0.0 || ^7.0.0 || ^8.0.0"
-+			},
-+			"peerDependenciesMeta": {
-+				"@edge-runtime/vm": {
-+					"optional": true
-+				},
-+				"@opentelemetry/api": {
-+					"optional": true
-+				},
-+				"@types/node": {
-+					"optional": true
-+				},
-+				"@vitest/browser-playwright": {
-+					"optional": true
-+				},
-+				"@vitest/browser-preview": {
-+					"optional": true
-+				},
-+				"@vitest/browser-webdriverio": {
-+					"optional": true
-+				},
-+				"@vitest/coverage-istanbul": {
-+					"optional": true
-+				},
-+				"@vitest/coverage-v8": {
-+					"optional": true
-+				},
-+				"@vitest/ui": {
-+					"optional": true
-+				},
-+				"happy-dom": {
-+					"optional": true
-+				},
-+				"jsdom": {
-+					"optional": true
-+				},
-+				"vite": {
-+					"optional": false
-+				}
-+			}
-+		},
-+		"node_modules/w3c-xmlserializer": {
-+			"version": "5.0.0",
-+			"resolved": "https://registry.npmjs.org/w3c-xmlserializer/-/w3c-xmlserializer-5.0.0.tgz",
-+			"integrity": "sha512-o8qghlI8NZHU1lLPrpi2+Uq7abh4GGPpYANlalzWxyWteJOCsr/P+oPBA49TOLu5FTZO4d3F9MnWJfiMo4BkmA==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"xml-name-validator": "^5.0.0"
-+			},
-+			"engines": {
-+				"node": ">=18"
-+			}
-+		},
-+		"node_modules/webidl-conversions": {
-+			"version": "8.0.1",
-+			"resolved": "https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-8.0.1.tgz",
-+			"integrity": "sha512-BMhLD/Sw+GbJC21C/UgyaZX41nPt8bUTg+jWyDeg7e7YN4xOM05YPSIXceACnXVtqyEw/LMClUQMtMZ+PGGpqQ==",
-+			"dev": true,
-+			"license": "BSD-2-Clause",
-+			"engines": {
-+				"node": ">=20"
-+			}
-+		},
-+		"node_modules/whatwg-mimetype": {
-+			"version": "5.0.0",
-+			"resolved": "https://registry.npmjs.org/whatwg-mimetype/-/whatwg-mimetype-5.0.0.tgz",
-+			"integrity": "sha512-sXcNcHOC51uPGF0P/D4NVtrkjSU2fNsm9iog4ZvZJsL3rjoDAzXZhkm2MWt1y+PUdggKAYVoMAIYcs78wJ51Cw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=20"
-+			}
-+		},
-+		"node_modules/whatwg-url": {
-+			"version": "16.0.1",
-+			"resolved": "https://registry.npmjs.org/whatwg-url/-/whatwg-url-16.0.1.tgz",
-+			"integrity": "sha512-1to4zXBxmXHV3IiSSEInrreIlu02vUOvrhxJJH5vcxYTBDAx51cqZiKdyTxlecdKNSjj8EcxGBxNf6Vg+945gw==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"@exodus/bytes": "^1.11.0",
-+				"tr46": "^6.0.0",
-+				"webidl-conversions": "^8.0.1"
-+			},
-+			"engines": {
-+				"node": "^20.19.0 || ^22.12.0 || >=24.0.0"
-+			}
-+		},
-+		"node_modules/why-is-node-running": {
-+			"version": "2.3.0",
-+			"resolved": "https://registry.npmjs.org/why-is-node-running/-/why-is-node-running-2.3.0.tgz",
-+			"integrity": "sha512-hUrmaWBdVDcxvYqnyh09zunKzROWjbZTiNy8dBEjkS7ehEDQibXJ7XvlmtbwuTclUiIyN+CyXQD4Vmko8fNm8w==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"siginfo": "^2.0.0",
-+				"stackback": "0.0.2"
-+			},
-+			"bin": {
-+				"why-is-node-running": "cli.js"
-+			},
-+			"engines": {
-+				"node": ">=8"
-+			}
-+		},
-+		"node_modules/wrap-ansi": {
-+			"version": "9.0.2",
-+			"resolved": "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-9.0.2.tgz",
-+			"integrity": "sha512-42AtmgqjV+X1VpdOfyTGOYRi0/zsoLqtXQckTmqTeybT+BDIbM/Guxo7x3pE2vtpr1ok6xRqM9OpBe+Jyoqyww==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"ansi-styles": "^6.2.1",
-+				"string-width": "^7.0.0",
-+				"strip-ansi": "^7.1.0"
-+			},
-+			"engines": {
-+				"node": ">=18"
-+			},
-+			"funding": {
-+				"url": "https://github.com/chalk/wrap-ansi?sponsor=1"
-+			}
-+		},
-+		"node_modules/wrap-ansi/node_modules/ansi-styles": {
-+			"version": "6.2.3",
-+			"resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-6.2.3.tgz",
-+			"integrity": "sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg==",
-+			"dev": true,
-+			"license": "MIT",
-+			"engines": {
-+				"node": ">=12"
-+			},
-+			"funding": {
-+				"url": "https://github.com/chalk/ansi-styles?sponsor=1"
-+			}
-+		},
-+		"node_modules/wrap-ansi/node_modules/string-width": {
-+			"version": "7.2.0",
-+			"resolved": "https://registry.npmjs.org/string-width/-/string-width-7.2.0.tgz",
-+			"integrity": "sha512-tsaTIkKW9b4N+AEj+SVA+WhJzV7/zMhcSu78mLKWSk7cXMOSHsBKFWUs0fWwq8QyK3MgJBQRX6Gbi4kYbdvGkQ==",
-+			"dev": true,
-+			"license": "MIT",
-+			"dependencies": {
-+				"emoji-regex": "^10.3.0",
-+				"get-east-asian-width": "^1.0.0",
-+				"strip-ansi": "^7.1.0"
-+			},
-+			"engines": {
-+				"node": ">=18"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/sindresorhus"
-+			}
-+		},
-+		"node_modules/xml-name-validator": {
-+			"version": "5.0.0",
-+			"resolved": "https://registry.npmjs.org/xml-name-validator/-/xml-name-validator-5.0.0.tgz",
-+			"integrity": "sha512-EvGK8EJ3DhaHfbRlETOWAS5pO9MZITeauHKJyb8wyajUfQUenkIg2MvLDTZ4T/TgIcm3HU0TFBgWWboAZ30UHg==",
-+			"dev": true,
-+			"license": "Apache-2.0",
-+			"engines": {
-+				"node": ">=18"
-+			}
-+		},
-+		"node_modules/xmlchars": {
-+			"version": "2.2.0",
-+			"resolved": "https://registry.npmjs.org/xmlchars/-/xmlchars-2.2.0.tgz",
-+			"integrity": "sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==",
-+			"dev": true,
-+			"license": "MIT"
-+		},
-+		"node_modules/yaml": {
-+			"version": "2.8.3",
-+			"resolved": "https://registry.npmjs.org/yaml/-/yaml-2.8.3.tgz",
-+			"integrity": "sha512-AvbaCLOO2Otw/lW5bmh9d/WEdcDFdQp2Z2ZUH3pX9U2ihyUY0nvLv7J6TrWowklRGPYbB/IuIMfYgxaCPg5Bpg==",
-+			"devOptional": true,
-+			"license": "ISC",
-+			"bin": {
-+				"yaml": "bin.mjs"
-+			},
-+			"engines": {
-+				"node": ">= 14.6"
-+			},
-+			"funding": {
-+				"url": "https://github.com/sponsors/eemeli"
-+			}
-+		}
-+	}
-+}
-diff --git a/package.json b/package.json
-new file mode 100644
-index 0000000..46bee4c
---- /dev/null
-+++ b/package.json
-@@ -0,0 +1,44 @@
-+{
-+	"name": "nch",
-+	"private": true,
-+	"version": "0.0.0",
-+	"type": "module",
-+	"scripts": {
-+		"dev": "vite",
-+		"build": "tsc -b && vite build",
-+		"lint": "biome check .",
-+		"format": "biome format --write .",
-+		"test": "vitest run --passWithNoTests",
-+		"test:watch": "vitest",
-+		"preview": "vite preview",
-+		"prepare": "husky"
-+	},
-+	"lint-staged": {
-+		"*.{ts,tsx}": [
-+			"biome check --write",
-+			"vitest run --reporter=verbose --passWithNoTests"
-+		]
-+	},
-+	"dependencies": {
-+		"@tailwindcss/vite": "^4.2.2",
-+		"react": "^19.2.4",
-+		"react-dom": "^19.2.4",
-+		"tailwindcss": "^4.2.2"
-+	},
-+	"devDependencies": {
-+		"@biomejs/biome": "^2.4.11",
-+		"@biomejs/cli-darwin-arm64": "^2.4.11",
-+		"@testing-library/react": "^16.3.2",
-+		"@types/node": "^24.12.0",
-+		"@types/react": "^19.2.14",
-+		"@types/react-dom": "^19.2.3",
-+		"@vitejs/plugin-react": "^6.0.1",
-+		"@vitest/coverage-v8": "^4.1.4",
-+		"husky": "^9.1.7",
-+		"jsdom": "^29.0.2",
-+		"lint-staged": "^16.4.0",
-+		"typescript": "~5.9.3",
-+		"vite": "^8.0.1",
-+		"vitest": "^4.1.4"
-+	}
-+}
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 0f5328d..2ab9b7a 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -17,7 +17,7 @@ P2P 匿名掲示板。ブラウザ完結。
+ ## Tech Stack
+ 
+ - **Language:** TypeScript (strict)
+-- **UI:** React 19 + Vite + Tailwind CSS
++- **UI:** React + Vite + Tailwind CSS
+ - **P2P:** WebRTC DataChannel
+ - **Signaling:** WebSocket
+ - **Crypto:** Web Crypto API (Ed25519, SHA-256)
+@@ -60,6 +60,22 @@ Node.js で動くヘッドレスピア。24時間稼働し過去ログを保持
+ 
+ UseCase は CryptoService のみに依存する。
+ 
++### 投稿順序（Lamport clock）
++
++スレ内の投稿順序は Lamport clock で決定する。各ノードがスレ単位で整数カウンタを持つ。
++
++- 投稿時: `max(自カウンタ, 受信済み最大値) + 1` を投稿の lamport に設定
++- 受信時: `max(自カウンタ, 受信した投稿の lamport)` でカウンタ更新。+1 しない
++- 表示順: lamport 昇順。同値の場合は post.id（コンテンツハッシュ）昇順で安定ソート
++
++lamport は署名ペイロードおよびコンテンツハッシュの計算に含める。timestamp（Unix ms）は表示用のみで、順序保証には使わない。
++
++### ドメインモデル
++
++- Post は boardId, threadId を持つ（「このレスはこのスレに属する」はドメインルール）
++- GossipMessage は Post を運ぶ封筒。boardId/threadId は持たない（Post が持つ）
++- IPostStore.save(post) は post.threadId で保存先を決定する
++
+ ## ユビキタス言語
+ 
+ コード上の命名はこの用語に従う。新規用語が必要になったら本セクションに追記すること。
+@@ -74,7 +90,8 @@ UseCase は CryptoService のみに依存する。
+ | ゴシップ | Gossip | レスの伝播プロトコル |
+ | シグナリング | Signaling | ピア発見（WebSocket） |
+ | OD ID | OD ID | セッション鍵由来の表示用ID |
+-| エンベロープ | GossipMessage | Post を運ぶネットワーク上の包み |
++| Lamport クロック | LamportClock | lamport カウンタを管理する domain service。 |
++| エンベロープ | GossipMessage | Post を運ぶ封筒。 |
+ | シードノード | Seed Node | 常駐するヘッドレスピア。他のピアと対等 |
+ | 暗号サービス | CryptoService | crypto 系操作の統合ファサード |
+ | 署名者 | ISigner / WebCryptoSigner | 秘密鍵を保持しステートフルな暗号操作を行う |
 diff --git a/src/App.tsx b/src/App.tsx
-new file mode 100644
-index 0000000..1c07efe
---- /dev/null
+index 1c07efe..633d3eb 100644
+--- a/src/App.tsx
 +++ b/src/App.tsx
-@@ -0,0 +1,25 @@
-+import { InMemoryPostStore } from "@/adapter/storage/InMemoryPostStore";
-+import { DEFAULT_THREAD_ID } from "@/config/constants";
-+import type { Post } from "@/domain/model/Post";
-+import { BoardPage } from "./components/pages/BoardPage";
+@@ -1,6 +1,10 @@
++import { useEffect, useState } from "react";
++import { WebCryptoSigner } from "@/adapter/crypto/WebCryptoSigner";
+ import { InMemoryPostStore } from "@/adapter/storage/InMemoryPostStore";
+-import { DEFAULT_THREAD_ID } from "@/config/constants";
++import { DEFAULT_BOARD_ID, DEFAULT_THREAD_ID } from "@/config/constants";
+ import type { Post } from "@/domain/model/Post";
++import { CryptoService } from "@/domain/service/CryptoService";
++import { LamportClock } from "@/domain/service/LamportClock";
+ import { BoardPage } from "./components/pages/BoardPage";
+ 
+ const GENESIS_POST: Post = {
+@@ -10,16 +14,60 @@ const GENESIS_POST: Post = {
+ 	body: "このスレを立てました。",
+ 	odId: "00000000",
+ 	timestamp: 0,
++	lamport: 0,
+ 	signature: "",
+ 	publicKey: "",
++	boardId: DEFAULT_BOARD_ID,
++	threadId: DEFAULT_THREAD_ID,
+ };
+ 
+-const store = new InMemoryPostStore(
++// セッション中に1度だけ生成するシングルトン
++const signer = new WebCryptoSigner();
++const cryptoService = new CryptoService(signer);
++const clock = new LamportClock();
++const postStore = new InMemoryPostStore(
+ 	new Map([[DEFAULT_THREAD_ID, [GENESIS_POST]]]),
+ );
+ 
++type Identity = { publicKey: string; odId: string };
 +
-+const GENESIS_POST: Post = {
-+	id: "genesis",
-+	number: 1,
-+	name: "名無しさん",
-+	body: "このスレを立てました。",
-+	odId: "00000000",
-+	timestamp: 0,
-+	signature: "",
-+	publicKey: "",
-+};
+ function App() {
+-	return <BoardPage store={store} />;
++	const [identity, setIdentity] = useState<Identity | null>(null);
++	const [initError, setInitError] = useState(false);
 +
-+const store = new InMemoryPostStore(
-+	new Map([[DEFAULT_THREAD_ID, [GENESIS_POST]]]),
-+);
++	useEffect(() => {
++		signer
++			.generateKeyPair()
++			.then(({ publicKey }) =>
++				cryptoService
++					.deriveOdId(publicKey)
++					.then((odId) => ({ publicKey, odId })),
++			)
++			.then(setIdentity)
++			.catch(() => setInitError(true));
++	}, []);
 +
-+function App() {
-+	return <BoardPage store={store} />;
-+}
-+
-+export default App;
-diff --git a/src/adapter/storage/InMemoryPostStore.test.ts b/src/adapter/storage/InMemoryPostStore.test.ts
-new file mode 100644
-index 0000000..84c67a9
---- /dev/null
-+++ b/src/adapter/storage/InMemoryPostStore.test.ts
-@@ -0,0 +1,55 @@
-+import { describe, expect, it, vi } from "vitest";
-+import { makePost } from "../../../tests/helpers/fixtures";
-+import { InMemoryPostStore } from "./InMemoryPostStore";
-+
-+const THREAD = "thread-1";
-+const BOARD = "board-1";
-+
-+describe("InMemoryPostStore", () => {
-+	it("test_getSnapshot_WithInitialPosts_ReturnsThosePosts", () => {
-+		const initial = makePost({ number: 1 });
-+		const store = new InMemoryPostStore(new Map([[THREAD, [initial]]]));
-+		const posts = store.getSnapshot(THREAD);
-+		expect(posts).toHaveLength(1);
-+		expect(posts[0]?.id).toBe(initial.id);
-+	});
-+
-+	it("test_getSnapshot_UnknownThread_ReturnsEmpty", () => {
-+		const store = new InMemoryPostStore();
-+		expect(store.getSnapshot("unknown")).toHaveLength(0);
-+	});
-+
-+	it("test_save_NewPost_AppendsToThread", async () => {
-+		const store = new InMemoryPostStore();
-+		const post = makePost({ id: "p2", number: 2 });
-+		await store.save(post, THREAD, BOARD);
-+		const posts = store.getSnapshot(THREAD);
-+		expect(posts).toHaveLength(1);
-+		expect(posts[0]?.id).toBe("p2");
-+	});
-+
-+	it("test_subscribe_AfterSave_CallsCallback", async () => {
-+		const store = new InMemoryPostStore();
-+		const cb = vi.fn();
-+		store.subscribe(THREAD, cb);
-+		await store.save(makePost(), THREAD, BOARD);
-+		expect(cb).toHaveBeenCalledOnce();
-+	});
-+
-+	it("test_subscribe_AfterUnsubscribe_DoesNotCallCallback", async () => {
-+		const store = new InMemoryPostStore();
-+		const cb = vi.fn();
-+		const unsub = store.subscribe(THREAD, cb);
-+		unsub();
-+		await store.save(makePost(), THREAD, BOARD);
-+		expect(cb).not.toHaveBeenCalled();
-+	});
-+
-+	it("test_save_DifferentThread_DoesNotNotifyOtherThread", async () => {
-+		const store = new InMemoryPostStore();
-+		const cb = vi.fn();
-+		store.subscribe("other-thread", cb);
-+		await store.save(makePost(), THREAD, BOARD);
-+		expect(cb).not.toHaveBeenCalled();
-+	});
-+});
-diff --git a/src/adapter/storage/InMemoryPostStore.ts b/src/adapter/storage/InMemoryPostStore.ts
-new file mode 100644
-index 0000000..20b612a
---- /dev/null
-+++ b/src/adapter/storage/InMemoryPostStore.ts
-@@ -0,0 +1,37 @@
-+import type { Post } from "@/domain/model/Post";
-+import type { IPostStore } from "@/domain/port/IPostStore";
-+
-+export class InMemoryPostStore implements IPostStore {
-+	private static readonly EMPTY: Post[] = [];
-+
-+	private readonly posts: Map<string, Post[]>;
-+	private readonly listeners = new Map<string, Set<() => void>>();
-+
-+	constructor(initial: Map<string, Post[]> = new Map()) {
-+		this.posts = new Map(initial);
-+	}
-+
-+	getSnapshot(threadId: string): Post[] {
-+		return this.posts.get(threadId) ?? InMemoryPostStore.EMPTY;
-+	}
-+
-+	subscribe(threadId: string, callback: () => void): () => void {
-+		let set = this.listeners.get(threadId);
-+		if (set === undefined) {
-+			set = new Set();
-+			this.listeners.set(threadId, set);
-+		}
-+		set.add(callback);
-+		return () => {
-+			this.listeners.get(threadId)?.delete(callback);
-+		};
-+	}
-+
-+	async save(post: Post, threadId: string, _boardId: string): Promise<void> {
-+		const current = this.posts.get(threadId) ?? [];
-+		this.posts.set(threadId, [...current, post]);
-+		for (const cb of this.listeners.get(threadId) ?? []) {
-+			cb();
-+		}
-+	}
-+}
-diff --git a/src/components/pages/BoardPage.tsx b/src/components/pages/BoardPage.tsx
-new file mode 100644
-index 0000000..7ccff46
---- /dev/null
-+++ b/src/components/pages/BoardPage.tsx
-@@ -0,0 +1,13 @@
-+import { ThreadView } from "@/components/thread/ThreadView";
-+import { DEFAULT_THREAD_ID, DEFAULT_THREAD_TITLE } from "@/config/constants";
-+import type { IPostStore } from "@/domain/port/IPostStore";
-+import { usePosts } from "@/hooks/usePosts";
-+
-+type Props = {
-+	store: IPostStore;
-+};
-+
-+export function BoardPage({ store }: Props) {
-+	const posts = usePosts(store, DEFAULT_THREAD_ID);
-+	return <ThreadView title={DEFAULT_THREAD_TITLE} posts={posts} />;
-+}
-diff --git a/src/components/thread/PostItem.test.tsx b/src/components/thread/PostItem.test.tsx
-new file mode 100644
-index 0000000..d488193
---- /dev/null
-+++ b/src/components/thread/PostItem.test.tsx
-@@ -0,0 +1,47 @@
-+import { render, screen } from "@testing-library/react";
-+import { describe, expect, it } from "vitest";
-+import { DEFAULT_NAME } from "@/config/constants";
-+import { makePost } from "../../../tests/helpers/fixtures";
-+import { PostItem } from "./PostItem";
-+
-+describe("PostItem", () => {
-+	it("test_PostItem_WithAllFields_DisplaysNumberNameBodyOdId", () => {
-+		render(
-+			<PostItem
-+				post={makePost({
-+					number: 42,
-+					name: "テスト太郎",
-+					body: "本文です",
-+					odId: "abc12345",
-+				})}
-+			/>,
-+		);
-+		expect(screen.getByText("42")).toBeTruthy();
-+		expect(screen.getByText("テスト太郎")).toBeTruthy();
-+		expect(screen.getByText("本文です")).toBeTruthy();
-+		expect(screen.getByText(/ID:abc12345/)).toBeTruthy();
-+	});
-+
-+	it("test_PostItem_EmptyName_ShowsDefaultName", () => {
-+		render(<PostItem post={makePost({ name: "" })} />);
-+		expect(screen.getByText(DEFAULT_NAME)).toBeTruthy();
-+	});
-+
-+	it("test_PostItem_ScriptTagInBody_RenderedAsText", () => {
-+		render(<PostItem post={makePost({ body: "<script>alert(1)</script>" })} />);
-+		expect(screen.getByText("<script>alert(1)</script>")).toBeTruthy();
-+		expect(document.querySelector("script")).toBeNull();
-+	});
-+
-+	it("test_PostItem_EmptyBody_RendersWithoutCrash", () => {
-+		render(<PostItem post={makePost({ number: 42, body: "" })} />);
-+		expect(screen.getByText("42")).toBeTruthy();
-+	});
-+
-+	it("test_PostItem_Timestamp_RenderedInTimeElement", () => {
-+		render(<PostItem post={makePost()} />);
-+		const timeEl = document.querySelector("time");
-+		expect(timeEl).not.toBeNull();
-+		expect(timeEl?.getAttribute("dateTime")).toBeTruthy();
-+	});
-+});
-diff --git a/src/components/thread/PostItem.tsx b/src/components/thread/PostItem.tsx
-new file mode 100644
-index 0000000..62c6bcc
---- /dev/null
-+++ b/src/components/thread/PostItem.tsx
-@@ -0,0 +1,23 @@
-+import { DEFAULT_NAME } from "@/config/constants";
-+import type { Post } from "@/domain/model/Post";
-+
-+type Props = {
-+	post: Post;
-+};
-+
-+export function PostItem({ post }: Props) {
-+	const name = post.name !== "" ? post.name : DEFAULT_NAME;
-+	const dateStr = new Date(post.timestamp).toLocaleString("ja-JP");
-+
-+	return (
-+		<article className="border-b border-gray-200 py-3 sm:py-4">
-+			<div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500 mb-1">
-+				<span className="font-mono font-bold text-gray-700">{post.number}</span>
-+				<span>{name}</span>
-+				<time dateTime={new Date(post.timestamp).toISOString()}>{dateStr}</time>
-+				<span className="font-mono text-xs">ID:{post.odId}</span>
++	if (initError) {
++		return (
++			<div className="flex items-center justify-center h-screen text-red-600 text-sm">
++				Web Crypto API に対応していないブラウザです。
 +			</div>
-+			<p className="text-base whitespace-pre-wrap break-words">{post.body}</p>
-+		</article>
-+	);
-+}
-diff --git a/src/components/thread/ThreadView.test.tsx b/src/components/thread/ThreadView.test.tsx
-new file mode 100644
-index 0000000..e15a8b9
---- /dev/null
-+++ b/src/components/thread/ThreadView.test.tsx
-@@ -0,0 +1,28 @@
-+import { render, screen } from "@testing-library/react";
-+import { describe, expect, it } from "vitest";
-+import { makePost } from "../../../tests/helpers/fixtures";
-+import { ThreadView } from "./ThreadView";
++		);
++	}
 +
-+describe("ThreadView", () => {
-+	it("test_ThreadView_WithTitle_DisplaysTitle", () => {
-+		render(<ThreadView title="テストスレ" posts={[]} />);
-+		expect(screen.getByRole("heading", { name: "テストスレ" })).toBeTruthy();
-+	});
++	if (!identity) {
++		return null;
++	}
 +
-+	it("test_ThreadView_WithPosts_RendersAllPosts", () => {
-+		const posts = [
-+			makePost({ id: "a", number: 1, body: "1レス目" }),
-+			makePost({ id: "b", number: 2, body: "2レス目" }),
-+			makePost({ id: "c", number: 3, body: "3レス目" }),
-+		];
-+		render(<ThreadView title="スレ" posts={posts} />);
-+		expect(screen.getByText("1レス目")).toBeTruthy();
-+		expect(screen.getByText("2レス目")).toBeTruthy();
-+		expect(screen.getByText("3レス目")).toBeTruthy();
-+	});
-+
-+	it("test_ThreadView_EmptyPosts_RendersOnlyTitle", () => {
-+		render(<ThreadView title="空スレ" posts={[]} />);
-+		expect(screen.queryByRole("article")).toBeNull();
-+	});
-+});
-diff --git a/src/components/thread/ThreadView.tsx b/src/components/thread/ThreadView.tsx
-new file mode 100644
-index 0000000..d83a66e
---- /dev/null
-+++ b/src/components/thread/ThreadView.tsx
-@@ -0,0 +1,22 @@
-+import type { Post } from "@/domain/model/Post";
-+import { PostItem } from "./PostItem";
-+
-+type Props = {
-+	title: string;
-+	posts: Post[];
-+};
-+
-+export function ThreadView({ title, posts }: Props) {
 +	return (
-+		<main className="px-4 sm:px-6 lg:px-8 py-6 w-full max-w-3xl mx-auto">
-+			<h1 className="text-2xl font-medium mb-6">{title}</h1>
-+			<ol>
-+				{posts.map((post) => (
-+					<li key={post.id}>
-+						<PostItem post={post} />
-+					</li>
-+				))}
-+			</ol>
-+		</main>
++		<BoardPage
++			store={postStore}
++			cryptoService={cryptoService}
++			clock={clock}
++			publicKey={identity.publicKey}
++			odId={identity.odId}
++		/>
 +	);
+ }
+ 
+ export default App;
+diff --git a/src/adapter/crypto/WebCryptoSigner.ts b/src/adapter/crypto/WebCryptoSigner.ts
+new file mode 100644
+index 0000000..3b073aa
+--- /dev/null
++++ b/src/adapter/crypto/WebCryptoSigner.ts
+@@ -0,0 +1,77 @@
++import type { Post } from "@/domain/model/Post";
++import type { ISigner } from "@/domain/port/ISigner";
++
++function bytesToBase64(bytes: Uint8Array): string {
++	return btoa(String.fromCharCode(...bytes));
 +}
-diff --git a/src/config/constants.ts b/src/config/constants.ts
-new file mode 100644
-index 0000000..5af91fd
---- /dev/null
-+++ b/src/config/constants.ts
-@@ -0,0 +1,20 @@
-+/** ゴシップのファンアウト数（転送先ピア数の上限）。 */
-+export const FANOUT = 5;
 +
-+/** 投稿者名のデフォルト値。 */
-+export const DEFAULT_NAME = "名無しさん";
-+
-+/** 1投稿あたりの本文の最大バイト数（UTF-8）。 */
-+export const MAX_POST_BYTES = 4096;
-+
-+/** ゴシップメッセージの初期 TTL（ホップ上限）。 */
-+export const TTL_INITIAL = 7;
-+
-+/** MVP で使用する固定の板 ID。 */
-+export const DEFAULT_BOARD_ID = "board-1";
-+
-+/** MVP で使用する固定のスレ ID。 */
-+export const DEFAULT_THREAD_ID = "thread-1";
-+
-+/** MVP で使用する固定のスレタイトル。 */
-+export const DEFAULT_THREAD_TITLE = "nch 雑談スレ";
-diff --git a/src/domain/error/NchError.ts b/src/domain/error/NchError.ts
-new file mode 100644
-index 0000000..7312809
---- /dev/null
-+++ b/src/domain/error/NchError.ts
-@@ -0,0 +1,20 @@
 +/**
-+ * エラーの回復戦略。
-+ * - retry: Adapter 層で自動リトライし、UseCase には最終結果のみ返す
-+ * - ignore: 不正メッセージを捨ててログに記録。ユーザーには見せない
-+ * - fatal: UI まで伝播して表示する
++ * Ed25519 鍵ペアを保持するアダプタ。
++ * 秘密鍵は extractable: false でメモリ内にのみ存在する。
++ * セッション開始時に generateKeyPair() を1回だけ呼ぶこと。
 + */
-+export type ErrorRecovery = "retry" | "ignore" | "fatal";
++export class WebCryptoSigner implements ISigner {
++	private keyPair: CryptoKeyPair | null = null;
 +
-+/** nch ドメインエラー。code + recovery + message の3要素で分類する。 */
-+export class NchError extends Error {
-+	readonly code: string;
-+	readonly recovery: ErrorRecovery;
++	async generateKeyPair(): Promise<{ publicKey: string }> {
++		this.keyPair = await crypto.subtle.generateKey("Ed25519", false, [
++			"sign",
++			"verify",
++		]);
++		const raw = await crypto.subtle.exportKey("raw", this.keyPair.publicKey);
++		return { publicKey: bytesToBase64(new Uint8Array(raw)) };
++	}
 +
-+	constructor(code: string, recovery: ErrorRecovery, message: string) {
-+		super(message);
-+		this.name = "NchError";
-+		this.code = code;
-+		this.recovery = recovery;
++	async sign(draft: Omit<Post, "id" | "signature">): Promise<Post> {
++		if (!this.keyPair) {
++			throw new Error("generateKeyPair() を先に呼んでください");
++		}
++
++		// 署名ペイロード: CryptoService.verifySignature と一致させること
++		const payload = new TextEncoder().encode(
++			[
++				draft.name,
++				draft.body,
++				draft.timestamp,
++				draft.boardId,
++				draft.threadId,
++				draft.lamport,
++			].join("|"),
++		);
++		const sigBuf = await crypto.subtle.sign(
++			"Ed25519",
++			this.keyPair.privateKey,
++			payload,
++		);
++		const signature = bytesToBase64(new Uint8Array(sigBuf));
++
++		// コンテンツハッシュ: CryptoService.computePostHash と一致させること
++		const content = [
++			draft.name,
++			draft.body,
++			draft.timestamp,
++			draft.publicKey,
++			draft.boardId,
++			draft.threadId,
++			draft.lamport,
++		].join("|");
++		const hashBuf = await crypto.subtle.digest(
++			"SHA-256",
++			new TextEncoder().encode(content),
++		);
++		const id = Array.from(new Uint8Array(hashBuf))
++			.map((b) => b.toString(16).padStart(2, "0"))
++			.join("");
++
++		return { ...draft, id, signature };
++	}
++
++	async deriveOdId(publicKey: string): Promise<string> {
++		const raw = Uint8Array.from(atob(publicKey), (c) => c.charCodeAt(0));
++		const buf = await crypto.subtle.digest("SHA-256", raw);
++		return Array.from(new Uint8Array(buf))
++			.map((b) => b.toString(16).padStart(2, "0"))
++			.join("")
++			.slice(0, 8);
 +	}
 +}
-diff --git a/src/domain/model/Board.ts b/src/domain/model/Board.ts
-new file mode 100644
-index 0000000..c26953c
---- /dev/null
-+++ b/src/domain/model/Board.ts
-@@ -0,0 +1,8 @@
-+import type { Thread } from "./Thread";
+diff --git a/src/adapter/storage/InMemoryPostStore.ts b/src/adapter/storage/InMemoryPostStore.ts
+index 20b612a..f39c657 100644
+--- a/src/adapter/storage/InMemoryPostStore.ts
++++ b/src/adapter/storage/InMemoryPostStore.ts
+@@ -27,7 +27,8 @@ export class InMemoryPostStore implements IPostStore {
+ 		};
+ 	}
+ 
+-	async save(post: Post, threadId: string, _boardId: string): Promise<void> {
++	async save(post: Post): Promise<void> {
++		const { threadId } = post;
+ 		const current = this.posts.get(threadId) ?? [];
+ 		this.posts.set(threadId, [...current, post]);
+ 		for (const cb of this.listeners.get(threadId) ?? []) {
+diff --git a/src/components/pages/BoardPage.tsx b/src/components/pages/BoardPage.tsx
+index 7ccff46..bce4535 100644
+--- a/src/components/pages/BoardPage.tsx
++++ b/src/components/pages/BoardPage.tsx
+@@ -1,13 +1,59 @@
++import { useCallback, useMemo } from "react";
++import { PostForm } from "@/components/thread/PostForm";
+ import { ThreadView } from "@/components/thread/ThreadView";
+-import { DEFAULT_THREAD_ID, DEFAULT_THREAD_TITLE } from "@/config/constants";
++import {
++	DEFAULT_BOARD_ID,
++	DEFAULT_THREAD_ID,
++	DEFAULT_THREAD_TITLE,
++} from "@/config/constants";
+ import type { IPostStore } from "@/domain/port/IPostStore";
++import type { CryptoService } from "@/domain/service/CryptoService";
++import type { LamportClock } from "@/domain/service/LamportClock";
+ import { usePosts } from "@/hooks/usePosts";
++import { PostMessageUseCase } from "@/usecase/PostMessageUseCase";
+ 
+ type Props = {
+ 	store: IPostStore;
++	cryptoService: CryptoService;
++	clock: LamportClock;
++	publicKey: string;
++	odId: string;
+ };
+ 
+-export function BoardPage({ store }: Props) {
++export function BoardPage({
++	store,
++	cryptoService,
++	clock,
++	publicKey,
++	odId,
++}: Props) {
+ 	const posts = usePosts(store, DEFAULT_THREAD_ID);
+-	return <ThreadView title={DEFAULT_THREAD_TITLE} posts={posts} />;
 +
-+/** 板: スレッドの集合。MVP では1つ固定。 */
-+export type Board = {
-+	readonly id: string;
-+	readonly name: string;
-+	readonly threads: Thread[];
-+};
-diff --git a/src/domain/model/GossipMessage.ts b/src/domain/model/GossipMessage.ts
-new file mode 100644
-index 0000000..ad6bb74
---- /dev/null
-+++ b/src/domain/model/GossipMessage.ts
-@@ -0,0 +1,14 @@
-+import type { Post } from "./Post";
-+
-+/** エンベロープ: Post をネットワーク上で運ぶ包み。 */
-+export type GossipMessage = {
-+	/** メッセージ種別。将来 "sync_request" | "sync_response" 等を追加。 */
-+	readonly type: "post";
-+	readonly boardId: string;
-+	readonly threadId: string;
-+	readonly post: Post;
-+	/** 中継のたびにデクリメント。0で転送停止。 */
-+	readonly ttl: number;
-+	/** 通過済みピアID。ループ防止。 */
-+	readonly path: string[];
-+};
-diff --git a/src/domain/model/Peer.ts b/src/domain/model/Peer.ts
-new file mode 100644
-index 0000000..04c7f86
---- /dev/null
-+++ b/src/domain/model/Peer.ts
-@@ -0,0 +1,5 @@
-+/** ピア: 接続中の他ノード。通信手段は Adapter が内部管理する。 */
-+export type Peer = {
-+	readonly id: string;
-+	readonly connectedAt: number;
-+};
-diff --git a/src/domain/model/Post.ts b/src/domain/model/Post.ts
-new file mode 100644
-index 0000000..4032a3e
---- /dev/null
-+++ b/src/domain/model/Post.ts
-@@ -0,0 +1,19 @@
-+/** レス: 1つの書き込み。 */
-+export type Post = {
-+	/** コンテンツハッシュ。改竄検知用であり事実上の投稿ID。 */
-+	readonly id: string;
-+	/** スレ内連番。1始まり、表示用。 */
-+	readonly number: number;
-+	/** 投稿者名。デフォルト "名無しさん"。 */
-+	readonly name: string;
-+	/** 本文。 */
-+	readonly body: string;
-+	/** セッション公開鍵ハッシュ先頭8文字。同一セッション = 同一ID。 */
-+	readonly odId: string;
-+	/** Unix ms。 */
-+	readonly timestamp: number;
-+	/** Ed25519 署名。 */
-+	readonly signature: string;
-+	/** 署名に使った公開鍵。 */
-+	readonly publicKey: string;
-+};
-diff --git a/src/domain/model/Thread.ts b/src/domain/model/Thread.ts
-new file mode 100644
-index 0000000..b11a387
---- /dev/null
-+++ b/src/domain/model/Thread.ts
-@@ -0,0 +1,10 @@
-+import type { Post } from "./Post";
-+
-+/** スレ: レスの集合。 */
-+export type Thread = {
-+	readonly id: string;
-+	readonly title: string;
-+	readonly boardId: string;
-+	readonly posts: Post[];
-+	readonly createdAt: number;
-+};
-diff --git a/src/domain/model/index.ts b/src/domain/model/index.ts
-new file mode 100644
-index 0000000..451eb39
---- /dev/null
-+++ b/src/domain/model/index.ts
-@@ -0,0 +1,5 @@
-+export type { Board } from "./Board";
-+export type { GossipMessage } from "./GossipMessage";
-+export type { Peer } from "./Peer";
-+export type { Post } from "./Post";
-+export type { Thread } from "./Thread";
-diff --git a/src/domain/port/ILogger.ts b/src/domain/port/ILogger.ts
-new file mode 100644
-index 0000000..8324574
---- /dev/null
-+++ b/src/domain/port/ILogger.ts
-@@ -0,0 +1,10 @@
-+/**
-+ * 構造化ログのポート。
-+ * ブラウザ完結のため実装は console に出力する（ConsoleLogger）。
-+ * イベントIDで識別する。メッセージ文字列ではなくイベントIDでテスト・検索する。
-+ */
-+export interface ILogger {
-+	info(eventId: string, data?: Record<string, unknown>): void;
-+	warn(eventId: string, data?: Record<string, unknown>): void;
-+	error(eventId: string, data?: Record<string, unknown>): void;
-+}
-diff --git a/src/domain/port/IPostStore.ts b/src/domain/port/IPostStore.ts
-new file mode 100644
-index 0000000..729646f
---- /dev/null
-+++ b/src/domain/port/IPostStore.ts
-@@ -0,0 +1,14 @@
-+import type { Post } from "../model/Post";
-+
-+/**
-+ * 投稿ストアのポート。
-+ * useSyncExternalStore 互換のインターフェース + 永続化。
-+ */
-+export interface IPostStore {
-+	/** スナップショット（スレッド内の投稿一覧）を返す。 */
-+	getSnapshot(threadId: string): Post[];
-+	/** 投稿一覧の変更を購読する。戻り値はアンサブスクライブ関数。 */
-+	subscribe(threadId: string, callback: () => void): () => void;
-+	/** 投稿を保存する。 */
-+	save(post: Post, threadId: string, boardId: string): Promise<void>;
-+}
-diff --git a/src/domain/port/ISigner.ts b/src/domain/port/ISigner.ts
-new file mode 100644
-index 0000000..5c96a6f
---- /dev/null
-+++ b/src/domain/port/ISigner.ts
-@@ -0,0 +1,14 @@
-+import type { Post } from "../model/Post";
-+
-+/**
-+ * 秘密鍵を保持するステートフルな署名器の抽象。
-+ * 実装は Adapter 層（WebCryptoSigner 等）に置く。
-+ */
-+export interface ISigner {
-+	/** Ed25519 鍵ペアを生成し、公開鍵（base64）を返す。 */
-+	generateKeyPair(): Promise<{ publicKey: string }>;
-+	/** 下書きに署名し、id と signature が付与された Post を返す。 */
-+	sign(draft: Omit<Post, "id" | "signature">): Promise<Post>;
-+	/** publicKey（base64）から OD ID（SHA-256 先頭8文字）を導出する。 */
-+	deriveOdId(publicKey: string): Promise<string>;
-+}
-diff --git a/src/hooks/usePosts.test.ts b/src/hooks/usePosts.test.ts
-new file mode 100644
-index 0000000..a42c2a1
---- /dev/null
-+++ b/src/hooks/usePosts.test.ts
-@@ -0,0 +1,74 @@
-+import { act, renderHook } from "@testing-library/react";
-+import { describe, expect, it } from "vitest";
-+import { InMemoryPostStore } from "@/adapter/storage/InMemoryPostStore";
-+import { makePost } from "../../tests/helpers/fixtures";
-+import { sortPosts, usePosts } from "./usePosts";
-+
-+const THREAD = "thread-1";
-+const BOARD = "board-1";
-+
-+describe("sortPosts", () => {
-+	it("test_sortPosts_ByNumber_AscendingOrder", () => {
-+		const posts = [
-+			makePost({ id: "b", number: 3 }),
-+			makePost({ id: "a", number: 1 }),
-+			makePost({ id: "c", number: 2 }),
-+		];
-+		const result = sortPosts(posts);
-+		expect(result.map((p) => p.number)).toEqual([1, 2, 3]);
-+	});
-+
-+	it("test_sortPosts_DuplicateNumber_StableSortById", () => {
-+		const posts = [
-+			makePost({ id: "z", number: 1 }),
-+			makePost({ id: "a", number: 1 }),
-+			makePost({ id: "m", number: 1 }),
-+		];
-+		const result = sortPosts(posts);
-+		expect(result.map((p) => p.id)).toEqual(["a", "m", "z"]);
-+	});
-+
-+	it("test_sortPosts_EmptyArray_ReturnsEmpty", () => {
-+		expect(sortPosts([])).toHaveLength(0);
-+	});
-+
-+	it("test_sortPosts_DoesNotMutateOriginal", () => {
-+		const posts = [
-+			makePost({ id: "b", number: 2 }),
-+			makePost({ id: "a", number: 1 }),
-+		];
-+		const original = [...posts];
-+		sortPosts(posts);
-+		expect(posts[0]?.id).toBe(original[0]?.id);
-+	});
-+});
-+
-+describe("usePosts", () => {
-+	it("test_usePosts_InitialRender_ReturnsInitialPost", () => {
-+		const initial = makePost({ number: 1 });
-+		const store = new InMemoryPostStore(new Map([[THREAD, [initial]]]));
-+		const { result } = renderHook(() => usePosts(store, THREAD));
-+		expect(result.current).toHaveLength(1);
-+		expect(result.current[0]?.number).toBe(1);
-+	});
-+
-+	it("test_usePosts_AfterSave_ReturnsUpdatedPosts", async () => {
-+		const store = new InMemoryPostStore();
-+		const { result } = renderHook(() => usePosts(store, THREAD));
-+		await act(async () => {
-+			await store.save(makePost({ id: "p2", number: 2 }), THREAD, BOARD);
-+		});
-+		expect(result.current).toHaveLength(1);
-+	});
-+
-+	it("test_usePosts_SaveOutOfOrder_ReturnsSortedByNumber", async () => {
-+		const initial = makePost({ id: "p1", number: 1 });
-+		const store = new InMemoryPostStore(new Map([[THREAD, [initial]]]));
-+		const { result } = renderHook(() => usePosts(store, THREAD));
-+		await act(async () => {
-+			await store.save(makePost({ id: "p3", number: 3 }), THREAD, BOARD);
-+			await store.save(makePost({ id: "p2", number: 2 }), THREAD, BOARD);
-+		});
-+		expect(result.current.map((p) => p.number)).toEqual([1, 2, 3]);
-+	});
-+});
-diff --git a/src/hooks/usePosts.ts b/src/hooks/usePosts.ts
-new file mode 100644
-index 0000000..6d985dd
---- /dev/null
-+++ b/src/hooks/usePosts.ts
-@@ -0,0 +1,20 @@
-+import { useSyncExternalStore } from "react";
-+import type { Post } from "@/domain/model/Post";
-+import type { IPostStore } from "@/domain/port/IPostStore";
-+
-+export function sortPosts(posts: Post[]): Post[] {
-+	return [...posts].sort((a, b) => {
-+		if (a.number !== b.number) return a.number - b.number;
-+		if (a.id < b.id) return -1;
-+		if (a.id > b.id) return 1;
-+		return 0;
-+	});
-+}
-+
-+export function usePosts(store: IPostStore, threadId: string): Post[] {
-+	const posts = useSyncExternalStore(
-+		(callback) => store.subscribe(threadId, callback),
-+		() => store.getSnapshot(threadId),
++	const usecase = useMemo(
++		() =>
++			new PostMessageUseCase(
++				store,
++				cryptoService,
++				clock,
++				publicKey,
++				odId,
++				DEFAULT_THREAD_ID,
++				DEFAULT_BOARD_ID,
++			),
++		[store, cryptoService, clock, publicKey, odId],
 +	);
-+	return sortPosts(posts);
-+}
-diff --git a/src/index.css b/src/index.css
++
++	const handleSubmit = useCallback(
++		(name: string, body: string) => {
++			void usecase.execute({ name, body });
++		},
++		[usecase],
++	);
++
++	return (
++		<>
++			<ThreadView title={DEFAULT_THREAD_TITLE} posts={posts} />
++			<PostForm onSubmit={handleSubmit} />
++		</>
++	);
+ }
+diff --git a/src/components/thread/PostForm.tsx b/src/components/thread/PostForm.tsx
 new file mode 100644
-index 0000000..e5cb09f
+index 0000000..26be783
 --- /dev/null
-+++ b/src/index.css
-@@ -0,0 +1,9 @@
-+@import "tailwindcss";
++++ b/src/components/thread/PostForm.tsx
+@@ -0,0 +1,60 @@
++import { useState } from "react";
++import { DEFAULT_NAME, MAX_POST_BYTES } from "@/config/constants";
 +
-+body {
-+	margin: 0;
-+}
++type Props = {
++	onSubmit: (name: string, body: string) => void;
++};
 +
-+#root {
-+	min-height: 100svh;
++export function PostForm({ onSubmit }: Props) {
++	const [name, setName] = useState("");
++	const [body, setBody] = useState("");
++
++	const bodyBytes = new TextEncoder().encode(body).length;
++	const isOverLimit = bodyBytes > MAX_POST_BYTES;
++	const isSubmitDisabled = body.trim() === "" || isOverLimit;
++
++	const handleSubmit = (e: React.FormEvent) => {
++		e.preventDefault();
++		if (isSubmitDisabled) return;
++		onSubmit(name, body);
++		setBody("");
++	};
++
++	return (
++		<form
++			onSubmit={handleSubmit}
++			className="px-4 sm:px-6 lg:px-8 py-4 w-full max-w-3xl mx-auto border-t border-gray-200"
++		>
++			<div className="flex flex-col gap-2">
++				<input
++					type="text"
++					placeholder={DEFAULT_NAME}
++					value={name}
++					onChange={(e) => setName(e.target.value)}
++					className="w-full sm:w-48 rounded border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
++				/>
++				<textarea
++					placeholder="本文を入力..."
++					value={body}
++					onChange={(e) => setBody(e.target.value)}
++					rows={4}
++					className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400 resize-none"
++				/>
++				<div className="flex items-center justify-between">
++					<span
++						className={`text-xs ${isOverLimit ? "text-red-500" : "text-gray-400"}`}
++					>
++						{bodyBytes} / {MAX_POST_BYTES} bytes
++					</span>
++					<button
++						type="submit"
++						disabled={isSubmitDisabled}
++						className="px-4 py-1.5 text-sm rounded bg-gray-700 text-white disabled:opacity-40 hover:bg-gray-600 transition-colors"
++					>
++						書き込む
++					</button>
++				</div>
++			</div>
++		</form>
++	);
 +}
-diff --git a/src/main.tsx b/src/main.tsx
+diff --git a/src/domain/model/GossipMessage.ts b/src/domain/model/GossipMessage.ts
+index ad6bb74..39d51b5 100644
+--- a/src/domain/model/GossipMessage.ts
++++ b/src/domain/model/GossipMessage.ts
+@@ -1,11 +1,9 @@
+-import type { Post } from "./Post";
++import type { Post } from "./post";
+ 
+-/** エンベロープ: Post をネットワーク上で運ぶ包み。 */
++/** エンベロープ: Post をネットワーク上で運ぶ包み。boardId/threadId は Post が持つ。 */
+ export type GossipMessage = {
+ 	/** メッセージ種別。将来 "sync_request" | "sync_response" 等を追加。 */
+ 	readonly type: "post";
+-	readonly boardId: string;
+-	readonly threadId: string;
+ 	readonly post: Post;
+ 	/** 中継のたびにデクリメント。0で転送停止。 */
+ 	readonly ttl: number;
+diff --git a/src/domain/model/Post.ts b/src/domain/model/Post.ts
+index 4032a3e..284086f 100644
+--- a/src/domain/model/Post.ts
++++ b/src/domain/model/Post.ts
+@@ -2,6 +2,10 @@
+ export type Post = {
+ 	/** コンテンツハッシュ。改竄検知用であり事実上の投稿ID。 */
+ 	readonly id: string;
++	/** 所属する板の ID。 */
++	readonly boardId: string;
++	/** 所属するスレの ID。 */
++	readonly threadId: string;
+ 	/** スレ内連番。1始まり、表示用。 */
+ 	readonly number: number;
+ 	/** 投稿者名。デフォルト "名無しさん"。 */
+@@ -10,8 +14,15 @@ export type Post = {
+ 	readonly body: string;
+ 	/** セッション公開鍵ハッシュ先頭8文字。同一セッション = 同一ID。 */
+ 	readonly odId: string;
+-	/** Unix ms。 */
++	/** Unix ms。表示用。順序保証には lamport を使う。 */
+ 	readonly timestamp: number;
++	/**
++	 * Lamport clock の値。スレ単位の論理時計。
++	 * - 投稿時: LamportClock.tick() で取得（max(自カウンタ, 受信済み最大値) + 1）
++	 * - 受信時: LamportClock.merge(received.lamport) でカウンタ更新（+1 しない）
++	 * - 表示順ソート: lamport 昇順 → 同値なら post.id（hash）昇順で安定ソート
++	 */
++	readonly lamport: number;
+ 	/** Ed25519 署名。 */
+ 	readonly signature: string;
+ 	/** 署名に使った公開鍵。 */
+diff --git a/src/domain/port/IPostStore.ts b/src/domain/port/IPostStore.ts
+index 729646f..df23efb 100644
+--- a/src/domain/port/IPostStore.ts
++++ b/src/domain/port/IPostStore.ts
+@@ -9,6 +9,6 @@ export interface IPostStore {
+ 	getSnapshot(threadId: string): Post[];
+ 	/** 投稿一覧の変更を購読する。戻り値はアンサブスクライブ関数。 */
+ 	subscribe(threadId: string, callback: () => void): () => void;
+-	/** 投稿を保存する。 */
+-	save(post: Post, threadId: string, boardId: string): Promise<void>;
++	/** 投稿を保存する。保存先は post.threadId で決定する。 */
++	save(post: Post): Promise<void>;
+ }
+diff --git a/src/domain/service/CryptoService.ts b/src/domain/service/CryptoService.ts
 new file mode 100644
-index 0000000..6ac1283
+index 0000000..8860986
 --- /dev/null
-+++ b/src/main.tsx
-@@ -0,0 +1,13 @@
-+import { StrictMode } from "react";
-+import { createRoot } from "react-dom/client";
-+import "./index.css";
-+import App from "./App.tsx";
++++ b/src/domain/service/CryptoService.ts
+@@ -0,0 +1,79 @@
++import type { Post } from "../model/Post";
++import type { ISigner } from "../port/ISigner";
 +
-+const rootEl = document.getElementById("root");
-+if (!rootEl) throw new Error("root element not found");
++/**
++ * 暗号操作の統合ファサード。
++ * UseCase はこのクラスのみに依存する。
++ * ステートレスな操作（ハッシュ計算・検証）は自前で実装し、
++ * ステートフルな操作（鍵生成・署名）は ISigner に委譲する。
++ */
++export class CryptoService {
++	constructor(private readonly signer: ISigner) {}
 +
-+createRoot(rootEl).render(
-+	<StrictMode>
-+		<App />
-+	</StrictMode>,
-+);
++	// --- ステートレス（Post の中身だけで完結）---
++
++	/** コンテンツハッシュ（Post.id）を計算する。署名を含まない */
++	async computePostHash(post: Omit<Post, "id" | "signature">): Promise<string> {
++		const content = [
++			post.name,
++			post.body,
++			post.timestamp,
++			post.publicKey,
++			post.boardId,
++			post.threadId,
++			post.lamport,
++		].join("|");
++		const buf = await crypto.subtle.digest(
++			"SHA-256",
++			new TextEncoder().encode(content),
++		);
++		return Array.from(new Uint8Array(buf))
++			.map((b) => b.toString(16).padStart(2, "0"))
++			.join("");
++	}
++
++	/** Post.id が本文から再計算したハッシュと一致するか検証する */
++	async verifyPostHash(post: Post): Promise<boolean> {
++		return (await this.computePostHash(post)) === post.id;
++	}
++
++	/** Ed25519 署名を検証する */
++	async verifySignature(post: Post): Promise<boolean> {
++		const rawKey = Uint8Array.from(atob(post.publicKey), (c) =>
++			c.charCodeAt(0),
++		);
++		const key = await crypto.subtle.importKey(
++			"raw",
++			rawKey,
++			{ name: "Ed25519" },
++			false,
++			["verify"],
++		);
++		const sig = Uint8Array.from(atob(post.signature), (c) => c.charCodeAt(0));
++		const payload = new TextEncoder().encode(
++			[
++				post.name,
++				post.body,
++				post.timestamp,
++				post.boardId,
++				post.threadId,
++				post.lamport,
++			].join("|"),
++		);
++		return crypto.subtle.verify("Ed25519", key, sig, payload);
++	}
++
++	// --- ステートフル（ISigner に委譲）---
++
++	generateKeyPair(): Promise<{ publicKey: string }> {
++		return this.signer.generateKeyPair();
++	}
++
++	sign(draft: Omit<Post, "id" | "signature">): Promise<Post> {
++		return this.signer.sign(draft);
++	}
++
++	deriveOdId(publicKey: string): Promise<string> {
++		return this.signer.deriveOdId(publicKey);
++	}
++}
+diff --git a/src/domain/service/LamportClock.ts b/src/domain/service/LamportClock.ts
+new file mode 100644
+index 0000000..08cd3fc
+--- /dev/null
++++ b/src/domain/service/LamportClock.ts
+@@ -0,0 +1,25 @@
++/**
++ * Lamport clock。スレ単位で1インスタンス生成して使う。
++ * PostMessageUseCase と ReceiveMessageUseCase で共有する。
++ */
++export class LamportClock {
++	private counter = 0;
++
++	/** 投稿時に呼ぶ。カウンタをインクリメントして返す。 */
++	tick(): number {
++		this.counter += 1;
++		return this.counter;
++	}
++
++	/** 受信時に呼ぶ。max(self, received) でカウンタを更新する。+1 しない。 */
++	merge(received: number): void {
++		if (received > this.counter) {
++			this.counter = received;
++		}
++	}
++
++	/** 現在のカウンタ値を返す。 */
++	current(): number {
++		return this.counter;
++	}
++}
+diff --git a/src/hooks/usePosts.ts b/src/hooks/usePosts.ts
+index 6d985dd..5daf953 100644
+--- a/src/hooks/usePosts.ts
++++ b/src/hooks/usePosts.ts
+@@ -3,12 +3,14 @@ import type { Post } from "@/domain/model/Post";
+ import type { IPostStore } from "@/domain/port/IPostStore";
+ 
+ export function sortPosts(posts: Post[]): Post[] {
+-	return [...posts].sort((a, b) => {
+-		if (a.number !== b.number) return a.number - b.number;
+-		if (a.id < b.id) return -1;
+-		if (a.id > b.id) return 1;
+-		return 0;
+-	});
++	return [...posts]
++		.sort((a, b) => {
++			if (a.lamport !== b.lamport) return a.lamport - b.lamport;
++			if (a.id < b.id) return -1;
++			if (a.id > b.id) return 1;
++			return 0;
++		})
++		.map((post, i) => ({ ...post, number: i + 1 }));
+ }
+ 
+ export function usePosts(store: IPostStore, threadId: string): Post[] {
+diff --git a/src/usecase/PostMessageUseCase.ts b/src/usecase/PostMessageUseCase.ts
+new file mode 100644
+index 0000000..b500c4d
+--- /dev/null
++++ b/src/usecase/PostMessageUseCase.ts
+@@ -0,0 +1,42 @@
++import { DEFAULT_NAME } from "@/config/constants";
++import type { IPostStore } from "@/domain/port/IPostStore";
++import type { CryptoService } from "@/domain/service/CryptoService";
++import type { LamportClock } from "@/domain/service/LamportClock";
++
++type PostInput = {
++	name: string;
++	body: string;
++};
++
++/**
++ * レスを投稿する UseCase。署名してローカルに保存する。
++ * ネットワーク伝播は Story 3 で追加する。
++ */
++export class PostMessageUseCase {
++	constructor(
++		private readonly postStore: IPostStore,
++		private readonly crypto: CryptoService,
++		private readonly clock: LamportClock,
++		private readonly publicKey: string,
++		private readonly odId: string,
++		private readonly threadId: string,
++		private readonly boardId: string,
++	) {}
++
++	async execute(input: PostInput): Promise<void> {
++		const lamport = this.clock.tick();
++		const draft = {
++			number: 0, // usePosts が lamport ソート後に振り直す
++			name: input.name.trim() || DEFAULT_NAME,
++			body: input.body.trim(),
++			odId: this.odId,
++			timestamp: Date.now(),
++			lamport,
++			publicKey: this.publicKey,
++			boardId: this.boardId,
++			threadId: this.threadId,
++		};
++		const post = await this.crypto.sign(draft);
++		await this.postStore.save(post);
++	}
++}
+diff --git a/story/02_local-post-odid.md b/story/02_local-post-odid.md
+new file mode 100644
+index 0000000..e3445cb
+--- /dev/null
++++ b/story/02_local-post-odid.md
+@@ -0,0 +1,39 @@
++# Story 2: レスを投稿でき、投稿者IDが表示される
++
++## 受け入れ条件
++
++- [ ] 投稿フォームに名前（任意）と本文（必須）を入力して送信できる
++- [ ] 送信したレスがスレに表示される（ローカルのみ）
++- [ ] 各レスに OD ID（セッション公開鍵ハッシュ先頭8文字）が表示される
++- [ ] 名前欄が空欄の場合、「名無しさん」として投稿される
++- [ ] 本文が空欄または MAX_POST_BYTES（4096 bytes）超の場合、送信できない
++- [ ] レスは lamport 昇順 → 同値なら post.id 昇順で表示される
++- [ ] セッション内で OD ID は一定（鍵ペアはセッション開始時に1回のみ生成）
++
++## 設計メモ
++
++### Post モデルの変更
++
++`lamport`, `boardId`, `threadId` を Post に追加。GossipMessage から `boardId`/`threadId` を削除（Post が持つ）。`IPostStore.save(post)` のシグネチャを post のみに簡素化。`lamport` と `boardId`/`threadId` は署名ペイロードおよびコンテンツハッシュに含める。
++
++### LamportClock
++
++スレ単位のカウンタを管理する domain service。PostMessageUseCase と ReceiveMessageUseCase（Story 3）が共有する。
++
++- `tick()`: 投稿時。カウンタをインクリメントして返す
++- `merge(received)`: 受信時。`max(self, received)` でカウンタ更新
++- `current()`: 現在値参照
++
++## エッジケース
++
++- `generateKeyPair()` 失敗（非対応ブラウザ）→ fatal: UI に操作不能を表示
++- バイト数チェックは `new TextEncoder().encode(body).length` で判定
++- GENESIS_POST は `lamport: 0` とし、最初のユーザー投稿は `lamport: 1`
++
++## 影響範囲
++
++Domain（Post / GossipMessage / IPostStore / LamportClock / CryptoService）, Adapter（WebCryptoSigner）, UseCase（PostMessageUseCase）, UI（PostForm / BoardPage）
++
++## 見積もり
++
++M
+diff --git a/tests/adapter/crypto/WebCryptoSigner.test.ts b/tests/adapter/crypto/WebCryptoSigner.test.ts
+new file mode 100644
+index 0000000..3efab85
+--- /dev/null
++++ b/tests/adapter/crypto/WebCryptoSigner.test.ts
+@@ -0,0 +1,54 @@
++import { beforeEach, describe, expect, it } from "vitest";
++import { WebCryptoSigner } from "@/adapter/crypto/WebCryptoSigner";
++import { makePost } from "../../helpers/fixtures";
++
++describe("WebCryptoSigner", () => {
++	let signer: WebCryptoSigner;
++
++	beforeEach(() => {
++		signer = new WebCryptoSigner();
++	});
++
++	it("test_generateKeyPair_ReturnsBase64PublicKey", async () => {
++		const { publicKey } = await signer.generateKeyPair();
++		expect(publicKey).toBeTruthy();
++		// base64 デコードして 32 バイト（Ed25519 公開鍵長）
++		const raw = Uint8Array.from(atob(publicKey), (c) => c.charCodeAt(0));
++		expect(raw.byteLength).toBe(32);
++	});
++
++	it("test_sign_WithoutKeyPair_Throws", async () => {
++		await expect(
++			signer.sign(makePost({ id: "", signature: "" })),
++		).rejects.toThrow();
++	});
++
++	it("test_sign_WithKeyPair_ReturnsPostWithIdAndSignature", async () => {
++		const { publicKey } = await signer.generateKeyPair();
++		const draft = makePost({ id: "", signature: "", publicKey });
++		const post = await signer.sign(draft);
++		expect(post.id).toMatch(/^[0-9a-f]{64}$/);
++		expect(post.signature).toBeTruthy();
++	});
++
++	it("test_sign_SameDraft_ReturnsSameId", async () => {
++		const { publicKey } = await signer.generateKeyPair();
++		const draft = makePost({ id: "", signature: "", publicKey });
++		const p1 = await signer.sign(draft);
++		const p2 = await signer.sign(draft);
++		expect(p1.id).toBe(p2.id);
++	});
++
++	it("test_deriveOdId_Returns8HexChars", async () => {
++		const { publicKey } = await signer.generateKeyPair();
++		const odId = await signer.deriveOdId(publicKey);
++		expect(odId).toMatch(/^[0-9a-f]{8}$/);
++	});
++
++	it("test_deriveOdId_SameKeyReturnsSameId", async () => {
++		const { publicKey } = await signer.generateKeyPair();
++		const id1 = await signer.deriveOdId(publicKey);
++		const id2 = await signer.deriveOdId(publicKey);
++		expect(id1).toBe(id2);
++	});
++});
+diff --git a/src/adapter/storage/InMemoryPostStore.test.ts b/tests/adapter/storage/InMemoryPostStore.test.ts
+similarity index 73%
+rename from src/adapter/storage/InMemoryPostStore.test.ts
+rename to tests/adapter/storage/InMemoryPostStore.test.ts
+index 84c67a9..bb7096f 100644
+--- a/src/adapter/storage/InMemoryPostStore.test.ts
++++ b/tests/adapter/storage/InMemoryPostStore.test.ts
+@@ -1,9 +1,8 @@
+ import { describe, expect, it, vi } from "vitest";
+-import { makePost } from "../../../tests/helpers/fixtures";
+-import { InMemoryPostStore } from "./InMemoryPostStore";
++import { InMemoryPostStore } from "@/adapter/storage/InMemoryPostStore";
++import { makePost } from "../../helpers/fixtures";
+ 
+ const THREAD = "thread-1";
+-const BOARD = "board-1";
+ 
+ describe("InMemoryPostStore", () => {
+ 	it("test_getSnapshot_WithInitialPosts_ReturnsThosePosts", () => {
+@@ -22,17 +21,24 @@ describe("InMemoryPostStore", () => {
+ 	it("test_save_NewPost_AppendsToThread", async () => {
+ 		const store = new InMemoryPostStore();
+ 		const post = makePost({ id: "p2", number: 2 });
+-		await store.save(post, THREAD, BOARD);
++		await store.save(post);
+ 		const posts = store.getSnapshot(THREAD);
+ 		expect(posts).toHaveLength(1);
+ 		expect(posts[0]?.id).toBe("p2");
+ 	});
+ 
++	it("test_save_UsesPostThreadId_AsKey", async () => {
++		const store = new InMemoryPostStore();
++		await store.save(makePost({ threadId: "thread-a" }));
++		expect(store.getSnapshot("thread-a")).toHaveLength(1);
++		expect(store.getSnapshot("thread-b")).toHaveLength(0);
++	});
++
+ 	it("test_subscribe_AfterSave_CallsCallback", async () => {
+ 		const store = new InMemoryPostStore();
+ 		const cb = vi.fn();
+ 		store.subscribe(THREAD, cb);
+-		await store.save(makePost(), THREAD, BOARD);
++		await store.save(makePost());
+ 		expect(cb).toHaveBeenCalledOnce();
+ 	});
+ 
+@@ -41,7 +47,7 @@ describe("InMemoryPostStore", () => {
+ 		const cb = vi.fn();
+ 		const unsub = store.subscribe(THREAD, cb);
+ 		unsub();
+-		await store.save(makePost(), THREAD, BOARD);
++		await store.save(makePost());
+ 		expect(cb).not.toHaveBeenCalled();
+ 	});
+ 
+@@ -49,7 +55,7 @@ describe("InMemoryPostStore", () => {
+ 		const store = new InMemoryPostStore();
+ 		const cb = vi.fn();
+ 		store.subscribe("other-thread", cb);
+-		await store.save(makePost(), THREAD, BOARD);
++		await store.save(makePost({ threadId: THREAD }));
+ 		expect(cb).not.toHaveBeenCalled();
+ 	});
+ });
+diff --git a/tests/components/thread/PostForm.test.tsx b/tests/components/thread/PostForm.test.tsx
+new file mode 100644
+index 0000000..3708180
+--- /dev/null
++++ b/tests/components/thread/PostForm.test.tsx
+@@ -0,0 +1,69 @@
++import { fireEvent, render, screen } from "@testing-library/react";
++import { describe, expect, it, vi } from "vitest";
++import { PostForm } from "@/components/thread/PostForm";
++import { MAX_POST_BYTES } from "@/config/constants";
++
++describe("PostForm", () => {
++	it("test_render_EmptyBody_SubmitButtonDisabled", () => {
++		render(<PostForm onSubmit={vi.fn()} />);
++		expect(
++			(screen.getByRole("button", { name: "書き込む" }) as HTMLButtonElement)
++				.disabled,
++		).toBe(true);
++	});
++
++	it("test_submit_ValidBody_CallsOnSubmit", () => {
++		const onSubmit = vi.fn();
++		render(<PostForm onSubmit={onSubmit} />);
++		fireEvent.change(screen.getByPlaceholderText("本文を入力..."), {
++			target: { value: "テスト本文" },
++		});
++		fireEvent.click(screen.getByRole("button", { name: "書き込む" }));
++		expect(onSubmit).toHaveBeenCalledWith("", "テスト本文");
++	});
++
++	it("test_submit_WithName_PassesNameToOnSubmit", () => {
++		const onSubmit = vi.fn();
++		render(<PostForm onSubmit={onSubmit} />);
++		fireEvent.change(screen.getByPlaceholderText("名無しさん"), {
++			target: { value: "Alice" },
++		});
++		fireEvent.change(screen.getByPlaceholderText("本文を入力..."), {
++			target: { value: "本文" },
++		});
++		fireEvent.click(screen.getByRole("button", { name: "書き込む" }));
++		expect(onSubmit).toHaveBeenCalledWith("Alice", "本文");
++	});
++
++	it("test_submit_ValidBody_ClearsBodyAfterSubmit", () => {
++		render(<PostForm onSubmit={vi.fn()} />);
++		const textarea = screen.getByPlaceholderText("本文を入力...");
++		fireEvent.change(textarea, { target: { value: "本文" } });
++		fireEvent.click(screen.getByRole("button", { name: "書き込む" }));
++		expect((textarea as HTMLTextAreaElement).value).toBe("");
++	});
++
++	it("test_render_BodyExceedsMaxBytes_SubmitButtonDisabled", () => {
++		render(<PostForm onSubmit={vi.fn()} />);
++		// "あ" は UTF-8 で 3 bytes。MAX_POST_BYTES / 3 + 1 文字で確実に超過
++		const over = "あ".repeat(Math.ceil(MAX_POST_BYTES / 3) + 1);
++		fireEvent.change(screen.getByPlaceholderText("本文を入力..."), {
++			target: { value: over },
++		});
++		expect(
++			(screen.getByRole("button", { name: "書き込む" }) as HTMLButtonElement)
++				.disabled,
++		).toBe(true);
++	});
++
++	it("test_render_WhitespaceOnlyBody_SubmitButtonDisabled", () => {
++		render(<PostForm onSubmit={vi.fn()} />);
++		fireEvent.change(screen.getByPlaceholderText("本文を入力..."), {
++			target: { value: "   " },
++		});
++		expect(
++			(screen.getByRole("button", { name: "書き込む" }) as HTMLButtonElement)
++				.disabled,
++		).toBe(true);
++	});
++});
+diff --git a/src/components/thread/PostItem.test.tsx b/tests/components/thread/PostItem.test.tsx
+similarity index 93%
+rename from src/components/thread/PostItem.test.tsx
+rename to tests/components/thread/PostItem.test.tsx
+index d488193..6e34c54 100644
+--- a/src/components/thread/PostItem.test.tsx
++++ b/tests/components/thread/PostItem.test.tsx
+@@ -1,8 +1,8 @@
+ import { render, screen } from "@testing-library/react";
+ import { describe, expect, it } from "vitest";
++import { PostItem } from "@/components/thread/PostItem";
+ import { DEFAULT_NAME } from "@/config/constants";
+-import { makePost } from "../../../tests/helpers/fixtures";
+-import { PostItem } from "./PostItem";
++import { makePost } from "../../helpers/fixtures";
+ 
+ describe("PostItem", () => {
+ 	it("test_PostItem_WithAllFields_DisplaysNumberNameBodyOdId", () => {
+diff --git a/src/components/thread/ThreadView.test.tsx b/tests/components/thread/ThreadView.test.tsx
+similarity index 89%
+rename from src/components/thread/ThreadView.test.tsx
+rename to tests/components/thread/ThreadView.test.tsx
+index e15a8b9..f15db8f 100644
+--- a/src/components/thread/ThreadView.test.tsx
++++ b/tests/components/thread/ThreadView.test.tsx
+@@ -1,7 +1,7 @@
+ import { render, screen } from "@testing-library/react";
+ import { describe, expect, it } from "vitest";
+-import { makePost } from "../../../tests/helpers/fixtures";
+-import { ThreadView } from "./ThreadView";
++import { ThreadView } from "@/components/thread/ThreadView";
++import { makePost } from "../../helpers/fixtures";
+ 
+ describe("ThreadView", () => {
+ 	it("test_ThreadView_WithTitle_DisplaysTitle", () => {
+diff --git a/tests/domain/service/CryptoService.test.ts b/tests/domain/service/CryptoService.test.ts
+new file mode 100644
+index 0000000..084ebbd
+--- /dev/null
++++ b/tests/domain/service/CryptoService.test.ts
+@@ -0,0 +1,105 @@
++import { beforeEach, describe, expect, it, vi } from "vitest";
++import { WebCryptoSigner } from "@/adapter/crypto/WebCryptoSigner";
++import { CryptoService } from "@/domain/service/CryptoService";
++import { makePost } from "../../helpers/fixtures";
++
++describe("CryptoService", () => {
++	describe("computePostHash", () => {
++		let service: CryptoService;
++
++		beforeEach(() => {
++			service = new CryptoService({
++				generateKeyPair: vi.fn(),
++				sign: vi.fn(),
++				deriveOdId: vi.fn(),
++			});
++		});
++
++		it("test_computePostHash_SameInput_ReturnsSameHash", async () => {
++			const draft = makePost();
++			const h1 = await service.computePostHash(draft);
++			const h2 = await service.computePostHash(draft);
++			expect(h1).toBe(h2);
++		});
++
++		it("test_computePostHash_DifferentBody_ReturnsDifferentHash", async () => {
++			const h1 = await service.computePostHash(makePost({ body: "aaa" }));
++			const h2 = await service.computePostHash(makePost({ body: "bbb" }));
++			expect(h1).not.toBe(h2);
++		});
++
++		it("test_computePostHash_DifferentLamport_ReturnsDifferentHash", async () => {
++			const h1 = await service.computePostHash(makePost({ lamport: 1 }));
++			const h2 = await service.computePostHash(makePost({ lamport: 2 }));
++			expect(h1).not.toBe(h2);
++		});
++
++		it("test_computePostHash_DifferentBoardId_ReturnsDifferentHash", async () => {
++			const h1 = await service.computePostHash(
++				makePost({ boardId: "board-1" }),
++			);
++			const h2 = await service.computePostHash(
++				makePost({ boardId: "board-2" }),
++			);
++			expect(h1).not.toBe(h2);
++		});
++
++		it("test_computePostHash_Returns64CharHex", async () => {
++			const hash = await service.computePostHash(makePost());
++			expect(hash).toMatch(/^[0-9a-f]{64}$/);
++		});
++	});
++
++	describe("verifyPostHash", () => {
++		it("test_verifyPostHash_ValidPost_ReturnsTrue", async () => {
++			const signer = new WebCryptoSigner();
++			await signer.generateKeyPair();
++			const service = new CryptoService(signer);
++			const signed = await signer.sign(makePost({ id: "", signature: "" }));
++			expect(await service.verifyPostHash(signed)).toBe(true);
++		});
++
++		it("test_verifyPostHash_TamperedBody_ReturnsFalse", async () => {
++			const signer = new WebCryptoSigner();
++			await signer.generateKeyPair();
++			const service = new CryptoService(signer);
++			const signed = await signer.sign(makePost({ id: "", signature: "" }));
++			const tampered = { ...signed, body: "改竄" };
++			expect(await service.verifyPostHash(tampered)).toBe(false);
++		});
++	});
++
++	describe("verifySignature", () => {
++		it("test_verifySignature_ValidSignature_ReturnsTrue", async () => {
++			const signer = new WebCryptoSigner();
++			const { publicKey } = await signer.generateKeyPair();
++			const service = new CryptoService(signer);
++			const signed = await signer.sign(
++				makePost({ id: "", signature: "", publicKey }),
++			);
++			expect(await service.verifySignature(signed)).toBe(true);
++		});
++
++		it("test_verifySignature_TamperedBody_ReturnsFalse", async () => {
++			const signer = new WebCryptoSigner();
++			const { publicKey } = await signer.generateKeyPair();
++			const service = new CryptoService(signer);
++			const signed = await signer.sign(
++				makePost({ id: "", signature: "", publicKey }),
++			);
++			const tampered = { ...signed, body: "改竄" };
++			expect(await service.verifySignature(tampered)).toBe(false);
++		});
++
++		it("test_verifySignature_TamperedLamport_ReturnsFalse", async () => {
++			const signer = new WebCryptoSigner();
++			const { publicKey } = await signer.generateKeyPair();
++			const service = new CryptoService(signer);
++			const signed = await signer.sign(
++				makePost({ id: "", signature: "", publicKey, lamport: 1 }),
++			);
++			const tampered = { ...signed, lamport: 99 };
++			expect(await service.verifySignature(tampered)).toBe(false);
++		});
++	});
++});
+diff --git a/tests/domain/service/LamportClock.test.ts b/tests/domain/service/LamportClock.test.ts
+new file mode 100644
+index 0000000..d68f5fe
+--- /dev/null
++++ b/tests/domain/service/LamportClock.test.ts
+@@ -0,0 +1,52 @@
++import { beforeEach, describe, expect, it } from "vitest";
++import { LamportClock } from "@/domain/service/LamportClock";
++
++describe("LamportClock", () => {
++	let clock: LamportClock;
++
++	beforeEach(() => {
++		clock = new LamportClock();
++	});
++
++	it("test_tick_InitialState_ReturnsOne", () => {
++		expect(clock.tick()).toBe(1);
++	});
++
++	it("test_tick_MultipleCalls_Increments", () => {
++		clock.tick();
++		clock.tick();
++		expect(clock.tick()).toBe(3);
++	});
++
++	it("test_current_BeforeTick_ReturnsZero", () => {
++		expect(clock.current()).toBe(0);
++	});
++
++	it("test_current_AfterTick_ReflectsLatestValue", () => {
++		clock.tick();
++		clock.tick();
++		expect(clock.current()).toBe(2);
++	});
++
++	it("test_merge_ReceivedHigher_UpdatesCounter", () => {
++		clock.merge(10);
++		expect(clock.current()).toBe(10);
++	});
++
++	it("test_merge_ReceivedLower_NoChange", () => {
++		clock.tick(); // counter = 1
++		clock.merge(0);
++		expect(clock.current()).toBe(1);
++	});
++
++	it("test_tick_AfterMerge_ExceedsMergedValue", () => {
++		clock.merge(5);
++		expect(clock.tick()).toBe(6);
++	});
++
++	it("test_merge_SameValue_NoChange", () => {
++		clock.tick(); // counter = 1
++		clock.merge(1);
++		expect(clock.current()).toBe(1);
++	});
++});
 diff --git a/tests/helpers/fixtures.ts b/tests/helpers/fixtures.ts
-new file mode 100644
-index 0000000..69cedd2
---- /dev/null
+index 69cedd2..a3ff6f2 100644
+--- a/tests/helpers/fixtures.ts
 +++ b/tests/helpers/fixtures.ts
-@@ -0,0 +1,15 @@
-+import type { Post } from "../../src/domain/model/Post";
-+
-+export function makePost(overrides: Partial<Post> = {}): Post {
-+	return {
-+		id: "hash-abc123",
-+		number: 1,
-+		name: "名無しさん",
-+		body: "テスト本文",
-+		odId: "abcd1234",
-+		timestamp: 1_700_000_000_000,
-+		signature: "valid-sig",
-+		publicKey: "pubkey-base64",
+@@ -1,3 +1,4 @@
++import type { GossipMessage } from "../../src/domain/model/GossipMessage";
+ import type { Post } from "../../src/domain/model/Post";
+ 
+ export function makePost(overrides: Partial<Post> = {}): Post {
+@@ -8,8 +9,23 @@ export function makePost(overrides: Partial<Post> = {}): Post {
+ 		body: "テスト本文",
+ 		odId: "abcd1234",
+ 		timestamp: 1_700_000_000_000,
++		lamport: 1,
+ 		signature: "valid-sig",
+ 		publicKey: "pubkey-base64",
++		boardId: "board-1",
++		threadId: "thread-1",
 +		...overrides,
 +	};
 +}
-diff --git a/tsconfig.app.json b/tsconfig.app.json
++
++export function makeGossipMessage(
++	overrides: Partial<GossipMessage> = {},
++): GossipMessage {
++	return {
++		type: "post",
++		post: makePost(),
++		ttl: 3,
++		path: ["peer-origin"],
+ 		...overrides,
+ 	};
+ }
+diff --git a/src/hooks/usePosts.test.ts b/tests/hooks/usePosts.test.ts
+similarity index 52%
+rename from src/hooks/usePosts.test.ts
+rename to tests/hooks/usePosts.test.ts
+index a42c2a1..d7b77e5 100644
+--- a/src/hooks/usePosts.test.ts
++++ b/tests/hooks/usePosts.test.ts
+@@ -1,28 +1,36 @@
+ import { act, renderHook } from "@testing-library/react";
+ import { describe, expect, it } from "vitest";
+ import { InMemoryPostStore } from "@/adapter/storage/InMemoryPostStore";
+-import { makePost } from "../../tests/helpers/fixtures";
+-import { sortPosts, usePosts } from "./usePosts";
++import { sortPosts, usePosts } from "@/hooks/usePosts";
++import { makePost } from "../helpers/fixtures";
+ 
+ const THREAD = "thread-1";
+-const BOARD = "board-1";
+ 
+ describe("sortPosts", () => {
+-	it("test_sortPosts_ByNumber_AscendingOrder", () => {
++	it("test_sortPosts_ByLamport_AscendingOrder", () => {
+ 		const posts = [
+-			makePost({ id: "b", number: 3 }),
+-			makePost({ id: "a", number: 1 }),
+-			makePost({ id: "c", number: 2 }),
++			makePost({ id: "b", lamport: 3 }),
++			makePost({ id: "a", lamport: 1 }),
++			makePost({ id: "c", lamport: 2 }),
+ 		];
+ 		const result = sortPosts(posts);
+-		expect(result.map((p) => p.number)).toEqual([1, 2, 3]);
++		expect(result.map((p) => p.lamport)).toEqual([1, 2, 3]);
+ 	});
+ 
+-	it("test_sortPosts_DuplicateNumber_StableSortById", () => {
++	it("test_sortPosts_AssignsNumberFromSortedIndex", () => {
+ 		const posts = [
+-			makePost({ id: "z", number: 1 }),
+-			makePost({ id: "a", number: 1 }),
+-			makePost({ id: "m", number: 1 }),
++			makePost({ id: "b", lamport: 3 }),
++			makePost({ id: "a", lamport: 1 }),
++		];
++		const result = sortPosts(posts);
++		expect(result.map((p) => p.number)).toEqual([1, 2]);
++	});
++
++	it("test_sortPosts_DuplicateLamport_StableSortById", () => {
++		const posts = [
++			makePost({ id: "z", lamport: 1 }),
++			makePost({ id: "a", lamport: 1 }),
++			makePost({ id: "m", lamport: 1 }),
+ 		];
+ 		const result = sortPosts(posts);
+ 		expect(result.map((p) => p.id)).toEqual(["a", "m", "z"]);
+@@ -34,18 +42,18 @@ describe("sortPosts", () => {
+ 
+ 	it("test_sortPosts_DoesNotMutateOriginal", () => {
+ 		const posts = [
+-			makePost({ id: "b", number: 2 }),
+-			makePost({ id: "a", number: 1 }),
++			makePost({ id: "b", lamport: 2 }),
++			makePost({ id: "a", lamport: 1 }),
+ 		];
+-		const original = [...posts];
++		const firstId = posts[0]?.id;
+ 		sortPosts(posts);
+-		expect(posts[0]?.id).toBe(original[0]?.id);
++		expect(posts[0]?.id).toBe(firstId);
+ 	});
+ });
+ 
+ describe("usePosts", () => {
+ 	it("test_usePosts_InitialRender_ReturnsInitialPost", () => {
+-		const initial = makePost({ number: 1 });
++		const initial = makePost({ lamport: 1 });
+ 		const store = new InMemoryPostStore(new Map([[THREAD, [initial]]]));
+ 		const { result } = renderHook(() => usePosts(store, THREAD));
+ 		expect(result.current).toHaveLength(1);
+@@ -56,19 +64,20 @@ describe("usePosts", () => {
+ 		const store = new InMemoryPostStore();
+ 		const { result } = renderHook(() => usePosts(store, THREAD));
+ 		await act(async () => {
+-			await store.save(makePost({ id: "p2", number: 2 }), THREAD, BOARD);
++			await store.save(makePost({ id: "p2", lamport: 2 }));
+ 		});
+ 		expect(result.current).toHaveLength(1);
+ 	});
+ 
+-	it("test_usePosts_SaveOutOfOrder_ReturnsSortedByNumber", async () => {
+-		const initial = makePost({ id: "p1", number: 1 });
++	it("test_usePosts_SaveOutOfLamportOrder_ReturnsSortedByLamport", async () => {
++		const initial = makePost({ id: "p1", lamport: 1 });
+ 		const store = new InMemoryPostStore(new Map([[THREAD, [initial]]]));
+ 		const { result } = renderHook(() => usePosts(store, THREAD));
+ 		await act(async () => {
+-			await store.save(makePost({ id: "p3", number: 3 }), THREAD, BOARD);
+-			await store.save(makePost({ id: "p2", number: 2 }), THREAD, BOARD);
++			await store.save(makePost({ id: "p3", lamport: 3 }));
++			await store.save(makePost({ id: "p2", lamport: 2 }));
+ 		});
++		expect(result.current.map((p) => p.lamport)).toEqual([1, 2, 3]);
+ 		expect(result.current.map((p) => p.number)).toEqual([1, 2, 3]);
+ 	});
+ });
+diff --git a/tests/usecase/PostMessageUseCase.test.ts b/tests/usecase/PostMessageUseCase.test.ts
 new file mode 100644
-index 0000000..1d2b456
+index 0000000..a060804
 --- /dev/null
-+++ b/tsconfig.app.json
-@@ -0,0 +1,36 @@
-+{
-+	"compilerOptions": {
-+		"tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-+		"target": "ES2023",
-+		"useDefineForClassFields": true,
-+		"lib": ["ES2023", "DOM", "DOM.Iterable"],
-+		"module": "ESNext",
-+		"types": ["vite/client"],
-+		"skipLibCheck": true,
++++ b/tests/usecase/PostMessageUseCase.test.ts
+@@ -0,0 +1,105 @@
++import { describe, expect, it, vi } from "vitest";
++import { DEFAULT_NAME } from "@/config/constants";
++import type { Post } from "@/domain/model/Post";
++import { CryptoService } from "@/domain/service/CryptoService";
++import { LamportClock } from "@/domain/service/LamportClock";
++import { PostMessageUseCase } from "@/usecase/PostMessageUseCase";
 +
-+		/* Bundler mode */
-+		"moduleResolution": "bundler",
-+		"allowImportingTsExtensions": true,
-+		"verbatimModuleSyntax": true,
-+		"moduleDetection": "force",
-+		"noEmit": true,
-+		"jsx": "react-jsx",
++const THREAD = "thread-1";
++const BOARD = "board-1";
++const PUBLIC_KEY = "pubkey-base64";
++const OD_ID = "abcd1234";
 +
-+		/* Linting */
-+		"strict": true,
-+		"noUnusedLocals": true,
-+		"noUnusedParameters": true,
-+		"erasableSyntaxOnly": true,
-+		"noFallthroughCasesInSwitch": true,
-+		"noUncheckedSideEffectImports": true,
-+		"noUncheckedIndexedAccess": true,
-+
-+		/* Path aliases */
-+		"baseUrl": ".",
-+		"ignoreDeprecations": "5.0",
-+		"paths": {
-+			"@/*": ["src/*"]
-+		}
-+	},
-+	"include": ["src", "tests"]
++function makeUsecase(clockOverride?: LamportClock) {
++	const postStore = {
++		save: vi.fn().mockResolvedValue(undefined),
++		getSnapshot: vi.fn().mockReturnValue([]),
++		subscribe: vi.fn(),
++	};
++	const signer = {
++		generateKeyPair: vi.fn(),
++		sign: vi
++			.fn()
++			.mockImplementation((draft: Omit<Post, "id" | "signature">) =>
++				Promise.resolve({ ...draft, id: "hash-abc", signature: "sig" }),
++			),
++		deriveOdId: vi.fn(),
++	};
++	const crypto = new CryptoService(signer);
++	const clock = clockOverride ?? new LamportClock();
++	return {
++		usecase: new PostMessageUseCase(
++			postStore,
++			crypto,
++			clock,
++			PUBLIC_KEY,
++			OD_ID,
++			THREAD,
++			BOARD,
++		),
++		postStore,
++		clock,
++	};
 +}
-diff --git a/vite.config.ts b/vite.config.ts
-new file mode 100644
-index 0000000..88a1506
---- /dev/null
-+++ b/vite.config.ts
-@@ -0,0 +1,24 @@
-+import { resolve } from "node:path";
-+import tailwindcss from "@tailwindcss/vite";
-+import react from "@vitejs/plugin-react";
-+import { defineConfig } from "vitest/config";
 +
-+// https://vite.dev/config/
-+export default defineConfig({
-+	plugins: [react(), tailwindcss()],
-+	resolve: {
-+		alias: {
-+			"@": resolve(__dirname, "src"),
-+		},
-+	},
-+	test: {
-+		environment: "jsdom",
-+		globals: true,
-+		include: [
-+			"src/**/*.test.ts",
-+			"src/**/*.test.tsx",
-+			"tests/**/*.test.ts",
-+			"tests/**/*.test.tsx",
-+		],
-+	},
++describe("PostMessageUseCase", () => {
++	it("test_execute_ValidInput_SavesPost", async () => {
++		const { usecase, postStore } = makeUsecase();
++		await usecase.execute({ name: "テスト", body: "本文" });
++		expect(postStore.save).toHaveBeenCalledOnce();
++	});
++
++	it("test_execute_EmptyName_UsesDefaultName", async () => {
++		const { usecase, postStore } = makeUsecase();
++		await usecase.execute({ name: "", body: "本文" });
++		const saved = postStore.save.mock.calls[0]?.[0] as Post;
++		expect(saved.name).toBe(DEFAULT_NAME);
++	});
++
++	it("test_execute_WhitespaceName_UsesDefaultName", async () => {
++		const { usecase, postStore } = makeUsecase();
++		await usecase.execute({ name: "   ", body: "本文" });
++		const saved = postStore.save.mock.calls[0]?.[0] as Post;
++		expect(saved.name).toBe(DEFAULT_NAME);
++	});
++
++	it("test_execute_SetsCorrectOdId", async () => {
++		const { usecase, postStore } = makeUsecase();
++		await usecase.execute({ name: "name", body: "body" });
++		const saved = postStore.save.mock.calls[0]?.[0] as Post;
++		expect(saved.odId).toBe(OD_ID);
++	});
++
++	it("test_execute_SetsCorrectPublicKey", async () => {
++		const { usecase, postStore } = makeUsecase();
++		await usecase.execute({ name: "name", body: "body" });
++		const saved = postStore.save.mock.calls[0]?.[0] as Post;
++		expect(saved.publicKey).toBe(PUBLIC_KEY);
++	});
++
++	it("test_execute_IncreasesLamportPerPost", async () => {
++		const { usecase, postStore } = makeUsecase();
++		await usecase.execute({ name: "a", body: "body1" });
++		await usecase.execute({ name: "b", body: "body2" });
++		const first = postStore.save.mock.calls[0]?.[0] as Post;
++		const second = postStore.save.mock.calls[1]?.[0] as Post;
++		expect(second.lamport).toBeGreaterThan(first.lamport);
++	});
++
++	it("test_execute_SetsCorrectBoardAndThread", async () => {
++		const { usecase, postStore } = makeUsecase();
++		await usecase.execute({ name: "name", body: "body" });
++		const saved = postStore.save.mock.calls[0]?.[0] as Post;
++		expect(saved.boardId).toBe(BOARD);
++		expect(saved.threadId).toBe(THREAD);
++	});
++
++	it("test_execute_AfterMerge_LamportExceedsMergedValue", async () => {
++		const clock = new LamportClock();
++		clock.merge(10); // 他ピアから lamport=10 を受け取った想定
++		const { usecase, postStore } = makeUsecase(clock);
++		await usecase.execute({ name: "name", body: "body" });
++		const saved = postStore.save.mock.calls[0]?.[0] as Post;
++		expect(saved.lamport).toBe(11);
++	});
 +});
+diff --git a/vite.config.ts b/vite.config.ts
+index 88a1506..772b591 100644
+--- a/vite.config.ts
++++ b/vite.config.ts
+@@ -14,11 +14,6 @@ export default defineConfig({
+ 	test: {
+ 		environment: "jsdom",
+ 		globals: true,
+-		include: [
+-			"src/**/*.test.ts",
+-			"src/**/*.test.tsx",
+-			"tests/**/*.test.ts",
+-			"tests/**/*.test.tsx",
+-		],
++		include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
+ 	},
+ });

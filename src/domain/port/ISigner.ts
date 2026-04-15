@@ -9,6 +9,4 @@ export interface ISigner {
 	generateKeyPair(): Promise<{ publicKey: string }>;
 	/** 下書きに署名し、id と signature が付与された Post を返す。 */
 	sign(draft: Omit<Post, "id" | "signature">): Promise<Post>;
-	/** publicKey（base64）から OD ID（SHA-256 先頭8文字）を導出する。 */
-	deriveOdId(publicKey: string): Promise<string>;
 }

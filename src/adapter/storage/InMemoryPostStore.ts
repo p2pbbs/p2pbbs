@@ -27,7 +27,8 @@ export class InMemoryPostStore implements IPostStore {
 		};
 	}
 
-	async save(post: Post, threadId: string, _boardId: string): Promise<void> {
+	async save(post: Post): Promise<void> {
+		const { threadId } = post;
 		const current = this.posts.get(threadId) ?? [];
 		this.posts.set(threadId, [...current, post]);
 		for (const cb of this.listeners.get(threadId) ?? []) {

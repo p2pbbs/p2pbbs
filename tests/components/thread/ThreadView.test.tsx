@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { makePost } from "../../../tests/helpers/fixtures";
-import { ThreadView } from "./ThreadView";
+import { ThreadView } from "@/components/thread/ThreadView";
+import { makeDisplayPost } from "../../helpers/fixtures";
 
 describe("ThreadView", () => {
 	it("test_ThreadView_WithTitle_DisplaysTitle", () => {
@@ -11,9 +11,9 @@ describe("ThreadView", () => {
 
 	it("test_ThreadView_WithPosts_RendersAllPosts", () => {
 		const posts = [
-			makePost({ id: "a", number: 1, body: "1レス目" }),
-			makePost({ id: "b", number: 2, body: "2レス目" }),
-			makePost({ id: "c", number: 3, body: "3レス目" }),
+			makeDisplayPost({ id: "a", displayNumber: 1, body: "1レス目" }),
+			makeDisplayPost({ id: "b", displayNumber: 2, body: "2レス目" }),
+			makeDisplayPost({ id: "c", displayNumber: 3, body: "3レス目" }),
 		];
 		render(<ThreadView title="スレ" posts={posts} />);
 		expect(screen.getByText("1レス目")).toBeTruthy();

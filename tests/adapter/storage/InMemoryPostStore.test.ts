@@ -1,9 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { makePost } from "../../../tests/helpers/fixtures";
-import { InMemoryPostStore } from "./InMemoryPostStore";
+import { InMemoryPostStore } from "@/adapter/storage/InMemoryPostStore";
+import { makePost } from "../../helpers/fixtures";
 
 const THREAD = "thread-1";
-const BOARD = "board-1";
 
 describe("InMemoryPostStore", () => {
 	it("test_getSnapshot_WithInitialPosts_ReturnsThosePosts", () => {
@@ -22,17 +21,24 @@ describe("InMemoryPostStore", () => {
 	it("test_save_NewPost_AppendsToThread", async () => {
 		const store = new InMemoryPostStore();
 		const post = makePost({ id: "p2", number: 2 });
-		await store.save(post, THREAD, BOARD);
+		await store.save(post);
 		const posts = store.getSnapshot(THREAD);
 		expect(posts).toHaveLength(1);
 		expect(posts[0]?.id).toBe("p2");
+	});
+
+	it("test_save_UsesPostThreadId_AsKey", async () => {
+		const store = new InMemoryPostStore();
+		await store.save(makePost({ threadId: "thread-a" }));
+		expect(store.getSnapshot("thread-a")).toHaveLength(1);
+		expect(store.getSnapshot("thread-b")).toHaveLength(0);
 	});
 
 	it("test_subscribe_AfterSave_CallsCallback", async () => {
 		const store = new InMemoryPostStore();
 		const cb = vi.fn();
 		store.subscribe(THREAD, cb);
-		await store.save(makePost(), THREAD, BOARD);
+		await store.save(makePost());
 		expect(cb).toHaveBeenCalledOnce();
 	});
 
@@ -41,7 +47,7 @@ describe("InMemoryPostStore", () => {
 		const cb = vi.fn();
 		const unsub = store.subscribe(THREAD, cb);
 		unsub();
-		await store.save(makePost(), THREAD, BOARD);
+		await store.save(makePost());
 		expect(cb).not.toHaveBeenCalled();
 	});
 
@@ -49,7 +55,7 @@ describe("InMemoryPostStore", () => {
 		const store = new InMemoryPostStore();
 		const cb = vi.fn();
 		store.subscribe("other-thread", cb);
-		await store.save(makePost(), THREAD, BOARD);
+		await store.save(makePost({ threadId: THREAD }));
 		expect(cb).not.toHaveBeenCalled();
 	});
 });
