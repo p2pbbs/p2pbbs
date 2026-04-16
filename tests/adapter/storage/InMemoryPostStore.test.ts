@@ -58,4 +58,23 @@ describe("InMemoryPostStore", () => {
 		await store.save(makePost({ threadId: THREAD }));
 		expect(cb).not.toHaveBeenCalled();
 	});
+
+	it("test_save_DuplicatePostId_DoesNotAddDuplicate", async () => {
+		const store = new InMemoryPostStore();
+		const post = makePost({ id: "dup-id" });
+		await store.save(post);
+		await store.save(post);
+		expect(store.getSnapshot(THREAD)).toHaveLength(1);
+	});
+
+	it("test_save_DuplicatePostId_DoesNotNotifySubscribers", async () => {
+		const store = new InMemoryPostStore();
+		const cb = vi.fn();
+		store.subscribe(THREAD, cb);
+		const post = makePost({ id: "dup-id" });
+		await store.save(post);
+		await store.save(post);
+		// 最初の save で 1 回だけ通知される
+		expect(cb).toHaveBeenCalledOnce();
+	});
 });

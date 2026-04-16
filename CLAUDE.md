@@ -60,6 +60,10 @@ Node.js で動くヘッドレスピア。24時間稼働し過去ログを保持�
 
 UseCase は CryptoService のみに依存する。
 
+### 永続化
+
+InMemoryPostStore の裏に IndexedDB を足すハイブリッド構成。起動時に IndexedDB → メモリ読み込み。save 時にメモリ + IndexedDB 両方に書く。getSnapshot は常にメモリから返す（同期、useSyncExternalStore 互換）。セッション鍵（CryptoKey）も IndexedDB に保存（extractable: false のまま structured clone）。
+
 ### 投稿順序（Lamport clock）
 
 スレ内の投稿順序は Lamport clock で決定する。各ノードがスレ単位で整数カウンタを持つ。

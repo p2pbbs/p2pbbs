@@ -1,0 +1,223 @@
+import { describe, expect, it, vi } from "vitest";
+import type { GossipMessage } from "@/domain/model/GossipMessage";
+import { CryptoService } from "@/domain/service/CryptoService";
+import { LamportClock } from "@/domain/service/LamportClock";
+import { ReceiveMessageUseCase } from "@/usecase/ReceiveMessageUseCase";
+import { makeGossipMessage, makePost } from "../helpers/fixtures";
+
+const SELF_ID = "self-node";
+
+function makeUsecase(clockOverride?: LamportClock) {
+	const postStore = {
+		save: vi.fn().mockResolvedValue(undefined),
+		getSnapshot: vi.fn().mockReturnValue([]),
+		subscribe: vi.fn(),
+	};
+	const signer = {
+		generateKeyPair: vi.fn(),
+		sign: vi.fn(),
+	};
+	const crypto = new CryptoService(signer);
+	const sigSpy = vi.spyOn(crypto, "verifySignature").mockResolvedValue(true);
+	const hashSpy = vi.spyOn(crypto, "verifyPostHash").mockResolvedValue(true);
+	const clock = clockOverride ?? new LamportClock();
+	const gateway = {
+		send: vi.fn(),
+		onReceive: vi.fn().mockReturnValue(vi.fn()),
+	};
+	const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+	const usecase = new ReceiveMessageUseCase(
+		postStore,
+		crypto,
+		clock,
+		SELF_ID,
+		gateway,
+		logger,
+	);
+	return {
+		usecase,
+		postStore,
+		crypto,
+		clock,
+		gateway,
+		logger,
+		sigSpy,
+		hashSpy,
+	};
+}
+
+describe("ReceiveMessageUseCase", () => {
+	// --- 正常系 ---
+
+	it("test_execute_ValidMessage_SavesPost", async () => {
+		const { usecase, postStore } = makeUsecase();
+		const msg = makeGossipMessage();
+		await usecase.execute(msg);
+		expect(postStore.save).toHaveBeenCalledOnce();
+		expect(postStore.save).toHaveBeenCalledWith(msg.post);
+	});
+
+	it("test_execute_ValidMessage_FansOutWithDecrementedTtl", async () => {
+		const { usecase, gateway } = makeUsecase();
+		await usecase.execute(makeGossipMessage({ ttl: 3, path: ["peer-a"] }));
+		expect(gateway.send).toHaveBeenCalledOnce();
+		const forwarded = gateway.send.mock.calls[0]?.[0] as GossipMessage;
+		expect(forwarded.ttl).toBe(2);
+	});
+
+	it("test_execute_ValidMessage_AddsSelfIdToPath", async () => {
+		const { usecase, gateway } = makeUsecase();
+		await usecase.execute(makeGossipMessage({ path: ["peer-a"] }));
+		const forwarded = gateway.send.mock.calls[0]?.[0] as GossipMessage;
+		expect(forwarded.path).toContain(SELF_ID);
+		expect(forwarded.path).toContain("peer-a");
+	});
+
+	it("test_execute_ValidMessage_MergesLamportClock", async () => {
+		const clock = new LamportClock();
+		const { usecase } = makeUsecase(clock);
+		await usecase.execute(
+			makeGossipMessage({ post: makePost({ lamport: 5 }) }),
+		);
+		expect(clock.current()).toBe(5);
+	});
+
+	it("test_execute_ConcurrentPosts_BothAreSaved", async () => {
+		const { usecase, postStore } = makeUsecase();
+		const msg1 = makeGossipMessage({ post: makePost({ id: "post-aaa" }) });
+		const msg2 = makeGossipMessage({ post: makePost({ id: "post-bbb" }) });
+		await Promise.all([usecase.execute(msg1), usecase.execute(msg2)]);
+		expect(postStore.save).toHaveBeenCalledTimes(2);
+	});
+
+	// --- 署名検証 ---
+
+	it("test_execute_InvalidSignature_DoesNotSave", async () => {
+		const { usecase, postStore, sigSpy } = makeUsecase();
+		sigSpy.mockResolvedValue(false);
+		await usecase.execute(makeGossipMessage());
+		expect(postStore.save).not.toHaveBeenCalled();
+	});
+
+	it("test_execute_InvalidSignature_DoesNotFanOut", async () => {
+		const { usecase, gateway, sigSpy } = makeUsecase();
+		sigSpy.mockResolvedValue(false);
+		await usecase.execute(makeGossipMessage());
+		expect(gateway.send).not.toHaveBeenCalled();
+	});
+
+	it("test_execute_InvalidSignature_LogsWarning", async () => {
+		const { usecase, logger, sigSpy } = makeUsecase();
+		sigSpy.mockResolvedValue(false);
+		await usecase.execute(makeGossipMessage());
+		expect(logger.warn).toHaveBeenCalledWith(
+			"receive.invalid_signature",
+			expect.objectContaining({ postId: expect.any(String) }),
+		);
+	});
+
+	it("test_execute_InvalidSignatureThenValidSameId_ValidIsProcessed", async () => {
+		// 先に不正署名メッセージが来ても seen を汚染しないため、後から届く正規メッセージは保存される
+		const { usecase, postStore, sigSpy } = makeUsecase();
+		const msg = makeGossipMessage();
+		sigSpy.mockResolvedValueOnce(false); // 1回目: 不正 → seen に追加しない
+		await usecase.execute(msg);
+		await usecase.execute(msg); // 2回目: 正規 → 保存される
+		expect(postStore.save).toHaveBeenCalledOnce();
+	});
+
+	// --- ハッシュ検証 ---
+
+	it("test_execute_InvalidHash_DoesNotSave", async () => {
+		const { usecase, postStore, hashSpy } = makeUsecase();
+		hashSpy.mockResolvedValue(false);
+		await usecase.execute(makeGossipMessage());
+		expect(postStore.save).not.toHaveBeenCalled();
+	});
+
+	it("test_execute_InvalidHash_DoesNotFanOut", async () => {
+		const { usecase, gateway, hashSpy } = makeUsecase();
+		hashSpy.mockResolvedValue(false);
+		await usecase.execute(makeGossipMessage());
+		expect(gateway.send).not.toHaveBeenCalled();
+	});
+
+	it("test_execute_InvalidHash_LogsWarning", async () => {
+		const { usecase, logger, hashSpy } = makeUsecase();
+		hashSpy.mockResolvedValue(false);
+		await usecase.execute(makeGossipMessage());
+		expect(logger.warn).toHaveBeenCalledWith(
+			"receive.invalid_hash",
+			expect.objectContaining({ postId: expect.any(String) }),
+		);
+	});
+
+	// --- 重複排除 (seen Set) ---
+
+	it("test_execute_DuplicatePostId_SavesOnlyOnce", async () => {
+		const { usecase, postStore } = makeUsecase();
+		const msg = makeGossipMessage();
+		await usecase.execute(msg);
+		await usecase.execute(msg);
+		expect(postStore.save).toHaveBeenCalledOnce();
+	});
+
+	it("test_execute_DuplicatePostId_FansOutOnlyOnce", async () => {
+		const { usecase, gateway } = makeUsecase();
+		const msg = makeGossipMessage();
+		await usecase.execute(msg);
+		await usecase.execute(msg);
+		expect(gateway.send).toHaveBeenCalledOnce();
+	});
+
+	// --- 重複排除 (path による自ノード除外) ---
+
+	it("test_execute_SelfInPath_DoesNotSave", async () => {
+		const { usecase, postStore } = makeUsecase();
+		// path に selfId が含まれる = 自ノードが投稿または中継済み
+		await usecase.execute(makeGossipMessage({ path: [SELF_ID, "peer-a"] }));
+		expect(postStore.save).not.toHaveBeenCalled();
+	});
+
+	it("test_execute_SelfInPath_DoesNotFanOut", async () => {
+		const { usecase, gateway } = makeUsecase();
+		await usecase.execute(makeGossipMessage({ path: [SELF_ID] }));
+		expect(gateway.send).not.toHaveBeenCalled();
+	});
+
+	// --- TTL 制御 ---
+
+	it("test_execute_TtlZero_SavesButDoesNotFanOut", async () => {
+		const { usecase, postStore, gateway } = makeUsecase();
+		await usecase.execute(makeGossipMessage({ ttl: 0 }));
+		expect(postStore.save).toHaveBeenCalledOnce();
+		expect(gateway.send).not.toHaveBeenCalled();
+	});
+
+	it("test_execute_TtlOne_FansOutWithTtlZero", async () => {
+		const { usecase, gateway } = makeUsecase();
+		await usecase.execute(makeGossipMessage({ ttl: 1 }));
+		expect(gateway.send).toHaveBeenCalledOnce();
+		const forwarded = gateway.send.mock.calls[0]?.[0] as GossipMessage;
+		expect(forwarded.ttl).toBe(0);
+	});
+
+	// --- 処理順序: clock.merge は保存後 ---
+
+	it("test_execute_LamportMerge_HappensAfterSave", async () => {
+		const clock = new LamportClock();
+		const { usecase, postStore } = makeUsecase(clock);
+		let clockAtSave = -1;
+		postStore.save.mockImplementation(() => {
+			clockAtSave = clock.current();
+			return Promise.resolve();
+		});
+		await usecase.execute(
+			makeGossipMessage({ post: makePost({ lamport: 8 }) }),
+		);
+		// save 実行時点ではまだ clock は更新されていない
+		expect(clockAtSave).toBe(0);
+		// save 後に merge されて 8 になっている
+		expect(clock.current()).toBe(8);
+	});
+});

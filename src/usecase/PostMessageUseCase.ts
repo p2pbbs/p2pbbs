@@ -1,4 +1,6 @@
-import { DEFAULT_NAME } from "@/config/constants";
+import { DEFAULT_NAME, TTL_INITIAL } from "@/config/constants";
+import type { GossipMessage } from "@/domain/model/GossipMessage";
+import type { IGossipMessageGateway } from "@/domain/port/IGossipMessageGateway";
 import type { IPostStore } from "@/domain/port/IPostStore";
 import type { CryptoService } from "@/domain/service/CryptoService";
 import type { LamportClock } from "@/domain/service/LamportClock";
@@ -9,8 +11,7 @@ type PostInput = {
 };
 
 /**
- * レスを投稿する UseCase。署名してローカルに保存する。
- * ネットワーク伝播は Story 3 で追加する。
+ * レスを投稿する UseCase。署名してローカルに保存し、ゴシップで伝播する。
  */
 export class PostMessageUseCase {
 	constructor(
@@ -21,6 +22,7 @@ export class PostMessageUseCase {
 		private readonly odId: string,
 		private readonly threadId: string,
 		private readonly boardId: string,
+		private readonly gateway: IGossipMessageGateway,
 	) {}
 
 	async execute(input: PostInput): Promise<void> {
@@ -37,5 +39,13 @@ export class PostMessageUseCase {
 		};
 		const post = await this.crypto.sign(draft);
 		await this.postStore.save(post);
+
+		const msg: GossipMessage = {
+			type: "post",
+			post,
+			ttl: TTL_INITIAL,
+			path: [this.odId],
+		};
+		this.gateway.send(msg);
 	}
 }

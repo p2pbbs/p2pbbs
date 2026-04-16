@@ -30,6 +30,8 @@ export class InMemoryPostStore implements IPostStore {
 	async save(post: Post): Promise<void> {
 		const { threadId } = post;
 		const current = this.posts.get(threadId) ?? [];
+		// 同一 post.id（コンテンツハッシュ）が既に存在する場合は保存しない（冪等性）
+		if (current.some((p) => p.id === post.id)) return;
 		this.posts.set(threadId, [...current, post]);
 		for (const cb of this.listeners.get(threadId) ?? []) {
 			cb();

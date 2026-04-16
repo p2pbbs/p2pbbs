@@ -26,6 +26,7 @@ function makeUsecase(clockOverride?: LamportClock) {
 	};
 	const crypto = new CryptoService(signer);
 	const clock = clockOverride ?? new LamportClock();
+	const gateway = { send: vi.fn(), onReceive: vi.fn() };
 	return {
 		usecase: new PostMessageUseCase(
 			postStore,
@@ -35,9 +36,11 @@ function makeUsecase(clockOverride?: LamportClock) {
 			OD_ID,
 			THREAD,
 			BOARD,
+			gateway,
 		),
 		postStore,
 		clock,
+		gateway,
 	};
 }
 
@@ -100,5 +103,36 @@ describe("PostMessageUseCase", () => {
 		await usecase.execute({ name: "name", body: "body" });
 		const saved = postStore.save.mock.calls[0]?.[0] as Post;
 		expect(saved.lamport).toBe(11);
+	});
+
+	it("test_execute_ValidInput_CallsGatewaySend", async () => {
+		const { usecase, gateway } = makeUsecase();
+		await usecase.execute({ name: "name", body: "body" });
+		expect(gateway.send).toHaveBeenCalledOnce();
+	});
+
+	it("test_execute_GatewayMessage_HasCorrectTypeAndPost", async () => {
+		const { usecase, postStore, gateway } = makeUsecase();
+		await usecase.execute({ name: "name", body: "body" });
+		const saved = postStore.save.mock.calls[0]?.[0] as Post;
+		const sent = gateway.send.mock.calls[0]?.[0];
+		expect(sent).toMatchObject({
+			type: "post",
+			post: saved,
+		});
+	});
+
+	it("test_execute_GatewayMessage_PathContainsOdId", async () => {
+		const { usecase, gateway } = makeUsecase();
+		await usecase.execute({ name: "name", body: "body" });
+		const sent = gateway.send.mock.calls[0]?.[0];
+		expect(sent).toMatchObject({ path: [OD_ID] });
+	});
+
+	it("test_execute_GatewayMessage_TtlIsPositive", async () => {
+		const { usecase, gateway } = makeUsecase();
+		await usecase.execute({ name: "name", body: "body" });
+		const sent = gateway.send.mock.calls[0]?.[0] as { ttl: number };
+		expect(sent.ttl).toBeGreaterThan(0);
 	});
 });

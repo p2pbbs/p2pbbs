@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { WebCryptoSigner } from "@/adapter/crypto/WebCryptoSigner";
+import { BroadcastChannelGateway } from "@/adapter/gossip/BroadcastChannelGateway";
+import { ConsoleLogger } from "@/adapter/logging/ConsoleLogger";
 import { InMemoryPostStore } from "@/adapter/storage/InMemoryPostStore";
 import { DEFAULT_BOARD_ID, DEFAULT_THREAD_ID } from "@/config/constants";
+import { GossipController } from "@/controller/GossipController";
 import type { Post } from "@/domain/model/Post";
 import { CryptoService } from "@/domain/service/CryptoService";
 import { LamportClock } from "@/domain/service/LamportClock";
+import { ReceiveMessageUseCase } from "@/usecase/ReceiveMessageUseCase";
 import { BoardPage } from "./components/pages/BoardPage";
 
 const GENESIS_POST: Post = {
@@ -21,12 +25,14 @@ const GENESIS_POST: Post = {
 };
 
 // セッション中に1度だけ生成するシングルトン
+const logger = new ConsoleLogger();
 const signer = new WebCryptoSigner();
 const cryptoService = new CryptoService(signer);
 const clock = new LamportClock();
 const postStore = new InMemoryPostStore(
 	new Map([[DEFAULT_THREAD_ID, [GENESIS_POST]]]),
 );
+const gateway = new BroadcastChannelGateway("nch", logger);
 
 type Identity = { publicKey: string; odId: string };
 
@@ -35,15 +41,36 @@ function App() {
 	const [initError, setInitError] = useState(false);
 
 	useEffect(() => {
+		let active = true;
+		let controller: GossipController | null = null;
+
 		(async () => {
 			try {
 				const { publicKey } = await signer.generateKeyPair();
 				const odId = await cryptoService.deriveOdId(publicKey);
+				if (!active) return;
+
 				setIdentity({ publicKey, odId });
+
+				const receiveUseCase = new ReceiveMessageUseCase(
+					postStore,
+					cryptoService,
+					clock,
+					odId,
+					gateway,
+					logger,
+				);
+				controller = new GossipController(gateway, receiveUseCase);
+				controller.start();
 			} catch {
-				setInitError(true);
+				if (active) setInitError(true);
 			}
 		})();
+
+		return () => {
+			active = false;
+			controller?.stop();
+		};
 	}, []);
 
 	if (initError) {
@@ -65,6 +92,7 @@ function App() {
 			clock={clock}
 			publicKey={identity.publicKey}
 			odId={identity.odId}
+			gateway={gateway}
 		/>
 	);
 }

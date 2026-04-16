@@ -6,6 +6,7 @@ import {
 	DEFAULT_THREAD_ID,
 	DEFAULT_THREAD_TITLE,
 } from "@/config/constants";
+import type { IGossipMessageGateway } from "@/domain/port/IGossipMessageGateway";
 import type { IPostStore } from "@/domain/port/IPostStore";
 import type { CryptoService } from "@/domain/service/CryptoService";
 import type { LamportClock } from "@/domain/service/LamportClock";
@@ -18,6 +19,7 @@ type Props = {
 	clock: LamportClock;
 	publicKey: string;
 	odId: string;
+	gateway: IGossipMessageGateway;
 };
 
 export function BoardPage({
@@ -26,6 +28,7 @@ export function BoardPage({
 	clock,
 	publicKey,
 	odId,
+	gateway,
 }: Props) {
 	const posts = usePosts(store, DEFAULT_THREAD_ID);
 
@@ -39,8 +42,9 @@ export function BoardPage({
 				odId,
 				DEFAULT_THREAD_ID,
 				DEFAULT_BOARD_ID,
+				gateway,
 			),
-		[store, cryptoService, clock, publicKey, odId],
+		[store, cryptoService, clock, publicKey, odId, gateway],
 	);
 
 	const handleSubmit = useCallback(
