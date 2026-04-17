@@ -504,6 +504,48 @@ describe("ReceiveMessageUseCase", () => {
 
 ---
 
+## 実行時バリデーション
+
+外部境界から入ってくるデータは必ず検証する。`as Type` キャストで信頼しない。
+
+| 境界 | 方法 | 失敗時 |
+|------|------|--------|
+| IndexedDB 読み込み（Post） | `PostSchema.safeParse` | warn ログ + スキップ |
+| BroadcastChannel 受信 | `GossipMessageSchema.safeParse` | warn ログ + スキップ |
+| 将来の WebRTC DataChannel 受信 | `GossipMessageSchema.safeParse` | warn ログ + スキップ |
+| IndexedDB 読み込み（CryptoKey） | `instanceof CryptoKey` | null 扱い → 再生成 |
+
+### 型定義と zod スキーマのセット定義
+
+ドメインモデル（Post, GossipMessage）は **各モデルファイルで zod スキーマと `z.infer` による型導出をセット**で定義する。
+手書きの型定義と zod スキーマを別ファイルに分離しない。
+
+```typescript
+// src/core/domain/model/Post.ts
+import { z } from "zod";
+
+export const PostSchema = z.object({
+  id: z.string(),
+  // ...
+});
+
+export type Post = z.infer<typeof PostSchema>;
+```
+
+### CryptoKey の特例
+
+CryptoKey は opaque オブジェクトで zod では検証できない。`instanceof CryptoKey` で最低限ガードする。
+
+```typescript
+// ✅ CryptoKey の instanceof ガード
+if (record.privateKey instanceof CryptoKey && record.publicKey instanceof CryptoKey) {
+  return { privateKey: record.privateKey, publicKey: record.publicKey };
+}
+return null; // 破損 → 再生成にフォールバック
+```
+
+---
+
 ## よくある落とし穴
 
 | 落とし穴 | 対処 |

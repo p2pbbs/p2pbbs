@@ -1,3 +1,4 @@
+import { IDBFactory } from "fake-indexeddb";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { WebCryptoSigner } from "@/core/adapter/crypto/WebCryptoSigner";
 import { CryptoService } from "@/core/domain/service/CryptoService";
@@ -51,7 +52,7 @@ describe("CryptoService", () => {
 
 	describe("verifyPostHash", () => {
 		it("test_verifyPostHash_ValidPost_ReturnsTrue", async () => {
-			const signer = new WebCryptoSigner();
+			const signer = new WebCryptoSigner(new IDBFactory());
 			await signer.generateKeyPair();
 			const service = new CryptoService(signer);
 			const signed = await signer.sign(makePost({ id: "", signature: "" }));
@@ -59,7 +60,7 @@ describe("CryptoService", () => {
 		});
 
 		it("test_verifyPostHash_TamperedBody_ReturnsFalse", async () => {
-			const signer = new WebCryptoSigner();
+			const signer = new WebCryptoSigner(new IDBFactory());
 			await signer.generateKeyPair();
 			const service = new CryptoService(signer);
 			const signed = await signer.sign(makePost({ id: "", signature: "" }));
@@ -70,7 +71,7 @@ describe("CryptoService", () => {
 
 	describe("verifySignature", () => {
 		it("test_verifySignature_ValidSignature_ReturnsTrue", async () => {
-			const signer = new WebCryptoSigner();
+			const signer = new WebCryptoSigner(new IDBFactory());
 			const { publicKey } = await signer.generateKeyPair();
 			const service = new CryptoService(signer);
 			const signed = await signer.sign(
@@ -80,7 +81,7 @@ describe("CryptoService", () => {
 		});
 
 		it("test_verifySignature_TamperedBody_ReturnsFalse", async () => {
-			const signer = new WebCryptoSigner();
+			const signer = new WebCryptoSigner(new IDBFactory());
 			const { publicKey } = await signer.generateKeyPair();
 			const service = new CryptoService(signer);
 			const signed = await signer.sign(
@@ -91,7 +92,7 @@ describe("CryptoService", () => {
 		});
 
 		it("test_verifySignature_TamperedLamport_ReturnsFalse", async () => {
-			const signer = new WebCryptoSigner();
+			const signer = new WebCryptoSigner(new IDBFactory());
 			const { publicKey } = await signer.generateKeyPair();
 			const service = new CryptoService(signer);
 			const signed = await signer.sign(
@@ -110,14 +111,14 @@ describe("CryptoService", () => {
 		});
 
 		it("test_deriveOdId_Returns8HexChars", async () => {
-			const signer = new WebCryptoSigner();
+			const signer = new WebCryptoSigner(new IDBFactory());
 			const { publicKey } = await signer.generateKeyPair();
 			const odId = await service.deriveOdId(publicKey);
 			expect(odId).toMatch(/^[0-9a-f]{8}$/);
 		});
 
 		it("test_deriveOdId_SameKeyReturnsSameId", async () => {
-			const signer = new WebCryptoSigner();
+			const signer = new WebCryptoSigner(new IDBFactory());
 			const { publicKey } = await signer.generateKeyPair();
 			const id1 = await service.deriveOdId(publicKey);
 			const id2 = await service.deriveOdId(publicKey);
@@ -125,8 +126,8 @@ describe("CryptoService", () => {
 		});
 
 		it("test_deriveOdId_DifferentKeys_ReturnDifferentIds", async () => {
-			const signerA = new WebCryptoSigner();
-			const signerB = new WebCryptoSigner();
+			const signerA = new WebCryptoSigner(new IDBFactory());
+			const signerB = new WebCryptoSigner(new IDBFactory());
 			const { publicKey: pkA } = await signerA.generateKeyPair();
 			const { publicKey: pkB } = await signerB.generateKeyPair();
 			expect(await service.deriveOdId(pkA)).not.toBe(
@@ -137,7 +138,7 @@ describe("CryptoService", () => {
 
 	describe("hash consistency", () => {
 		it("test_sign_id_MatchesComputePostHash", async () => {
-			const signer = new WebCryptoSigner();
+			const signer = new WebCryptoSigner(new IDBFactory());
 			const { publicKey } = await signer.generateKeyPair();
 			const service = new CryptoService(signer);
 			const draft = makePost({ id: "", signature: "", publicKey });
