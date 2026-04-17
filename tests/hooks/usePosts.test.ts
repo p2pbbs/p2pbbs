@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { InMemoryPostStore } from "@/adapter/storage/InMemoryPostStore";
-import { sortPosts, usePosts } from "@/hooks/usePosts";
+import { InMemoryPostStore } from "@/core/adapter/storage/InMemoryPostStore";
+import { sortPosts, usePosts } from "@/ui/hooks/usePosts";
 import { makePost } from "../helpers/fixtures";
 
 const THREAD = "thread-1";

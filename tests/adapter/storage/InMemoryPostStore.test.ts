@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { InMemoryPostStore } from "@/adapter/storage/InMemoryPostStore";
+import { InMemoryPostStore } from "@/core/adapter/storage/InMemoryPostStore";
 import { makePost } from "../../helpers/fixtures";
 
 const THREAD = "thread-1";

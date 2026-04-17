@@ -1,17 +1,17 @@
 import { useCallback, useMemo } from "react";
-import { PostForm } from "@/components/thread/PostForm";
-import { ThreadView } from "@/components/thread/ThreadView";
 import {
 	DEFAULT_BOARD_ID,
 	DEFAULT_THREAD_ID,
 	DEFAULT_THREAD_TITLE,
-} from "@/config/constants";
-import type { IGossipMessageGateway } from "@/domain/port/IGossipMessageGateway";
-import type { IPostStore } from "@/domain/port/IPostStore";
-import type { CryptoService } from "@/domain/service/CryptoService";
-import type { LamportClock } from "@/domain/service/LamportClock";
-import { usePosts } from "@/hooks/usePosts";
-import { PostMessageUseCase } from "@/usecase/PostMessageUseCase";
+} from "@/core/config/constants";
+import type { IGossipMessageGateway } from "@/core/domain/port/IGossipMessageGateway";
+import type { IPostStore } from "@/core/domain/port/IPostStore";
+import type { CryptoService } from "@/core/domain/service/CryptoService";
+import type { LamportClock } from "@/core/domain/service/LamportClock";
+import { PostMessageUseCase } from "@/core/usecase/PostMessageUseCase";
+import { PostForm } from "@/ui/components/thread/PostForm";
+import { ThreadView } from "@/ui/components/thread/ThreadView";
+import { usePosts } from "@/ui/hooks/usePosts";
 
 type Props = {
 	store: IPostStore;

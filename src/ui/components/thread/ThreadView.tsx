@@ -1,4 +1,4 @@
-import type { DisplayPost } from "@/hooks/usePosts";
+import type { DisplayPost } from "@/ui/hooks/usePosts";
 import { PostItem } from "./PostItem";
 
 type Props = {

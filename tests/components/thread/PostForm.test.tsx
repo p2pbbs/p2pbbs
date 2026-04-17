@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { PostForm } from "@/components/thread/PostForm";
-import { MAX_POST_BYTES } from "@/config/constants";
+import { MAX_POST_BYTES } from "@/core/config/constants";
+import { PostForm } from "@/ui/components/thread/PostForm";
 
 describe("PostForm", () => {
 	it("test_render_EmptyBody_SubmitButtonDisabled", () => {

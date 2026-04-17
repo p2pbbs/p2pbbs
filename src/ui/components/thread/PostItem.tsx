@@ -1,5 +1,5 @@
-import { DEFAULT_NAME } from "@/config/constants";
-import type { DisplayPost } from "@/hooks/usePosts";
+import { DEFAULT_NAME } from "@/core/config/constants";
+import type { DisplayPost } from "@/ui/hooks/usePosts";
 
 type Props = {
 	post: DisplayPost;

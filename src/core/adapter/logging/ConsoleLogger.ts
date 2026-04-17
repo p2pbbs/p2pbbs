@@ -1,4 +1,4 @@
-import type { ILogger } from "@/domain/port/ILogger";
+import type { ILogger } from "@/core/domain/port/ILogger";
 
 /**
  * ILogger の console 実装。ブラウザの DevTools に構造化ログを出力する。

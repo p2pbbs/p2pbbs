@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import type { GossipMessage } from "@/domain/model/GossipMessage";
-import { CryptoService } from "@/domain/service/CryptoService";
-import { LamportClock } from "@/domain/service/LamportClock";
-import { ReceiveMessageUseCase } from "@/usecase/ReceiveMessageUseCase";
+import type { GossipMessage } from "@/core/domain/model/GossipMessage";
+import { CryptoService } from "@/core/domain/service/CryptoService";
+import { LamportClock } from "@/core/domain/service/LamportClock";
+import { ReceiveMessageUseCase } from "@/core/usecase/ReceiveMessageUseCase";
 import { makeGossipMessage, makePost } from "../helpers/fixtures";
 
 const SELF_ID = "self-node";
@@ -88,6 +88,23 @@ describe("ReceiveMessageUseCase", () => {
 		const msg2 = makeGossipMessage({ post: makePost({ id: "post-bbb" }) });
 		await Promise.all([usecase.execute(msg1), usecase.execute(msg2)]);
 		expect(postStore.save).toHaveBeenCalledTimes(2);
+	});
+
+	// --- スキーマ検証 ---
+
+	it("test_execute_InvalidSchema_DoesNotSave", async () => {
+		const { usecase, postStore } = makeUsecase();
+		await usecase.execute({ type: "unknown", post: null });
+		expect(postStore.save).not.toHaveBeenCalled();
+	});
+
+	it("test_execute_InvalidSchema_LogsWarning", async () => {
+		const { usecase, logger } = makeUsecase();
+		await usecase.execute(null);
+		expect(logger.warn).toHaveBeenCalledWith(
+			"receive.invalid_schema",
+			expect.objectContaining({ error: expect.any(String) }),
+		);
 	});
 
 	// --- 署名検証 ---

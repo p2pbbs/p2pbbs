@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { GossipController } from "@/controller/GossipController";
-import type { GossipMessage } from "@/domain/model/GossipMessage";
-import type { ReceiveMessageUseCase } from "@/usecase/ReceiveMessageUseCase";
+import { GossipController } from "@/core/controller/GossipController";
+import type { GossipMessage } from "@/core/domain/model/GossipMessage";
+import type { ReceiveMessageUseCase } from "@/core/usecase/ReceiveMessageUseCase";
 import { makeGossipMessage } from "../helpers/fixtures";
 
 /**

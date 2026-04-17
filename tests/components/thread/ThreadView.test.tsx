@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { ThreadView } from "@/components/thread/ThreadView";
+import { ThreadView } from "@/ui/components/thread/ThreadView";
 import { makeDisplayPost } from "../../helpers/fixtures";
 
 describe("ThreadView", () => {

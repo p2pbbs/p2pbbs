@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DEFAULT_NAME, MAX_POST_BYTES } from "@/config/constants";
+import { DEFAULT_NAME, MAX_POST_BYTES } from "@/core/config/constants";
 
 type Props = {
 	onSubmit: (name: string, body: string) => void;

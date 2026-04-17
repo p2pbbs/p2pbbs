@@ -1,9 +1,9 @@
-import { DEFAULT_NAME, TTL_INITIAL } from "@/config/constants";
-import type { GossipMessage } from "@/domain/model/GossipMessage";
-import type { IGossipMessageGateway } from "@/domain/port/IGossipMessageGateway";
-import type { IPostStore } from "@/domain/port/IPostStore";
-import type { CryptoService } from "@/domain/service/CryptoService";
-import type { LamportClock } from "@/domain/service/LamportClock";
+import { DEFAULT_NAME, TTL_INITIAL } from "@/core/config/constants";
+import type { GossipMessage } from "@/core/domain/model/GossipMessage";
+import type { IGossipMessageGateway } from "@/core/domain/port/IGossipMessageGateway";
+import type { IPostStore } from "@/core/domain/port/IPostStore";
+import type { CryptoService } from "@/core/domain/service/CryptoService";
+import type { LamportClock } from "@/core/domain/service/LamportClock";
 
 type PostInput = {
 	name: string;

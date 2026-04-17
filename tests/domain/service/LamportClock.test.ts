@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { LamportClock } from "@/domain/service/LamportClock";
+import { LamportClock } from "@/core/domain/service/LamportClock";
 
 describe("LamportClock", () => {
 	let clock: LamportClock;

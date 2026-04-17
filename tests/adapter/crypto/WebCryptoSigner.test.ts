@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { WebCryptoSigner } from "@/adapter/crypto/WebCryptoSigner";
+import { WebCryptoSigner } from "@/core/adapter/crypto/WebCryptoSigner";
 import { makePost } from "../../helpers/fixtures";
 
 describe("WebCryptoSigner", () => {

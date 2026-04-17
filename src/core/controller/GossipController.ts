@@ -1,5 +1,5 @@
-import type { IGossipMessageGateway } from "@/domain/port/IGossipMessageGateway";
-import type { ReceiveMessageUseCase } from "@/usecase/ReceiveMessageUseCase";
+import type { IGossipMessageGateway } from "@/core/domain/port/IGossipMessageGateway";
+import type { ReceiveMessageUseCase } from "@/core/usecase/ReceiveMessageUseCase";
 
 /**
  * GossipController: UseCase と Gateway の配線役。

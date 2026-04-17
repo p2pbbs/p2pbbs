@@ -1,5 +1,5 @@
-import type { Post } from "@/domain/model/Post";
-import type { IPostStore } from "@/domain/port/IPostStore";
+import type { Post } from "@/core/domain/model/Post";
+import type { IPostStore } from "@/core/domain/port/IPostStore";
 
 export class InMemoryPostStore implements IPostStore {
 	private static readonly EMPTY: Post[] = [];

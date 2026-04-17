@@ -1,9 +1,10 @@
-import type { GossipMessage } from "@/domain/model/GossipMessage";
-import type { IGossipMessageGateway } from "@/domain/port/IGossipMessageGateway";
-import type { ILogger } from "@/domain/port/ILogger";
-import type { IPostStore } from "@/domain/port/IPostStore";
-import type { CryptoService } from "@/domain/service/CryptoService";
-import type { LamportClock } from "@/domain/service/LamportClock";
+import type { GossipMessage } from "@/core/domain/model/GossipMessage";
+import { GossipMessageSchema } from "@/core/domain/model/GossipMessage";
+import type { IGossipMessageGateway } from "@/core/domain/port/IGossipMessageGateway";
+import type { ILogger } from "@/core/domain/port/ILogger";
+import type { IPostStore } from "@/core/domain/port/IPostStore";
+import type { CryptoService } from "@/core/domain/service/CryptoService";
+import type { LamportClock } from "@/core/domain/service/LamportClock";
 
 /**
  * ゴシップメッセージの受信パイプライン。
@@ -33,7 +34,16 @@ export class ReceiveMessageUseCase {
 		private readonly logger: ILogger,
 	) {}
 
-	async execute(msg: GossipMessage): Promise<void> {
+	async execute(raw: unknown): Promise<void> {
+		// 0. スキーマ検証（全入口で共通。不正な構造のメッセージを早期排除する）
+		const parseResult = GossipMessageSchema.safeParse(raw);
+		if (!parseResult.success) {
+			this.logger.warn("receive.invalid_schema", {
+				error: parseResult.error.message,
+			});
+			return;
+		}
+		const msg: GossipMessage = parseResult.data;
 		const { post } = msg;
 
 		// 1. 署名検証

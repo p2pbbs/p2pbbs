@@ -1,5 +1,5 @@
-import type { Post } from "@/domain/model/Post";
-import type { ISigner } from "@/domain/port/ISigner";
+import type { Post } from "@/core/domain/model/Post";
+import type { ISigner } from "@/core/domain/port/ISigner";
 
 function bytesToBase64(bytes: Uint8Array): string {
 	return btoa(String.fromCharCode(...bytes));

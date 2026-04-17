@@ -1,6 +1,6 @@
-import type { GossipMessage } from "../../src/domain/model/GossipMessage";
-import type { Post } from "../../src/domain/model/Post";
-import type { DisplayPost } from "../../src/hooks/usePosts";
+import type { GossipMessage } from "../../src/core/domain/model/GossipMessage";
+import type { Post } from "../../src/core/domain/model/Post";
+import type { DisplayPost } from "../../src/ui/hooks/usePosts";
 
 export function makePost(overrides: Partial<Post> = {}): Post {
 	return {

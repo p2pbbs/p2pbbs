@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { BroadcastChannelGateway } from "@/adapter/gossip/BroadcastChannelGateway";
-import type { GossipMessage } from "@/domain/model/GossipMessage";
-import type { ILogger } from "@/domain/port/ILogger";
+import { BroadcastChannelGateway } from "@/core/adapter/gossip/BroadcastChannelGateway";
+import type { GossipMessage } from "@/core/domain/model/GossipMessage";
+import type { ILogger } from "@/core/domain/port/ILogger";
 import { makeGossipMessage } from "../../helpers/fixtures";
 
 /** BroadcastChannel の最小スタブ */
@@ -99,6 +99,26 @@ describe("BroadcastChannelGateway", () => {
 
 		expect(logger.warn).toHaveBeenCalledWith(
 			"gossip.receive_parse_error",
+			expect.objectContaining({ error: expect.any(String) }),
+		);
+	});
+
+	it("test_onReceive_InvalidSchema_LogsWarnAndDoesNotCallHandler", () => {
+		const gateway = new BroadcastChannelGateway("nch", logger);
+		const handler = vi.fn();
+		gateway.onReceive(handler);
+
+		const listener = getListener(channelStub);
+		// JSON は正しいが GossipMessage の構造に合わない（type フィールドが不正）
+		listener(
+			new MessageEvent("message", {
+				data: JSON.stringify({ type: "unknown", post: null }),
+			}),
+		);
+
+		expect(handler).not.toHaveBeenCalled();
+		expect(logger.warn).toHaveBeenCalledWith(
+			"gossip.receive_invalid_schema",
 			expect.objectContaining({ error: expect.any(String) }),
 		);
 	});

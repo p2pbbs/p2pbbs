@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { PostItem } from "@/components/thread/PostItem";
-import { DEFAULT_NAME } from "@/config/constants";
+import { DEFAULT_NAME } from "@/core/config/constants";
+import { PostItem } from "@/ui/components/thread/PostItem";
 import { makeDisplayPost } from "../../helpers/fixtures";
 
 describe("PostItem", () => {

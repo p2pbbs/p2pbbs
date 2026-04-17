@@ -1,6 +1,7 @@
-import type { GossipMessage } from "@/domain/model/GossipMessage";
-import type { IGossipMessageGateway } from "@/domain/port/IGossipMessageGateway";
-import type { ILogger } from "@/domain/port/ILogger";
+import type { GossipMessage } from "@/core/domain/model/GossipMessage";
+import { GossipMessageSchema } from "@/core/domain/model/GossipMessage";
+import type { IGossipMessageGateway } from "@/core/domain/port/IGossipMessageGateway";
+import type { ILogger } from "@/core/domain/port/ILogger";
 
 /**
  * IGossipMessageGateway の BroadcastChannel 実装（Phase 1）。
@@ -27,13 +28,22 @@ export class BroadcastChannelGateway implements IGossipMessageGateway {
 
 	onReceive(handler: (message: GossipMessage) => void): () => void {
 		const listener = (event: MessageEvent<unknown>) => {
+			let data: unknown;
 			try {
-				const data: unknown =
+				data =
 					typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-				handler(data as GossipMessage);
 			} catch (err) {
 				this.logger.warn("gossip.receive_parse_error", { error: String(err) });
+				return;
 			}
+			const result = GossipMessageSchema.safeParse(data);
+			if (!result.success) {
+				this.logger.warn("gossip.receive_invalid_schema", {
+					error: result.error.message,
+				});
+				return;
+			}
+			handler(result.data);
 		};
 		this.channel.addEventListener("message", listener);
 		return () => this.channel.removeEventListener("message", listener);

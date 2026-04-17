@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { DEFAULT_NAME } from "@/config/constants";
-import type { Post } from "@/domain/model/Post";
-import { CryptoService } from "@/domain/service/CryptoService";
-import { LamportClock } from "@/domain/service/LamportClock";
-import { PostMessageUseCase } from "@/usecase/PostMessageUseCase";
+import { DEFAULT_NAME } from "@/core/config/constants";
+import type { Post } from "@/core/domain/model/Post";
+import { CryptoService } from "@/core/domain/service/CryptoService";
+import { LamportClock } from "@/core/domain/service/LamportClock";
+import { PostMessageUseCase } from "@/core/usecase/PostMessageUseCase";
 
 const THREAD = "thread-1";
 const BOARD = "board-1";

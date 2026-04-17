@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
-import type { Post } from "@/domain/model/Post";
-import type { IPostStore } from "@/domain/port/IPostStore";
+import type { Post } from "@/core/domain/model/Post";
+import type { IPostStore } from "@/core/domain/port/IPostStore";
 
 /** 表示用の連番を付与した Post。lamport ソート後のインデックスから派生する。 */
 export type DisplayPost = Post & { readonly displayNumber: number };
