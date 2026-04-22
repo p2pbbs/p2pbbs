@@ -26,8 +26,11 @@ function bytesToBase64(bytes: Uint8Array): string {
  */
 export class WebCryptoSigner implements ISigner {
 	private keyPair: CryptoKeyPair | null = null;
+	private readonly idb: IDBFactory;
 
-	constructor(private readonly idb: IDBFactory = indexedDB) {}
+	constructor(idb: IDBFactory = indexedDB) {
+		this.idb = idb;
+	}
 
 	async generateKeyPair(): Promise<{ publicKey: string }> {
 		this.keyPair = await this.loadOrCreateKeyPair();

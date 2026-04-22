@@ -9,6 +9,7 @@ const THREAD = "thread-1";
 const BOARD = "board-1";
 const PUBLIC_KEY = "pubkey-base64";
 const OD_ID = "abcd1234";
+const PEER_ID = "550e8400-e29b-41d4-a716-446655440000";
 
 function makeUsecase(clockOverride?: LamportClock) {
 	const postStore = {
@@ -32,10 +33,13 @@ function makeUsecase(clockOverride?: LamportClock) {
 			postStore,
 			crypto,
 			clock,
-			PUBLIC_KEY,
-			OD_ID,
-			THREAD,
-			BOARD,
+			{
+				publicKey: PUBLIC_KEY,
+				odId: OD_ID,
+				peerId: PEER_ID,
+				threadId: THREAD,
+				boardId: BOARD,
+			},
 			gateway,
 		),
 		postStore,
@@ -122,11 +126,11 @@ describe("PostMessageUseCase", () => {
 		});
 	});
 
-	it("test_execute_GatewayMessage_PathContainsOdId", async () => {
+	it("test_execute_GatewayMessage_PathContainsPeerId", async () => {
 		const { usecase, gateway } = makeUsecase();
 		await usecase.execute({ name: "name", body: "body" });
 		const sent = gateway.send.mock.calls[0]?.[0];
-		expect(sent).toMatchObject({ path: [OD_ID] });
+		expect(sent).toMatchObject({ path: [PEER_ID] });
 	});
 
 	it("test_execute_GatewayMessage_TtlIsPositive", async () => {

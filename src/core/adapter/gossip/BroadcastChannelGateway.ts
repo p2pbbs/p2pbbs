@@ -10,12 +10,11 @@ import type { ILogger } from "@/core/domain/port/ILogger";
  */
 export class BroadcastChannelGateway implements IGossipMessageGateway {
 	private readonly channel: BroadcastChannel;
+	private readonly logger: ILogger;
 
-	constructor(
-		channelName: string,
-		private readonly logger: ILogger,
-	) {
+	constructor(channelName: string, logger: ILogger) {
 		this.channel = new BroadcastChannel(channelName);
+		this.logger = logger;
 	}
 
 	send(message: GossipMessage): void {

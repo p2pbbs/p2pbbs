@@ -19,6 +19,7 @@ type Props = {
 	clock: LamportClock;
 	publicKey: string;
 	odId: string;
+	peerId: string;
 	gateway: IGossipMessageGateway;
 };
 
@@ -28,6 +29,7 @@ export function BoardPage({
 	clock,
 	publicKey,
 	odId,
+	peerId,
 	gateway,
 }: Props) {
 	const posts = usePosts(store, DEFAULT_THREAD_ID);
@@ -38,13 +40,16 @@ export function BoardPage({
 				store,
 				cryptoService,
 				clock,
-				publicKey,
-				odId,
-				DEFAULT_THREAD_ID,
-				DEFAULT_BOARD_ID,
+				{
+					publicKey,
+					odId,
+					peerId,
+					threadId: DEFAULT_THREAD_ID,
+					boardId: DEFAULT_BOARD_ID,
+				},
 				gateway,
 			),
-		[store, cryptoService, clock, publicKey, odId, gateway],
+		[store, cryptoService, clock, publicKey, odId, peerId, gateway],
 	);
 
 	const handleSubmit = useCallback(

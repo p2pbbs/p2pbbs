@@ -21,10 +21,13 @@ export class IndexedDBPostStore implements IPostStore {
 	 * @param logger  - ログ出力先
 	 * @param idb     - IndexedDB ファクトリ。テスト時に fake-indexeddb を注入できる
 	 */
-	constructor(
-		private readonly logger: ILogger,
-		private readonly idb: IDBFactory = indexedDB,
-	) {}
+	private readonly logger: ILogger;
+	private readonly idb: IDBFactory;
+
+	constructor(logger: ILogger, idb: IDBFactory = indexedDB) {
+		this.logger = logger;
+		this.idb = idb;
+	}
 
 	/**
 	 * IndexedDB を開き、全投稿をメモリに読み込む。起動時に1回だけ呼ぶこと。

@@ -6,7 +6,7 @@ const THREAD = "thread-1";
 
 describe("InMemoryPostStore", () => {
 	it("test_getSnapshot_WithInitialPosts_ReturnsThosePosts", () => {
-		const initial = makePost({ number: 1 });
+		const initial = makePost({ lamport: 1 });
 		const store = new InMemoryPostStore(new Map([[THREAD, [initial]]]));
 		const posts = store.getSnapshot(THREAD);
 		expect(posts).toHaveLength(1);
@@ -20,7 +20,7 @@ describe("InMemoryPostStore", () => {
 
 	it("test_save_NewPost_AppendsToThread", async () => {
 		const store = new InMemoryPostStore();
-		const post = makePost({ id: "p2", number: 2 });
+		const post = makePost({ id: "p2", lamport: 2 });
 		await store.save(post);
 		const posts = store.getSnapshot(THREAD);
 		expect(posts).toHaveLength(1);

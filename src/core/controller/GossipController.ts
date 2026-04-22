@@ -9,11 +9,16 @@ import type { ReceiveMessageUseCase } from "@/core/usecase/ReceiveMessageUseCase
  */
 export class GossipController {
 	private unsubscribe: (() => void) | null = null;
+	private readonly gateway: IGossipMessageGateway;
+	private readonly receiveUseCase: ReceiveMessageUseCase;
 
 	constructor(
-		private readonly gateway: IGossipMessageGateway,
-		private readonly receiveUseCase: ReceiveMessageUseCase,
-	) {}
+		gateway: IGossipMessageGateway,
+		receiveUseCase: ReceiveMessageUseCase,
+	) {
+		this.gateway = gateway;
+		this.receiveUseCase = receiveUseCase;
+	}
 
 	start(): void {
 		this.unsubscribe = this.gateway.onReceive((msg) => {

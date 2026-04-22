@@ -25,14 +25,29 @@ export class ReceiveMessageUseCase {
 	 */
 	private readonly seen = new Set<string>();
 
+	private readonly postStore: IPostStore;
+	private readonly crypto: CryptoService;
+	private readonly clock: LamportClock;
+	/** タブごとのランダム UUID（Peer ID）。OD ID ではない。 */
+	private readonly selfId: string;
+	private readonly gateway: IGossipMessageGateway;
+	private readonly logger: ILogger;
+
 	constructor(
-		private readonly postStore: IPostStore,
-		private readonly crypto: CryptoService,
-		private readonly clock: LamportClock,
-		private readonly selfId: string,
-		private readonly gateway: IGossipMessageGateway,
-		private readonly logger: ILogger,
-	) {}
+		postStore: IPostStore,
+		crypto: CryptoService,
+		clock: LamportClock,
+		selfId: string,
+		gateway: IGossipMessageGateway,
+		logger: ILogger,
+	) {
+		this.postStore = postStore;
+		this.crypto = crypto;
+		this.clock = clock;
+		this.selfId = selfId;
+		this.gateway = gateway;
+		this.logger = logger;
+	}
 
 	async execute(raw: unknown): Promise<void> {
 		// 0. スキーマ検証（全入口で共通。不正な構造のメッセージを早期排除する）

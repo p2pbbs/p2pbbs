@@ -18,3 +18,22 @@ export const DEFAULT_THREAD_ID = "thread-1";
 
 /** MVP で使用する固定のスレタイトル。 */
 export const DEFAULT_THREAD_TITLE = "nch 雑談スレ";
+
+/** シグナリングサーバーのデフォルト WebSocket URL。 */
+export const SIGNALING_URL =
+	import.meta.env.VITE_SIGNALING_URL ?? "ws://localhost:8080";
+
+/** シグナリング discover() のタイムアウト（ミリ秒）。超過したら fatal エラー。 */
+export const SIGNALING_DISCOVER_TIMEOUT_MS = 10_000;
+
+/** DataChannel heartbeat の送信間隔（ミリ秒）。 */
+export const HEARTBEAT_INTERVAL_MS = 30_000;
+
+/** DataChannel heartbeat のタイムアウト（ミリ秒）。この時間内に受信がなければ dead と判定。 */
+export const HEARTBEAT_TIMEOUT_MS = 90_000;
+
+/** Google 公開 STUN サーバー。TURN は使わない。 */
+export const STUN_URL = "stun:stun.l.google.com:19302";
+
+/** 同時に保持する active な WebRTC DataChannel 接続の上限。 */
+export const MAX_ACTIVE_PEERS = 8;

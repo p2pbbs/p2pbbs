@@ -22,11 +22,11 @@ description: >
 ```typescript
 // src/domain/Post.ts
 export type Post = {
-  readonly id: string;        // SHA-256 コンテンツハッシュ（事実上の投稿ID）
-  readonly number: number;    // スレ内連番、1始まり
-  readonly name: string;      // 投稿者名、デフォルト "名無しさん"
+  readonly id: string; // SHA-256 コンテンツハッシュ（事実上の投稿ID）
+  readonly number: number; // スレ内連番、1始まり
+  readonly name: string; // 投稿者名、デフォルト "名無しさん"
   readonly body: string;
-  readonly odId: string;      // SHA-256(publicKey) の先頭8文字
+  readonly odId: string; // SHA-256(publicKey) の先頭8文字
   readonly timestamp: number; // Unix ms
   readonly signature: string; // Ed25519 署名（base64）
   readonly publicKey: string; // Ed25519 公開鍵（base64）
@@ -38,7 +38,7 @@ export type GossipMessage = {
   readonly boardId: string;
   readonly threadId: string;
   readonly post: Post;
-  readonly ttl: number;    // ホップ上限。0 で転送停止
+  readonly ttl: number; // ホップ上限。0 で転送停止
   readonly path: string[]; // 通過済みピアID。ループ防止用
 };
 
@@ -70,7 +70,10 @@ export interface ISignalingRepository {
   connect(url: string): Promise<void>;
   sendOffer(peerId: string, sdp: RTCSessionDescriptionInit): Promise<void>;
   sendAnswer(peerId: string, sdp: RTCSessionDescriptionInit): Promise<void>;
-  sendIceCandidate(peerId: string, candidate: RTCIceCandidateInit): Promise<void>;
+  sendIceCandidate(
+    peerId: string,
+    candidate: RTCIceCandidateInit,
+  ): Promise<void>;
   disconnect(): void;
 }
 ```
@@ -81,11 +84,11 @@ export interface ISignalingRepository {
 
 暗号操作はステートフルかステートレスかで責務を分離する。
 
-| 責務 | 場所 | 理由 |
-|------|------|------|
-| `verifySignature`, `computePostHash`, `verifyPostHash` | `domain/service/CryptoService.ts` | Post の中身だけで完結するステートレス処理 |
-| `generateKeyPair`, `sign`, `deriveOdId` | `adapter/crypto/WebCryptoSigner.ts` | 秘密鍵（セッション状態）を必要とするステートフル処理 |
-| 統合ファサード | `domain/service/CryptoService.ts` | UseCase が依存する唯一の暗号抽象 |
+| 責務                                                   | 場所                                | 理由                                                 |
+| ------------------------------------------------------ | ----------------------------------- | ---------------------------------------------------- |
+| `verifySignature`, `computePostHash`, `verifyPostHash` | `domain/service/CryptoService.ts`   | Post の中身だけで完結するステートレス処理            |
+| `generateKeyPair`, `sign`, `deriveOdId`                | `adapter/crypto/WebCryptoSigner.ts` | 秘密鍵（セッション状態）を必要とするステートフル処理 |
+| 統合ファサード                                         | `domain/service/CryptoService.ts`   | UseCase が依存する唯一の暗号抽象                     |
 
 ### ISigner（src/domain/port/ISigner.ts）
 
@@ -115,8 +118,13 @@ export class CryptoService {
   // --- ステートレス（Post の中身だけで完結）---
 
   async computePostHash(post: Omit<Post, "id" | "signature">): Promise<string> {
-    const content = [post.name, post.body, post.timestamp, post.publicKey].join("|");
-    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(content));
+    const content = [post.name, post.body, post.timestamp, post.publicKey].join(
+      "|",
+    );
+    const buf = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(content),
+    );
     return Array.from(new Uint8Array(buf))
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
@@ -127,10 +135,20 @@ export class CryptoService {
   }
 
   async verifySignature(post: Post): Promise<boolean> {
-    const rawKey = Uint8Array.from(atob(post.publicKey), (c) => c.charCodeAt(0));
-    const key = await crypto.subtle.importKey("raw", rawKey, { name: "Ed25519" }, false, ["verify"]);
+    const rawKey = Uint8Array.from(atob(post.publicKey), (c) =>
+      c.charCodeAt(0),
+    );
+    const key = await crypto.subtle.importKey(
+      "raw",
+      rawKey,
+      { name: "Ed25519" },
+      false,
+      ["verify"],
+    );
     const sig = Uint8Array.from(atob(post.signature), (c) => c.charCodeAt(0));
-    const payload = new TextEncoder().encode([post.name, post.body, post.timestamp].join("|"));
+    const payload = new TextEncoder().encode(
+      [post.name, post.body, post.timestamp].join("|"),
+    );
     return crypto.subtle.verify("Ed25519", key, sig, payload);
   }
 
@@ -165,29 +183,52 @@ export class WebCryptoSigner implements ISigner {
   private keyPair: CryptoKeyPair | null = null;
 
   async generateKeyPair(): Promise<{ publicKey: string }> {
-    this.keyPair = await crypto.subtle.generateKey("Ed25519", false, ["sign", "verify"]);
+    this.keyPair = await crypto.subtle.generateKey("Ed25519", false, [
+      "sign",
+      "verify",
+    ]);
     const raw = await crypto.subtle.exportKey("raw", this.keyPair.publicKey);
     return { publicKey: bytesToBase64(new Uint8Array(raw)) };
   }
 
   async sign(draft: Omit<Post, "id" | "signature">): Promise<Post> {
-    if (!this.keyPair) throw new Error("generateKeyPair() を先に呼んでください");
-    const payload = new TextEncoder().encode([draft.name, draft.body, draft.timestamp].join("|"));
-    const sigBuf = await crypto.subtle.sign("Ed25519", this.keyPair.privateKey, payload);
+    if (!this.keyPair)
+      throw new Error("generateKeyPair() を先に呼んでください");
+    const payload = new TextEncoder().encode(
+      [draft.name, draft.body, draft.timestamp].join("|"),
+    );
+    const sigBuf = await crypto.subtle.sign(
+      "Ed25519",
+      this.keyPair.privateKey,
+      payload,
+    );
     const signature = bytesToBase64(new Uint8Array(sigBuf));
     // id の計算は CryptoService.computePostHash が行うのでここでは行わない
     // Smart Component が CryptoService.sign() を呼ぶことで自動的に id が付与される
     // （WebCryptoSigner.sign は id を空文字で返し、CryptoService がラップして id を付ける設計でも可）
-    const content = [draft.name, draft.body, draft.timestamp, draft.publicKey].join("|");
-    const hashBuf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(content));
-    const id = Array.from(new Uint8Array(hashBuf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    const content = [
+      draft.name,
+      draft.body,
+      draft.timestamp,
+      draft.publicKey,
+    ].join("|");
+    const hashBuf = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(content),
+    );
+    const id = Array.from(new Uint8Array(hashBuf))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
     return { ...draft, id, signature };
   }
 
   async deriveOdId(publicKey: string): Promise<string> {
     const raw = Uint8Array.from(atob(publicKey), (c) => c.charCodeAt(0));
     const buf = await crypto.subtle.digest("SHA-256", raw);
-    return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 8);
+    return Array.from(new Uint8Array(buf))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("")
+      .slice(0, 8);
   }
 }
 ```
@@ -227,7 +268,10 @@ export class ReceiveMessageUseCase {
     private readonly peerRepo: IPeerRepository,
     private readonly crypto: CryptoService,
     private readonly selfId: string,
-    private readonly sendToChannel: (peerId: string, msg: GossipMessage) => void,
+    private readonly sendToChannel: (
+      peerId: string,
+      msg: GossipMessage,
+    ) => void,
   ) {}
 
   async execute(msg: GossipMessage): Promise<void> {
@@ -288,10 +332,18 @@ export class PostMessageUseCase {
     private readonly peerRepo: IPeerRepository,
     private readonly crypto: CryptoService,
     private readonly selfId: string,
-    private readonly sendToChannel: (peerId: string, msg: GossipMessage) => void,
+    private readonly sendToChannel: (
+      peerId: string,
+      msg: GossipMessage,
+    ) => void,
   ) {}
 
-  async execute(draft: { name: string; body: string; threadId: string; boardId: string }): Promise<void> {
+  async execute(draft: {
+    name: string;
+    body: string;
+    threadId: string;
+    boardId: string;
+  }): Promise<void> {
     const post = await this.crypto.sign({
       number: 0,
       name: draft.name,
@@ -352,7 +404,9 @@ export class WebRTCPeerAdapter {
   ) {}
 
   async createPeer(peerId: string): Promise<RTCPeerConnection> {
-    const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+    const pc = new RTCPeerConnection({
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+    });
     const channel = pc.createDataChannel("gossip", { ordered: false });
     this.wire(peerId, pc, channel);
     return pc;
@@ -362,7 +416,11 @@ export class WebRTCPeerAdapter {
     pc.ondatachannel = (e) => this.wire(peerId, pc, e.channel);
   }
 
-  private wire(peerId: string, pc: RTCPeerConnection, channel: RTCDataChannel): void {
+  private wire(
+    peerId: string,
+    pc: RTCPeerConnection,
+    channel: RTCDataChannel,
+  ): void {
     channel.onopen = () => {
       this.channels.set(peerId, channel);
       // Domain の Peer は id + connectedAt のみ
@@ -376,7 +434,10 @@ export class WebRTCPeerAdapter {
       this.onMessage(JSON.parse(e.data) as GossipMessage);
     };
     pc.oniceconnectionstatechange = () => {
-      if (pc.iceConnectionState === "disconnected" || pc.iceConnectionState === "failed") {
+      if (
+        pc.iceConnectionState === "disconnected" ||
+        pc.iceConnectionState === "failed"
+      ) {
         this.channels.delete(peerId);
         this.peerRepo.remove(peerId);
       }
@@ -442,14 +503,25 @@ const validMsg: GossipMessage = {
 };
 
 describe("ReceiveMessageUseCase", () => {
-  let postRepo: { save: ReturnType<typeof vi.fn>; findByThread: ReturnType<typeof vi.fn> };
-  let peerRepo: { add: ReturnType<typeof vi.fn>; remove: ReturnType<typeof vi.fn>; getAll: ReturnType<typeof vi.fn>; getConnected: ReturnType<typeof vi.fn> };
+  let postRepo: {
+    save: ReturnType<typeof vi.fn>;
+    findByThread: ReturnType<typeof vi.fn>;
+  };
+  let peerRepo: {
+    add: ReturnType<typeof vi.fn>;
+    remove: ReturnType<typeof vi.fn>;
+    getAll: ReturnType<typeof vi.fn>;
+    getConnected: ReturnType<typeof vi.fn>;
+  };
   let crypto: CryptoService;
   let sendToChannel: ReturnType<typeof vi.fn>;
   let usecase: ReceiveMessageUseCase;
 
   beforeEach(() => {
-    postRepo = { save: vi.fn().mockResolvedValue(undefined), findByThread: vi.fn() };
+    postRepo = {
+      save: vi.fn().mockResolvedValue(undefined),
+      findByThread: vi.fn(),
+    };
     peerRepo = {
       add: vi.fn(),
       remove: vi.fn(),
@@ -457,11 +529,21 @@ describe("ReceiveMessageUseCase", () => {
       getConnected: vi.fn().mockReturnValue([]),
     };
     // CryptoService の spy — ISigner モックは不要（メソッドを直接 spyOn）
-    crypto = new CryptoService({ generateKeyPair: vi.fn(), sign: vi.fn(), deriveOdId: vi.fn() } as any);
+    crypto = new CryptoService({
+      generateKeyPair: vi.fn(),
+      sign: vi.fn(),
+      deriveOdId: vi.fn(),
+    } as any);
     vi.spyOn(crypto, "verifySignature").mockResolvedValue(true);
     vi.spyOn(crypto, "verifyPostHash").mockResolvedValue(true);
     sendToChannel = vi.fn();
-    usecase = new ReceiveMessageUseCase(postRepo, peerRepo, crypto, "self-id", sendToChannel);
+    usecase = new ReceiveMessageUseCase(
+      postRepo,
+      peerRepo,
+      crypto,
+      "self-id",
+      sendToChannel,
+    );
   });
 
   it("test_receiveMessage_validGossipMessage_savesAndFansOut", async () => {
@@ -475,7 +557,10 @@ describe("ReceiveMessageUseCase", () => {
 
     expect(postRepo.save).toHaveBeenCalledWith(validPost, "t1", "b1");
     expect(sendToChannel).toHaveBeenCalledTimes(2);
-    const [, forwarded] = sendToChannel.mock.calls[0] as [string, GossipMessage];
+    const [, forwarded] = sendToChannel.mock.calls[0] as [
+      string,
+      GossipMessage,
+    ];
     expect(forwarded.ttl).toBe(2);
     expect(forwarded.path).toContain("self-id");
   });
@@ -508,12 +593,12 @@ describe("ReceiveMessageUseCase", () => {
 
 外部境界から入ってくるデータは必ず検証する。`as Type` キャストで信頼しない。
 
-| 境界 | 方法 | 失敗時 |
-|------|------|--------|
-| IndexedDB 読み込み（Post） | `PostSchema.safeParse` | warn ログ + スキップ |
-| BroadcastChannel 受信 | `GossipMessageSchema.safeParse` | warn ログ + スキップ |
-| 将来の WebRTC DataChannel 受信 | `GossipMessageSchema.safeParse` | warn ログ + スキップ |
-| IndexedDB 読み込み（CryptoKey） | `instanceof CryptoKey` | null 扱い → 再生成 |
+| 境界                            | 方法                            | 失敗時               |
+| ------------------------------- | ------------------------------- | -------------------- |
+| IndexedDB 読み込み（Post）      | `PostSchema.safeParse`          | warn ログ + スキップ |
+| BroadcastChannel 受信           | `GossipMessageSchema.safeParse` | warn ログ + スキップ |
+| 将来の WebRTC DataChannel 受信  | `GossipMessageSchema.safeParse` | warn ログ + スキップ |
+| IndexedDB 読み込み（CryptoKey） | `instanceof CryptoKey`          | null 扱い → 再生成   |
 
 ### 型定義と zod スキーマのセット定義
 
@@ -538,7 +623,10 @@ CryptoKey は opaque オブジェクトで zod では検証できない。`insta
 
 ```typescript
 // ✅ CryptoKey の instanceof ガード
-if (record.privateKey instanceof CryptoKey && record.publicKey instanceof CryptoKey) {
+if (
+  record.privateKey instanceof CryptoKey &&
+  record.publicKey instanceof CryptoKey
+) {
   return { privateKey: record.privateKey, publicKey: record.publicKey };
 }
 return null; // 破損 → 再生成にフォールバック
@@ -546,18 +634,91 @@ return null; // 破損 → 再生成にフォールバック
 
 ---
 
+## コールバックの書き方
+
+コールバック登録時、アロー関数の中身が宣言的に読めるかで判断する。メソッド名だけで意図が伝わるならインラインで良い。処理の流れを読み込まないと意図がわからないなら名前付きメソッドに委譲する。
+
+### OK: 各行が自明なメソッド呼び出しで、ブランチがないならインライン
+
+```typescript
+button.onClick(() => setCount(count + 1));
+
+dc.onClose(() => {
+  this.channels.delete(peerId);
+  this.heartbeat.removePeer(peerId);
+  this.removeSession(peerId);
+});
+```
+
+複数行でも、上から読んで意図がわかるなら OK。
+
+### NG: パース・ブランチ・エラーハンドリングをインラインに書く
+
+```typescript
+dc.onMessage((raw) => {
+  try {
+    const result = DataChannelMessageSchema.safeParse(JSON.parse(raw));
+    if (!result.success) return;
+    if (result.data.type === "heartbeat") {
+      this.heartbeat.receiveFrom(peerId);
+    }
+  } catch {
+    /* ignore */
+  }
+});
+```
+
+### OK: 名前付きメソッドに委譲
+
+```typescript
+dc.onMessage((raw) => this.handleHeartbeat(peerId, raw));
+```
+
+```typescript
+private handleHeartbeat(peerId: string, raw: string): void {
+  try {
+    const result = DataChannelMessageSchema.safeParse(JSON.parse(raw));
+    if (!result.success) return;
+    if (result.data.type === "heartbeat") {
+      this.heartbeat.receiveFrom(peerId);
+    }
+  } catch { /* ignore malformed messages */ }
+}
+```
+
+### ISP: 振る舞いとイベントのインターフェース分離
+
+コールバックを登録できるインターフェースは、振る舞い（送信側）とイベント（受信側）を分離する。
+
+```typescript
+// 送信側: send/close だけ
+interface IDataChannel {
+  send(data: string): void;
+  close(): void;
+}
+
+// 受信側: イベント登録だけ
+interface IDataChannelEvents {
+  onMessage(handler: (data: string) => void): () => void;
+  onOpen(handler: () => void): () => void;
+  onClose(handler: () => void): () => void;
+}
+```
+
+異なるコンテキストで異なるメソッドだけを使う場合に適用する。同じコンテキストで全メソッドを使うインターフェースには分離不要。
+
 ## よくある落とし穴
 
-| 落とし穴 | 対処 |
-|---------|------|
-| UseCase 内で Adapter を直接 import | インターフェース経由で注入。Smart Component が具象を持つ |
-| Domain 型のフィールドが mutable | 全フィールド `readonly`。更新はスプレッドで |
-| 重複判定を署名検証より前に行う | **必ず署名→ハッシュ→重複の順**（seen 汚染攻撃を防ぐ） |
-| ファンアウトで path 済みピアを含む | `filter((p) => !forwarded.path.includes(p.id))` を忘れずに |
-| TTL が 0 以下でも転送する | `if (msg.ttl <= 0) return;` |
-| 非対応ブラウザで Ed25519 を使う | 起動時に `crypto.subtle.generateKey("Ed25519", ...)` で対応確認 |
-| Domain の Peer に connection / channel を持たせる | Peer は `{ id, connectedAt }` のみ。RTCDataChannel は Adapter の channels Map で管理 |
-| テスト内でクラスを再定義する | 必ず `src/` から import する。再定義は禁止 |
+| 落とし穴                                                       | 対処                                                                                     |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| UseCase 内で Adapter を直接 import                             | インターフェース経由で注入。Smart Component が具象を持つ                                 |
+| Domain 型のフィールドが mutable                                | 全フィールド `readonly`。更新はスプレッドで                                              |
+| 重複判定を署名検証より前に行う                                 | **必ず署名→ハッシュ→重複の順**（seen 汚染攻撃を防ぐ）                                    |
+| ファンアウトで path 済みピアを含む                             | `filter((p) => !forwarded.path.includes(p.id))` を忘れずに                               |
+| TTL が 0 以下でも転送する                                      | `if (msg.ttl <= 0) return;`                                                              |
+| 非対応ブラウザで Ed25519 を使う                                | 起動時に `crypto.subtle.generateKey("Ed25519", ...)` で対応確認                          |
+| Domain の Peer に connection / channel を持たせる              | Peer は `{ id, connectedAt }` のみ。RTCDataChannel は Adapter の channels Map で管理     |
+| テスト内でクラスを再定義する                                   | 必ず `src/` から import する。再定義は禁止                                               |
 | `biome-ignore` / `eslint-disable` などの警告抑制コメントを使う | 禁止。根本原因を修正すること。型エラーは `as any` で握り潰さず、正しい型・設計で解決する |
 
 ## 実装フロー（CLAUDE.md より）

@@ -8,7 +8,11 @@ import type { ISigner } from "../port/ISigner";
  * ステートフルな操作（鍵生成・署名）は ISigner に委譲する。
  */
 export class CryptoService {
-	constructor(private readonly signer: ISigner) {}
+	private readonly signer: ISigner;
+
+	constructor(signer: ISigner) {
+		this.signer = signer;
+	}
 
 	// --- ステートレス（Post の中身だけで完結）---
 
