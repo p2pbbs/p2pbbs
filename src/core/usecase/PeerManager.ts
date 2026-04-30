@@ -97,6 +97,11 @@ export class PeerManager {
 		this.heartbeat.removePeer(peerId);
 	}
 
+	/** PeerManager が所有する channels Map への ReadonlyMap 参照。WebRTCGateway に渡す。 */
+	get activeChannels(): ReadonlyMap<string, IDataChannel> {
+		return this.channels;
+	}
+
 	/** HeartbeatTracker を停止し、シグナリング購読を解除する。 */
 	dispose(): void {
 		this.heartbeat.stop();

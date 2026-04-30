@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { WebCryptoSigner } from "@/core/adapter/crypto/WebCryptoSigner";
-import { BroadcastChannelGateway } from "@/core/adapter/gossip/BroadcastChannelGateway";
+import { WebRTCGateway } from "@/core/adapter/gossip/WebRTCGateway";
 import { ConsoleLogger } from "@/core/adapter/logging/ConsoleLogger";
 import { BrowserPeerConnectionFactory } from "@/core/adapter/peer/BrowserPeerConnectionFactory";
 import {
@@ -15,6 +15,10 @@ import {
 } from "@/core/config/constants";
 import { GossipController } from "@/core/controller/GossipController";
 import type { Post } from "@/core/domain/model/Post";
+import type { IGossipMessageGateway } from "@/core/domain/port/IGossipMessageGateway";
+import type { ILogger } from "@/core/domain/port/ILogger";
+import type { IPeerConnectionFactory } from "@/core/domain/port/IPeerConnectionFactory";
+import type { ISignalingTransport } from "@/core/domain/port/ISignalingTransport";
 import { CryptoService } from "@/core/domain/service/CryptoService";
 import { LamportClock } from "@/core/domain/service/LamportClock";
 import { PeerManager } from "@/core/usecase/PeerManager";
@@ -40,20 +44,49 @@ const signer = new WebCryptoSigner();
 const cryptoService = new CryptoService(signer);
 const clock = new LamportClock();
 const postStore = new IndexedDBPostStore(logger);
-const gateway = new BroadcastChannelGateway("nch", logger);
 const signaling = new WebSocketSignalingTransport(SIGNALING_URL, logger);
 const peerConnectionFactory = new BrowserPeerConnectionFactory();
 
 // タブ起動ごとにランダム UUID を生成する。セッションをまたいで変わってよい
 const peerId = crypto.randomUUID();
 
+/**
+ * PeerManager と WebRTCGateway の構築順序の循環を閉じ込めるファクトリ。
+ * let は関数内に留まり、呼び出し側は const で受け取れる。
+ */
+function createNetwork(
+	signalingTransport: ISignalingTransport,
+	factory: IPeerConnectionFactory,
+	selfId: string,
+	log: ILogger,
+): { peerManager: PeerManager; gateway: WebRTCGateway } {
+	let gateway: WebRTCGateway;
+
+	const peerManager = new PeerManager(
+		signalingTransport,
+		factory,
+		selfId,
+		(_remotePeerId, dc) => {
+			dc.onMessage((raw) => gateway.handleIncoming(raw));
+		},
+		log,
+	);
+
+	gateway = new WebRTCGateway(peerManager.activeChannels);
+
+	return { peerManager, gateway };
+}
+
 type InitError = { message: string; reloadable: boolean };
 
+type AppIdentity = {
+	publicKey: string;
+	odId: string;
+	gateway: IGossipMessageGateway;
+};
+
 function App() {
-	const [identity, setIdentity] = useState<{
-		publicKey: string;
-		odId: string;
-	} | null>(null);
+	const [identity, setIdentity] = useState<AppIdentity | null>(null);
 	const [initError, setInitError] = useState<InitError | null>(null);
 
 	useEffect(() => {
@@ -76,29 +109,24 @@ function App() {
 				const odId = await cryptoService.deriveOdId(publicKey);
 				if (!active) return;
 
-				setIdentity({ publicKey, odId });
+				const network = createNetwork(
+					signaling,
+					peerConnectionFactory,
+					peerId,
+					logger,
+				);
+				peerManager = network.peerManager;
 
 				const receiveUseCase = new ReceiveMessageUseCase(
 					postStore,
 					cryptoService,
 					clock,
 					peerId,
-					gateway,
+					network.gateway,
 					logger,
 				);
-				controller = new GossipController(gateway, receiveUseCase);
+				controller = new GossipController(network.gateway, receiveUseCase);
 				controller.start();
-
-				// シグナリングでピアを発見し WebRTC 接続を確立する
-				peerManager = new PeerManager(
-					signaling,
-					peerConnectionFactory,
-					peerId,
-					(_remotePeerId, _dc) => {
-						// Story 8 で WebRTCGateway に登録する
-					},
-					logger,
-				);
 
 				const peers = await signaling.discover(peerId);
 				if (!active) return;
@@ -106,6 +134,8 @@ function App() {
 				for (const remotePeerId of peers) {
 					peerManager.connectTo(remotePeerId);
 				}
+
+				setIdentity({ publicKey, odId, gateway: network.gateway });
 			} catch (err) {
 				if (!active) return;
 				if (err instanceof SignalingTimeoutError) {
@@ -158,7 +188,7 @@ function App() {
 			publicKey={identity.publicKey}
 			odId={identity.odId}
 			peerId={peerId}
-			gateway={gateway}
+			gateway={identity.gateway}
 		/>
 	);
 }
