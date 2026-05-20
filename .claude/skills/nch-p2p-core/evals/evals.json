@@ -91,6 +91,65 @@
           "type": "code_check"
         }
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "nchプロジェクトで HeartbeatTracker を実装してください。各ピアの生存状態を追跡し、一定時間 heartbeat が届かないピアを dead と判定します。プロトコル型 UseCase のパターンに従い、ピアごとの状態を型付き Map で管理してください。src/usecase/HeartbeatTracker.ts として出力してください。",
+      "expected_output": "Map<peerId, State> パターンで実装されていること。DigestStatus のような明示的な状態型を定義。onPeerConnected で Map に追加、onPeerDisconnected で Map から削除。状態遷移が明示的。req/res 語彙を使わない。",
+      "assertions": [
+        {
+          "name": "typed_map_pattern",
+          "description": "ピアごとの状態を Map<string, 明示的な型> で管理している（Set + count ではない）",
+          "type": "code_check"
+        },
+        {
+          "name": "explicit_state_type",
+          "description": "ピアの状態を表す型（type/enum/union）が定義されている",
+          "type": "code_check"
+        },
+        {
+          "name": "peer_lifecycle_via_map",
+          "description": "onPeerConnected で Map.set、onPeerDisconnected で Map.delete している",
+          "type": "code_check"
+        },
+        {
+          "name": "no_req_res_naming",
+          "description": "responded / pending / request / response 等の req-res 語彙を使っていない",
+          "type": "code_check"
+        },
+        {
+          "name": "evaluate_method",
+          "description": "全ピアの状態を集約判定するメソッドがある",
+          "type": "code_check"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "nchプロジェクトで ExchangeDigestUseCase のテストを書いてください。以下をカバー: (1) 全ピアから digest 受信で canPost が true、(2) ピアが応答前に切断しても canPost が正しく判定される（チャーン耐性）、(3) canPost が true になった後の新規ピア接続で状態が変わらない。プロトコル型 UseCase の状態遷移をテスト軸にしてください。",
+      "expected_output": "状態遷移カバレッジでテスト設計されていること。connectedPeers Map の状態遷移（awaiting → received、awaiting → 削除）がテストされている。チャーン（接続→即切断）のケースがある。",
+      "assertions": [
+        {
+          "name": "churn_test_case",
+          "description": "ピアが digest 未着のまま切断されるケースがテストされている",
+          "type": "code_check"
+        },
+        {
+          "name": "state_transition_coverage",
+          "description": "awaiting → received と awaiting → 削除（切断）の両方の遷移がテストされている",
+          "type": "code_check"
+        },
+        {
+          "name": "post_convergence_stability",
+          "description": "canPost が true になった後の新規接続で変化しないことをテストしている",
+          "type": "code_check"
+        },
+        {
+          "name": "naming_convention",
+          "description": "テスト名が test_Action_Condition_Result パターンに従っている",
+          "type": "code_check"
+        }
+      ]
     }
   ]
 }

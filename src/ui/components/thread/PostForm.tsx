@@ -3,15 +3,16 @@ import { DEFAULT_NAME, MAX_POST_BYTES } from "@/core/config/constants";
 
 type Props = {
 	onSubmit: (name: string, body: string) => void;
+	disabled?: boolean;
 };
 
-export function PostForm({ onSubmit }: Props) {
+export function PostForm({ onSubmit, disabled = false }: Props) {
 	const [name, setName] = useState("");
 	const [body, setBody] = useState("");
 
 	const bodyBytes = new TextEncoder().encode(body).length;
 	const isOverLimit = bodyBytes > MAX_POST_BYTES;
-	const isSubmitDisabled = body.trim() === "" || isOverLimit;
+	const isSubmitDisabled = disabled || body.trim() === "" || isOverLimit;
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -51,7 +52,7 @@ export function PostForm({ onSubmit }: Props) {
 						disabled={isSubmitDisabled}
 						className="px-4 py-1.5 text-sm rounded bg-gray-700 dark:bg-gray-600 text-white disabled:opacity-40 hover:bg-gray-600 dark:hover:bg-gray-500 transition-colors"
 					>
-						書き込む
+						{disabled ? "同期中..." : "書き込む"}
 					</button>
 				</div>
 			</div>

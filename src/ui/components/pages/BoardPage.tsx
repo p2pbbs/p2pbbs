@@ -8,9 +8,11 @@ import type { IGossipMessageGateway } from "@/core/domain/port/IGossipMessageGat
 import type { IPostStore } from "@/core/domain/port/IPostStore";
 import type { CryptoService } from "@/core/domain/service/CryptoService";
 import type { LamportClock } from "@/core/domain/service/LamportClock";
+import type { ExchangeDigestUseCase } from "@/core/usecase/ExchangeDigestUseCase";
 import { PostMessageUseCase } from "@/core/usecase/PostMessageUseCase";
 import { PostForm } from "@/ui/components/thread/PostForm";
 import { ThreadView } from "@/ui/components/thread/ThreadView";
+import { useCanPost } from "@/ui/hooks/useCanPost";
 import { usePosts } from "@/ui/hooks/usePosts";
 
 type Props = {
@@ -21,6 +23,7 @@ type Props = {
 	odId: string;
 	peerId: string;
 	gateway: IGossipMessageGateway;
+	exchangeDigestUseCase: ExchangeDigestUseCase;
 };
 
 export function BoardPage({
@@ -31,8 +34,10 @@ export function BoardPage({
 	odId,
 	peerId,
 	gateway,
+	exchangeDigestUseCase,
 }: Props) {
 	const posts = usePosts(store, DEFAULT_THREAD_ID);
+	const canPost = useCanPost(exchangeDigestUseCase);
 
 	const usecase = useMemo(
 		() =>
@@ -62,7 +67,7 @@ export function BoardPage({
 	return (
 		<>
 			<ThreadView title={DEFAULT_THREAD_TITLE} posts={posts} />
-			<PostForm onSubmit={handleSubmit} />
+			<PostForm onSubmit={handleSubmit} disabled={!canPost} />
 		</>
 	);
 }

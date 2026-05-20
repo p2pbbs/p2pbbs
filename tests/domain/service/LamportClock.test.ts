@@ -50,3 +50,32 @@ describe("LamportClock", () => {
 		expect(clock.current()).toBe(1);
 	});
 });
+
+describe("LamportClock.safeMerge", () => {
+	let clock: LamportClock;
+
+	beforeEach(() => {
+		clock = new LamportClock();
+	});
+
+	it("test_safeMerge_ValidValue_UpdatesCounter", () => {
+		clock.safeMerge(10);
+		expect(clock.current()).toBe(10);
+	});
+
+	it("test_safeMerge_MAX_LAMPORT_UpdatesCounter", () => {
+		clock.safeMerge(LamportClock.MAX_LAMPORT);
+		expect(clock.current()).toBe(LamportClock.MAX_LAMPORT);
+	});
+
+	it("test_safeMerge_ExceedsMaxLamport_Ignored", () => {
+		clock.safeMerge(LamportClock.MAX_LAMPORT + 1);
+		expect(clock.current()).toBe(0);
+	});
+
+	it("test_safeMerge_Zero_NoChange", () => {
+		clock.tick(); // counter = 1
+		clock.safeMerge(0);
+		expect(clock.current()).toBe(1);
+	});
+});

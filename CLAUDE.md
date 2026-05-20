@@ -101,6 +101,8 @@ lamport は署名ペイロードおよびコンテンツハッシュの計算に
 | シードノード | Seed Node | 常駐するヘッドレスピア。他のピアと対等 |
 | 暗号サービス | CryptoService | crypto 系操作の統合ファサード |
 | 署名者 | ISigner / WebCryptoSigner | 秘密鍵を保持しステートフルな暗号操作を行う |
+| ダイジェスト | ThreadDigest | スレの要約情報。threadId / maxLamport / postCount を含む |
+| 投稿可能 | Postable | 接続中のピア全員から digest を受信し、投稿フォームが有効化された状態 |
 
 ## Implementation Rules
 

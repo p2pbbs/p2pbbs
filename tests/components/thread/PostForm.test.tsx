@@ -66,4 +66,41 @@ describe("PostForm", () => {
 				.disabled,
 		).toBe(true);
 	});
+
+	it("test_render_DisabledTrue_ShowsSyncingLabel", () => {
+		render(<PostForm onSubmit={vi.fn()} disabled={true} />);
+		expect(screen.getByRole("button", { name: "同期中..." })).toBeTruthy();
+	});
+
+	it("test_render_DisabledTrue_SubmitButtonDisabledEvenWithBody", () => {
+		render(<PostForm onSubmit={vi.fn()} disabled={true} />);
+		fireEvent.change(screen.getByPlaceholderText("本文を入力..."), {
+			target: { value: "本文" },
+		});
+		expect(
+			(screen.getByRole("button", { name: "同期中..." }) as HTMLButtonElement)
+				.disabled,
+		).toBe(true);
+	});
+
+	it("test_submit_DisabledTrue_DoesNotCallOnSubmit", () => {
+		const onSubmit = vi.fn();
+		render(<PostForm onSubmit={onSubmit} disabled={true} />);
+		fireEvent.change(screen.getByPlaceholderText("本文を入力..."), {
+			target: { value: "本文" },
+		});
+		fireEvent.click(screen.getByRole("button", { name: "同期中..." }));
+		expect(onSubmit).not.toHaveBeenCalled();
+	});
+
+	it("test_render_DisabledFalse_SubmitButtonEnabledWithBody", () => {
+		render(<PostForm onSubmit={vi.fn()} disabled={false} />);
+		fireEvent.change(screen.getByPlaceholderText("本文を入力..."), {
+			target: { value: "本文" },
+		});
+		expect(
+			(screen.getByRole("button", { name: "書き込む" }) as HTMLButtonElement)
+				.disabled,
+		).toBe(false);
+	});
 });

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { WebCryptoSigner } from "@/core/adapter/crypto/WebCryptoSigner";
-import { WebRTCGateway } from "@/core/adapter/gossip/WebRTCGateway";
 import { ConsoleLogger } from "@/core/adapter/logging/ConsoleLogger";
 import { BrowserPeerConnectionFactory } from "@/core/adapter/peer/BrowserPeerConnectionFactory";
 import {
@@ -13,16 +12,13 @@ import {
 	DEFAULT_THREAD_ID,
 	SIGNALING_URL,
 } from "@/core/config/constants";
-import { GossipController } from "@/core/controller/GossipController";
 import type { Post } from "@/core/domain/model/Post";
 import type { IGossipMessageGateway } from "@/core/domain/port/IGossipMessageGateway";
-import type { ILogger } from "@/core/domain/port/ILogger";
-import type { IPeerConnectionFactory } from "@/core/domain/port/IPeerConnectionFactory";
-import type { ISignalingTransport } from "@/core/domain/port/ISignalingTransport";
 import { CryptoService } from "@/core/domain/service/CryptoService";
 import { LamportClock } from "@/core/domain/service/LamportClock";
-import { PeerManager } from "@/core/usecase/PeerManager";
-import { ReceiveMessageUseCase } from "@/core/usecase/ReceiveMessageUseCase";
+import type { ExchangeDigestUseCase } from "@/core/usecase/ExchangeDigestUseCase";
+import type { BootstrapResult } from "./bootstrap";
+import { bootstrap } from "./bootstrap";
 import { BoardPage } from "./components/pages/BoardPage";
 
 const GENESIS_POST: Post = {
@@ -50,39 +46,13 @@ const peerConnectionFactory = new BrowserPeerConnectionFactory();
 // タブ起動ごとにランダム UUID を生成する。セッションをまたいで変わってよい
 const peerId = crypto.randomUUID();
 
-/**
- * PeerManager と WebRTCGateway の構築順序の循環を閉じ込めるファクトリ。
- * let は関数内に留まり、呼び出し側は const で受け取れる。
- */
-function createNetwork(
-	signalingTransport: ISignalingTransport,
-	factory: IPeerConnectionFactory,
-	selfId: string,
-	log: ILogger,
-): { peerManager: PeerManager; gateway: WebRTCGateway } {
-	let gateway: WebRTCGateway;
-
-	const peerManager = new PeerManager(
-		signalingTransport,
-		factory,
-		selfId,
-		(_remotePeerId, dc) => {
-			dc.onMessage((raw) => gateway.handleIncoming(raw));
-		},
-		log,
-	);
-
-	gateway = new WebRTCGateway(peerManager.activeChannels);
-
-	return { peerManager, gateway };
-}
-
 type InitError = { message: string; reloadable: boolean };
 
 type AppIdentity = {
 	publicKey: string;
 	odId: string;
 	gateway: IGossipMessageGateway;
+	exchangeDigestUseCase: ExchangeDigestUseCase;
 };
 
 function App() {
@@ -91,8 +61,7 @@ function App() {
 
 	useEffect(() => {
 		let active = true;
-		let controller: GossipController | null = null;
-		let peerManager: PeerManager | null = null;
+		let result: BootstrapResult | null = null;
 
 		(async () => {
 			try {
@@ -109,33 +78,30 @@ function App() {
 				const odId = await cryptoService.deriveOdId(publicKey);
 				if (!active) return;
 
-				const network = createNetwork(
+				result = bootstrap(
 					signaling,
 					peerConnectionFactory,
 					peerId,
-					logger,
-				);
-				peerManager = network.peerManager;
-
-				const receiveUseCase = new ReceiveMessageUseCase(
 					postStore,
 					cryptoService,
 					clock,
-					peerId,
-					network.gateway,
 					logger,
 				);
-				controller = new GossipController(network.gateway, receiveUseCase);
-				controller.start();
+				result.controller.start();
 
 				const peers = await signaling.discover(peerId);
 				if (!active) return;
 
 				for (const remotePeerId of peers) {
-					peerManager.connectTo(remotePeerId);
+					result.peerManager.connectTo(remotePeerId);
 				}
 
-				setIdentity({ publicKey, odId, gateway: network.gateway });
+				setIdentity({
+					publicKey,
+					odId,
+					gateway: result.gateway,
+					exchangeDigestUseCase: result.exchangeDigestUseCase,
+				});
 			} catch (err) {
 				if (!active) return;
 				if (err instanceof SignalingTimeoutError) {
@@ -154,8 +120,9 @@ function App() {
 
 		return () => {
 			active = false;
-			controller?.stop();
-			peerManager?.dispose();
+			result?.controller.stop();
+			result?.peerManager.dispose();
+			result?.exchangeDigestUseCase.dispose();
 		};
 	}, []);
 
@@ -189,6 +156,7 @@ function App() {
 			odId={identity.odId}
 			peerId={peerId}
 			gateway={identity.gateway}
+			exchangeDigestUseCase={identity.exchangeDigestUseCase}
 		/>
 	);
 }
