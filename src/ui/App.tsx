@@ -144,7 +144,11 @@ function App() {
 	}
 
 	if (!identity) {
-		return null;
+		return (
+			<div className="flex items-center justify-center h-screen text-sm text-gray-500">
+				シグナリングサーバーに接続中...
+			</div>
+		);
 	}
 
 	return (

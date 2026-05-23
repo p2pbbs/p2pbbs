@@ -208,4 +208,88 @@ describe("WebRTCGateway", () => {
 		);
 		expect(handler).not.toHaveBeenCalled();
 	});
+
+	// --- sendSync ---
+
+	it("test_sendSync_KnownPeer_SendsSyncJson", () => {
+		const dc = makeMockDc();
+		channels.set(PEER_A, dc);
+		const posts = [makeGossipMessage().post];
+		gateway.sendSync(PEER_A, "board-1", posts);
+		expect(dc.send).toHaveBeenCalledWith(
+			JSON.stringify({ type: "sync", boardId: "board-1", posts }),
+		);
+	});
+
+	it("test_sendSync_UnknownPeer_DoesNotThrow", () => {
+		expect(() => gateway.sendSync("unknown-peer", "board-1", [])).not.toThrow();
+	});
+
+	it("test_sendSync_ChannelThrows_DoesNotPropagateError", () => {
+		const dc = makeMockDc();
+		vi.mocked(dc.send).mockImplementation(() => {
+			throw new Error("dc closing");
+		});
+		channels.set(PEER_A, dc);
+		expect(() => gateway.sendSync(PEER_A, "board-1", [])).not.toThrow();
+	});
+
+	// --- handleIncoming / onSyncReceive (sync) ---
+
+	it("test_handleIncoming_SyncMessage_CallsSyncHandlers", () => {
+		const handler = vi.fn();
+		gateway.onSyncReceive(handler);
+		const posts = [makeGossipMessage().post];
+		gateway.handleIncoming(
+			PEER_A,
+			JSON.stringify({ type: "sync", boardId: "board-1", posts }),
+		);
+		expect(handler).toHaveBeenCalledWith(PEER_A, "board-1", posts);
+	});
+
+	it("test_handleIncoming_SyncMessage_PassesPeerId", () => {
+		const handler = vi.fn();
+		gateway.onSyncReceive(handler);
+		gateway.handleIncoming(
+			"peer-x",
+			JSON.stringify({ type: "sync", boardId: "board-1", posts: [] }),
+		);
+		expect(handler).toHaveBeenCalledWith("peer-x", "board-1", []);
+	});
+
+	it("test_handleIncoming_Sync_DoesNotCallGossipHandlers", () => {
+		const gossipHandler = vi.fn();
+		gateway.onReceive(gossipHandler);
+		gateway.handleIncoming(
+			PEER_A,
+			JSON.stringify({ type: "sync", boardId: "board-1", posts: [] }),
+		);
+		expect(gossipHandler).not.toHaveBeenCalled();
+	});
+
+	it("test_handleIncoming_SyncOver100Posts_SchemaRejects", () => {
+		const handler = vi.fn();
+		gateway.onSyncReceive(handler);
+		// 101 件は DataChannelMessageSchema で弾かれる
+		const tooManyPosts = Array.from(
+			{ length: 101 },
+			() => makeGossipMessage().post,
+		);
+		gateway.handleIncoming(
+			PEER_A,
+			JSON.stringify({ type: "sync", boardId: "board-1", posts: tooManyPosts }),
+		);
+		expect(handler).not.toHaveBeenCalled();
+	});
+
+	it("test_onSyncReceive_AfterUnsubscribe_HandlerNotCalled", () => {
+		const handler = vi.fn();
+		const unsub = gateway.onSyncReceive(handler);
+		unsub();
+		gateway.handleIncoming(
+			PEER_A,
+			JSON.stringify({ type: "sync", boardId: "board-1", posts: [] }),
+		);
+		expect(handler).not.toHaveBeenCalled();
+	});
 });

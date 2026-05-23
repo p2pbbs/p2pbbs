@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { GossipMessage } from "@/core/domain/model/GossipMessage";
 import { CryptoService } from "@/core/domain/service/CryptoService";
 import { LamportClock } from "@/core/domain/service/LamportClock";
+import { PostIngester } from "@/core/domain/service/PostIngester";
 import { ReceiveMessageUseCase } from "@/core/usecase/ReceiveMessageUseCase";
 import { makeGossipMessage, makePost } from "../helpers/fixtures";
 
@@ -21,19 +22,13 @@ function makeUsecase(clockOverride?: LamportClock) {
 	const sigSpy = vi.spyOn(crypto, "verifySignature").mockResolvedValue(true);
 	const hashSpy = vi.spyOn(crypto, "verifyPostHash").mockResolvedValue(true);
 	const clock = clockOverride ?? new LamportClock();
+	const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+	const ingester = new PostIngester(postStore, crypto, clock, logger);
 	const gateway = {
 		send: vi.fn(),
 		onReceive: vi.fn().mockReturnValue(vi.fn()),
 	};
-	const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
-	const usecase = new ReceiveMessageUseCase(
-		postStore,
-		crypto,
-		clock,
-		SELF_ID,
-		gateway,
-		logger,
-	);
+	const usecase = new ReceiveMessageUseCase(ingester, SELF_ID, gateway, logger);
 	return {
 		usecase,
 		postStore,
@@ -127,8 +122,9 @@ describe("ReceiveMessageUseCase", () => {
 		const { usecase, logger, sigSpy } = makeUsecase();
 		sigSpy.mockResolvedValue(false);
 		await usecase.execute(makeGossipMessage());
+		// ログは PostIngester が出力する
 		expect(logger.warn).toHaveBeenCalledWith(
-			"receive.invalid_signature",
+			"post_ingester.invalid_signature",
 			expect.objectContaining({ postId: expect.any(String) }),
 		);
 	});
@@ -163,8 +159,9 @@ describe("ReceiveMessageUseCase", () => {
 		const { usecase, logger, hashSpy } = makeUsecase();
 		hashSpy.mockResolvedValue(false);
 		await usecase.execute(makeGossipMessage());
+		// ログは PostIngester が出力する
 		expect(logger.warn).toHaveBeenCalledWith(
-			"receive.invalid_hash",
+			"post_ingester.invalid_hash",
 			expect.objectContaining({ postId: expect.any(String) }),
 		);
 	});

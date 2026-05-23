@@ -103,6 +103,8 @@ lamport は署名ペイロードおよびコンテンツハッシュの計算に
 | 署名者 | ISigner / WebCryptoSigner | 秘密鍵を保持しステートフルな暗号操作を行う |
 | ダイジェスト | ThreadDigest | スレの要約情報。threadId / maxLamport / postCount を含む |
 | 投稿可能 | Postable | 接続中のピア全員から digest を受信し、投稿フォームが有効化された状態 |
+| データ同期ゲートウェイ | IDataSyncGateway | digest と sync の両方を扱うピア間通信インターフェース。WebRTCGateway が実装する |
+| 投稿インジェスター | PostIngester | 署名・ハッシュ検証・重複排除・保存・clock merge を担う domain service。gossip と sync で共有 |
 
 ## Implementation Rules
 

@@ -21,7 +21,7 @@ export const DEFAULT_THREAD_TITLE = "nch 雑談スレ";
 
 /** シグナリングサーバーのデフォルト WebSocket URL。 */
 export const SIGNALING_URL =
-	import.meta.env.VITE_SIGNALING_URL ?? "ws://localhost:8080";
+	import.meta.env.VITE_SIGNALING_URL ?? "ws://[::1]:8080";
 
 /** シグナリング discover() のタイムアウト（ミリ秒）。超過したら fatal エラー。 */
 export const SIGNALING_DISCOVER_TIMEOUT_MS = 10_000;

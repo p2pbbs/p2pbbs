@@ -8,6 +8,7 @@ import type { IPostStore } from "@/core/domain/port/IPostStore";
 import type { ISignalingTransport } from "@/core/domain/port/ISignalingTransport";
 import type { CryptoService } from "@/core/domain/service/CryptoService";
 import type { LamportClock } from "@/core/domain/service/LamportClock";
+import { PostIngester } from "@/core/domain/service/PostIngester";
 import { ExchangeDigestUseCase } from "@/core/usecase/ExchangeDigestUseCase";
 import { PeerManager } from "@/core/usecase/PeerManager";
 import { ReceiveMessageUseCase } from "@/core/usecase/ReceiveMessageUseCase";
@@ -50,10 +51,11 @@ export function bootstrap(
 
 	gateway = new WebRTCGateway(peerManager.activeChannels);
 
+	// PostVerifier は gossip 受信と sync 受信の両方で共有する（seen Set を共有して重複排除）
+	const postIngester = new PostIngester(postStore, crypto, clock, logger);
+
 	const receiveUseCase = new ReceiveMessageUseCase(
-		postStore,
-		crypto,
-		clock,
+		postIngester,
 		selfId,
 		gateway,
 		logger,
@@ -64,6 +66,7 @@ export function bootstrap(
 		DEFAULT_BOARD_ID,
 		DEFAULT_THREAD_ID,
 		postStore,
+		postIngester,
 		gateway,
 		clock,
 		logger,

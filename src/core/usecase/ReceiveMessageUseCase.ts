@@ -2,48 +2,30 @@ import type { GossipMessage } from "@/core/domain/model/GossipMessage";
 import { GossipMessageSchema } from "@/core/domain/model/GossipMessage";
 import type { IGossipMessageGateway } from "@/core/domain/port/IGossipMessageGateway";
 import type { ILogger } from "@/core/domain/port/ILogger";
-import type { IPostStore } from "@/core/domain/port/IPostStore";
-import type { CryptoService } from "@/core/domain/service/CryptoService";
-import type { LamportClock } from "@/core/domain/service/LamportClock";
+import type { PostIngester } from "@/core/domain/service/PostIngester";
 
 /**
  * ゴシップメッセージの受信パイプライン。
- * 処理順序: 署名検証 → ハッシュ検証 → 重複排除 → 保存 → clock.merge → 再ファンアウト
+ * 処理順序: スキーマ検証 → path 重複排除 → PostIngester → TTL チェック → 再ファンアウト
  *
- * 重複排除は2段構成:
- * 1. path に selfId が含まれる → 自ノードが投稿/中継済み → スキップ
- * 2. seen Set に post.id がある → 既に処理済み → スキップ
- *
- * ⚠️ 重複排除を署名・ハッシュ検証より前に行ってはいけない。
- * 不正メッセージで seen を汚染されると、後から届く正規メッセージがスキップされる。
+ * 署名検証・ハッシュ検証・seen 重複排除・保存・clock.merge は PostIngester に委譲する。
+ * gossip 受信と sync 受信で同一 PostIngester インスタンスを共有することで、
+ * どちらの経路から届いても重複保存を防ぐ。
  */
 export class ReceiveMessageUseCase {
-	/**
-	 * セッション内の重複排除用。post.id（コンテンツハッシュ）を記録する。
-	 * TODO: 長時間セッションでメモリが肥大化する。LRU か TTL 付きの実装に置き換えること。
-	 *       Story 3a で IndexedDB に保存済みの post.id を使って起動時に seen を復元することも検討する。
-	 */
-	private readonly seen = new Set<string>();
-
-	private readonly postStore: IPostStore;
-	private readonly crypto: CryptoService;
-	private readonly clock: LamportClock;
+	private readonly ingester: PostIngester;
 	/** タブごとのランダム UUID（Peer ID）。OD ID ではない。 */
 	private readonly selfId: string;
 	private readonly gateway: IGossipMessageGateway;
 	private readonly logger: ILogger;
 
 	constructor(
-		postStore: IPostStore,
-		crypto: CryptoService,
-		clock: LamportClock,
+		ingester: PostIngester,
 		selfId: string,
 		gateway: IGossipMessageGateway,
 		logger: ILogger,
 	) {
-		this.postStore = postStore;
-		this.crypto = crypto;
-		this.clock = clock;
+		this.ingester = ingester;
 		this.selfId = selfId;
 		this.gateway = gateway;
 		this.logger = logger;
@@ -59,37 +41,18 @@ export class ReceiveMessageUseCase {
 			return;
 		}
 		const msg: GossipMessage = parseResult.data;
-		const { post } = msg;
 
-		// 1. 署名検証
-		if (!(await this.crypto.verifySignature(post))) {
-			this.logger.warn("receive.invalid_signature", { postId: post.id });
-			return;
-		}
+		// 1. path 重複排除: selfId が含まれる場合は自ノードが投稿または中継済み
+		if (msg.path.includes(this.selfId)) return;
 
-		// 2. ハッシュ検証
-		if (!(await this.crypto.verifyPostHash(post))) {
-			this.logger.warn("receive.invalid_hash", { postId: post.id });
-			return;
-		}
+		// 2. PostIngester に委譲（署名検証 → ハッシュ検証 → seen 重複排除 → 保存 → clock.merge）
+		const saved = await this.ingester.ingest(msg.post);
+		if (!saved) return;
 
-		// 3. 重複排除
-		// path に selfId が含まれる場合は自ノードが投稿または中継済みなのでスキップ
-		if (msg.path.includes(this.selfId) || this.seen.has(post.id)) {
-			return;
-		}
-		this.seen.add(post.id);
-
-		// 4. 保存
-		await this.postStore.save(post);
-
-		// 5. clock.merge（表示順の正確性のために保存後に更新）
-		this.clock.merge(post.lamport);
-
-		// 6. TTL が切れていれば再ファンアウトしない
+		// 3. TTL が切れていれば再ファンアウトしない
 		if (msg.ttl <= 0) return;
 
-		// 7. 再ファンアウト（TTL をデクリメントし、自 ID を path に追加）
+		// 4. 再ファンアウト（TTL をデクリメントし、自 ID を path に追加）
 		const forwarded: GossipMessage = {
 			...msg,
 			ttl: msg.ttl - 1,
