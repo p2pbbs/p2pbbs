@@ -29,14 +29,20 @@ export class WebSocketSignalingTransport
 	private pendingPeersResolve: ((peers: string[]) => void) | undefined;
 	/** 再接続時に join を再送するために保持する Peer ID。 */
 	private joinedPeerId: string | undefined;
+	/** 再接続時の join 再送に含める板 ID。板切り替えで上書きされる。 */
+	private joinedBoardId: string | undefined;
 
 	constructor(url: string, logger: ILogger) {
 		this.logger = logger;
 		this.ws = new ReconnectingWebSocket(url);
 		this.ws.addEventListener("open", () => {
-			if (this.joinedPeerId) {
+			if (this.joinedPeerId !== undefined && this.joinedBoardId !== undefined) {
 				this.ws.send(
-					JSON.stringify({ type: "join", peerId: this.joinedPeerId }),
+					JSON.stringify({
+						type: "join",
+						peerId: this.joinedPeerId,
+						boardId: this.joinedBoardId,
+					}),
 				);
 			}
 		});
@@ -46,26 +52,38 @@ export class WebSocketSignalingTransport
 	}
 
 	/**
-	 * シグナリングサーバーに join して既存ピアの一覧を返す。
-	 * 再接続後も自動で join を再送するため Peer ID を内部に保持する。
+	 * 指定した板に join して、同じ板の既存ピア一覧を返す。
+	 * WebSocket 接続は板に依存しない 1 本を使い回し、板切り替えは新しい boardId で
+	 * join を再送するだけ（接続の切断・再接続はしない）。
+	 * 再接続後も自動で join を再送するため Peer ID と板 ID を内部に保持する。
 	 * SIGNALING_DISCOVER_TIMEOUT_MS 以内に応答がなければ SignalingTimeoutError を throw する。
 	 */
-	discover(myPeerId: string): Promise<string[]> {
+	discover(myPeerId: string, boardId: string): Promise<string[]> {
 		this.joinedPeerId = myPeerId;
+		this.joinedBoardId = boardId;
 		return new Promise((resolve, reject) => {
+			// resolver 自身を識別子に使い、後続の discover に追い越された古い timer が
+			// 新しい discover の resolver を消さないようガードする（板の連続切り替え対策）。
+			const resolver = (peers: string[]) => {
+				clearTimeout(timer);
+				if (this.pendingPeersResolve === resolver) {
+					this.pendingPeersResolve = undefined;
+				}
+				resolve(peers);
+			};
 			const timer = setTimeout(() => {
-				this.pendingPeersResolve = undefined;
+				if (this.pendingPeersResolve === resolver) {
+					this.pendingPeersResolve = undefined;
+				}
 				reject(new SignalingTimeoutError());
 			}, SIGNALING_DISCOVER_TIMEOUT_MS);
 
-			this.pendingPeersResolve = (peers) => {
-				clearTimeout(timer);
-				this.pendingPeersResolve = undefined;
-				resolve(peers);
-			};
+			this.pendingPeersResolve = resolver;
 
 			if (this.ws.readyState === WebSocket.OPEN) {
-				this.ws.send(JSON.stringify({ type: "join", peerId: myPeerId }));
+				this.ws.send(
+					JSON.stringify({ type: "join", peerId: myPeerId, boardId }),
+				);
 			}
 		});
 	}
@@ -89,6 +107,12 @@ export class WebSocketSignalingTransport
 
 		const msg = result.data;
 		if (msg.type === "peers") {
+			// TODO(rapid-board-switch): discover(mona)→discover(yaruo) を連続で呼ぶと、
+			// 先に届く mona の peers が（既に yaruo に差し替わった）resolver を resolve し、
+			// yaruo の Promise が mona のピアで解決されうる。signal relay の板検証で
+			// 誤接続は drop され、10秒後の定期 digest で自然回復するため実害は軽微。
+			// 恒久対応: peers レスポンスに boardId を含め、joinedBoardId 不一致なら無視する
+			// （サーバー側の対応も必要）。
 			this.pendingPeersResolve?.(msg.peers);
 		} else if (msg.type === "signal") {
 			for (const handler of this.handlers) {

@@ -5,7 +5,7 @@ import type { ILogger } from "@/core/domain/port/ILogger";
 import { makePost } from "../../helpers/fixtures";
 
 function makeLogger(): ILogger {
-	return { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+	return { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 }
 
 /** テストごとに独立した IndexedDB インスタンスを持つストアを生成する */
@@ -14,12 +14,6 @@ function makeStore(logger: ILogger = makeLogger()): IndexedDBPostStore {
 }
 
 describe("IndexedDBPostStore", () => {
-	it("test_load_EmptyDB_ReturnsZeroMaxLamport", async () => {
-		const store = makeStore();
-		const { maxLamport } = await store.load();
-		expect(maxLamport).toBe(0);
-	});
-
 	it("test_load_EmptyDB_GetSnapshotReturnsEmpty", async () => {
 		const store = makeStore();
 		await store.load();
@@ -39,19 +33,6 @@ describe("IndexedDBPostStore", () => {
 		const snapshot = store2.getSnapshot(post.threadId);
 		expect(snapshot).toHaveLength(1);
 		expect(snapshot[0]?.id).toBe("p-restore");
-	});
-
-	it("test_load_WithSavedPosts_ReturnsMaxLamport", async () => {
-		const idb = new IDBFactory();
-		const store1 = new IndexedDBPostStore(makeLogger(), idb);
-		await store1.load();
-		await store1.save(makePost({ id: "p1", lamport: 3 }));
-		await store1.save(makePost({ id: "p2", lamport: 7 }));
-		await store1.save(makePost({ id: "p3", lamport: 2 }));
-
-		const store2 = new IndexedDBPostStore(makeLogger(), idb);
-		const { maxLamport } = await store2.load();
-		expect(maxLamport).toBe(7);
 	});
 
 	it("test_getSnapshot_IsSynchronous", async () => {
@@ -126,10 +107,10 @@ describe("IndexedDBPostStore", () => {
 		});
 
 		const store = new IndexedDBPostStore(logger, idb);
-		const { maxLamport } = await store.load();
+		await store.load();
 
-		// 破損投稿は safeParse 失敗 → スキップされて maxLamport は 0 のまま
-		expect(maxLamport).toBe(0);
+		// 破損投稿は safeParse 失敗 → スキップされる
+		expect(store.getSnapshot("thread-1")).toHaveLength(0);
 		// storage.load_corrupt で warn が記録されること
 		expect(logger.warn).toHaveBeenCalledWith(
 			"storage.load_corrupt",

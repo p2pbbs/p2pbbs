@@ -4,6 +4,7 @@
  * イベントIDで識別する。メッセージ文字列ではなくイベントIDでテスト・検索する。
  */
 export interface ILogger {
+	debug(eventId: string, data?: Record<string, unknown>): void;
 	info(eventId: string, data?: Record<string, unknown>): void;
 	warn(eventId: string, data?: Record<string, unknown>): void;
 	error(eventId: string, data?: Record<string, unknown>): void;

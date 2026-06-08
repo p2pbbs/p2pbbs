@@ -7,6 +7,7 @@ import {
 } from "../../helpers/mockSignaling";
 
 const PEER_ID = "my-peer-uuid";
+const BOARD_ID = "mona";
 
 // reconnecting-websocket を最小スタブに差し替える
 let lastWs: {
@@ -66,7 +67,12 @@ async function makeTransport() {
 	const { WebSocketSignalingTransport } = await import(
 		"@/core/adapter/signaling/WebSocketSignalingTransport"
 	);
-	const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+	const logger = {
+		debug: vi.fn(),
+		info: vi.fn(),
+		warn: vi.fn(),
+		error: vi.fn(),
+	};
 	const transport = new WebSocketSignalingTransport(
 		"ws://localhost:8080",
 		logger,
@@ -89,39 +95,39 @@ describe("WebSocketSignalingTransport", () => {
 		ws.simulateOpen();
 		ws.send.mockClear();
 
-		void transport.discover(PEER_ID);
+		void transport.discover(PEER_ID, BOARD_ID);
 
 		expect(ws.send).toHaveBeenCalledOnce();
 		const msg = JSON.parse(ws.send.mock.calls[0]?.[0] as string);
-		expect(msg).toEqual({ type: "join", peerId: PEER_ID });
+		expect(msg).toEqual({ type: "join", peerId: PEER_ID, boardId: BOARD_ID });
 	});
 
 	it("test_discover_whenNotYetOpen_sendsJoinOnOpen", async () => {
 		const { transport, ws } = await makeTransport();
 
-		void transport.discover(PEER_ID);
+		void transport.discover(PEER_ID, BOARD_ID);
 		expect(ws.send).not.toHaveBeenCalled();
 
 		ws.simulateOpen();
 		expect(ws.send).toHaveBeenCalledOnce();
 		const msg = JSON.parse(ws.send.mock.calls[0]?.[0] as string);
-		expect(msg).toEqual({ type: "join", peerId: PEER_ID });
+		expect(msg).toEqual({ type: "join", peerId: PEER_ID, boardId: BOARD_ID });
 	});
 
 	it("test_discover_resolvesWithPeersList", async () => {
 		const { transport, ws } = await makeTransport();
 		ws.simulateOpen();
 
-		const promise = transport.discover(PEER_ID);
+		const promise = transport.discover(PEER_ID, BOARD_ID);
 		ws.simulateMessage({ type: "peers", peers: ["peer-a", "peer-b"] });
 
 		await expect(promise).resolves.toEqual(["peer-a", "peer-b"]);
 	});
 
-	it("test_discover_reconnect_resendsJoin", async () => {
+	it("test_discover_reconnect_resendsJoinWithBoardId", async () => {
 		const { transport, ws } = await makeTransport();
 		ws.simulateOpen();
-		void transport.discover(PEER_ID);
+		void transport.discover(PEER_ID, BOARD_ID);
 		ws.send.mockClear();
 
 		// 再接続
@@ -129,7 +135,20 @@ describe("WebSocketSignalingTransport", () => {
 
 		expect(ws.send).toHaveBeenCalledOnce();
 		const msg = JSON.parse(ws.send.mock.calls[0]?.[0] as string);
-		expect(msg).toEqual({ type: "join", peerId: PEER_ID });
+		expect(msg).toEqual({ type: "join", peerId: PEER_ID, boardId: BOARD_ID });
+	});
+
+	it("test_discover_switchBoard_reconnectResendsLatestBoardId", async () => {
+		const { transport, ws } = await makeTransport();
+		ws.simulateOpen();
+		void transport.discover(PEER_ID, "mona");
+		void transport.discover(PEER_ID, "yaruo");
+		ws.send.mockClear();
+
+		// 板切り替え後の再接続では最新の板で再 join する
+		ws.simulateOpen();
+		const msg = JSON.parse(ws.send.mock.calls[0]?.[0] as string);
+		expect(msg).toEqual({ type: "join", peerId: PEER_ID, boardId: "yaruo" });
 	});
 
 	// --- send / onMessage ---

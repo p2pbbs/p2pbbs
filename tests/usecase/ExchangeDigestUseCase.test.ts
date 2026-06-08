@@ -1,13 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Post } from "@/core/domain/model/Post";
+import type { Thread } from "@/core/domain/model/Thread";
+import type { ThreadDigest } from "@/core/domain/model/ThreadDigest";
 import type { IDataSyncGateway } from "@/core/domain/port/IDataSyncGateway";
 import type { ILogger } from "@/core/domain/port/ILogger";
 import type { IPostStore } from "@/core/domain/port/IPostStore";
+import type { IThreadStore } from "@/core/domain/port/IThreadStore";
 import { CryptoService } from "@/core/domain/service/CryptoService";
 import { LamportClock } from "@/core/domain/service/LamportClock";
+import { LamportClockMap } from "@/core/domain/service/LamportClockMap";
 import { PostIngester } from "@/core/domain/service/PostIngester";
+import { ThreadIngester } from "@/core/domain/service/ThreadIngester";
 import { ExchangeDigestUseCase } from "@/core/usecase/ExchangeDigestUseCase";
-import { makePost } from "../helpers/fixtures";
+import { makePost, makeThread, makeThreadStore } from "../helpers/fixtures";
 
 const BOARD_ID = "board-1";
 const THREAD_ID = "thread-1";
@@ -15,10 +20,15 @@ const THREAD_ID = "thread-1";
 type DigestHandler = (
 	peerId: string,
 	boardId: string,
-	threads: { threadId: string; maxLamport: number; postCount: number }[],
+	threads: ThreadDigest[],
 ) => void;
 
-type SyncHandler = (peerId: string, boardId: string, posts: Post[]) => void;
+type SyncHandler = (
+	peerId: string,
+	boardId: string,
+	posts: Post[],
+	threads: Thread[],
+) => void;
 
 function makeDigestGateway(): {
 	mock: IDataSyncGateway;
@@ -49,54 +59,67 @@ function makeDigestGateway(): {
 		digestHandler?.(peerId, boardId, threads);
 	};
 
-	const triggerSync: SyncHandler = (peerId, boardId, posts) => {
-		syncHandler?.(peerId, boardId, posts);
+	const triggerSync: SyncHandler = (peerId, boardId, posts, threads = []) => {
+		syncHandler?.(peerId, boardId, posts, threads);
 	};
 
 	return { mock, triggerDigest, triggerSync };
 }
 
 function makePostStore(posts: Post[] = [makePost()]): IPostStore {
+	const threadIds = [...new Set(posts.map((p) => p.threadId))];
 	return {
-		getSnapshot: vi.fn().mockReturnValue(posts),
+		getSnapshot: vi.fn((threadId: string) =>
+			posts.filter((p) => p.threadId === threadId),
+		),
 		subscribe: vi.fn().mockReturnValue(() => {}),
 		save: vi.fn().mockResolvedValue(undefined),
+		getThreadIds: vi.fn().mockReturnValue(threadIds),
 	};
 }
 
 function makeLogger(): ILogger {
 	return {
+		debug: vi.fn(),
 		info: vi.fn(),
 		warn: vi.fn(),
 		error: vi.fn(),
 	};
 }
 
-function makePostIngester(
-	logger: ILogger,
-	clock: LamportClock,
-	store: IPostStore,
-) {
-	const signer = { generateKeyPair: vi.fn(), sign: vi.fn() };
+function makeUseCase(options?: {
+	posts?: Post[];
+	clockMap?: LamportClockMap;
+	threadStore?: IThreadStore;
+}) {
+	const clockMap = options?.clockMap ?? new LamportClockMap();
+	const logger = makeLogger();
+	const store = makePostStore(options?.posts ?? [makePost()]);
+	const threadStore = options?.threadStore ?? makeThreadStore();
+	const { mock, triggerDigest, triggerSync } = makeDigestGateway();
+
+	const signer = {
+		generateKeyPair: vi.fn(),
+		sign: vi.fn(),
+		signThread: vi.fn(),
+	};
 	const crypto = new CryptoService(signer);
 	vi.spyOn(crypto, "verifySignature").mockResolvedValue(true);
 	vi.spyOn(crypto, "verifyPostHash").mockResolvedValue(true);
-	return new PostIngester(store, crypto, clock, logger);
-}
+	const threadSigSpy = vi
+		.spyOn(crypto, "verifyThreadSignature")
+		.mockResolvedValue(true);
+	const ingester = new PostIngester(store, crypto, clockMap, logger);
+	const threadIngester = new ThreadIngester(threadStore, crypto, logger);
 
-function makeUseCase(options?: { posts?: Post[]; clock?: LamportClock }) {
-	const clock = options?.clock ?? new LamportClock();
-	const logger = makeLogger();
-	const store = makePostStore(options?.posts ?? [makePost()]);
-	const { mock, triggerDigest, triggerSync } = makeDigestGateway();
-	const verifier = makePostIngester(logger, clock, store);
 	const uc = new ExchangeDigestUseCase(
 		BOARD_ID,
-		THREAD_ID,
 		store,
-		verifier,
+		threadStore,
+		ingester,
+		threadIngester,
 		mock,
-		clock,
+		clockMap,
 		logger,
 	);
 	return {
@@ -105,9 +128,10 @@ function makeUseCase(options?: { posts?: Post[]; clock?: LamportClock }) {
 		triggerDigest,
 		triggerSync,
 		store,
-		clock,
+		threadStore,
+		clockMap,
 		logger,
-		verifier,
+		threadSigSpy,
 	};
 }
 
@@ -196,7 +220,7 @@ describe("ExchangeDigestUseCase", () => {
 		uc.dispose();
 	});
 
-	// --- 接続時に digest を送信する ---
+	// --- 接続時に全スレの digest を送信する ---
 
 	it("test_onPeerConnected_SendsDigestToPeer", () => {
 		const { uc, mock } = makeUseCase({
@@ -208,6 +232,28 @@ describe("ExchangeDigestUseCase", () => {
 		expect(mock.sendDigest).toHaveBeenCalledWith("peer-a", BOARD_ID, [
 			{ threadId: THREAD_ID, maxLamport: 7, postCount: 2 },
 		]);
+		uc.dispose();
+	});
+
+	it("test_onPeerConnected_MultipleThreads_SendsDigestPerThread", () => {
+		const { uc, mock } = makeUseCase({
+			posts: [
+				makePost({ id: "a1", threadId: "t-a", lamport: 2 }),
+				makePost({ id: "b1", threadId: "t-b", lamport: 5 }),
+				makePost({ id: "b2", threadId: "t-b", lamport: 9 }),
+			],
+		});
+
+		uc.onPeerConnected("peer-a");
+
+		const digests = vi.mocked(mock.sendDigest).mock
+			.calls[0]?.[2] as ThreadDigest[];
+		expect(digests).toEqual(
+			expect.arrayContaining([
+				{ threadId: "t-a", maxLamport: 2, postCount: 1 },
+				{ threadId: "t-b", maxLamport: 9, postCount: 2 },
+			]),
+		);
 		uc.dispose();
 	});
 
@@ -232,8 +278,8 @@ describe("ExchangeDigestUseCase", () => {
 	// --- MAX_LAMPORT を超える値は clock に適用されない ---
 
 	it("test_handleDigest_LamportOverflow_ClockNotUpdated", () => {
-		const clock = new LamportClock();
-		const { uc, triggerDigest, logger } = makeUseCase({ clock });
+		const clockMap = new LamportClockMap();
+		const { uc, triggerDigest, logger } = makeUseCase({ clockMap });
 
 		uc.onPeerConnected("peer-a");
 		triggerDigest("peer-a", BOARD_ID, [
@@ -244,7 +290,7 @@ describe("ExchangeDigestUseCase", () => {
 			},
 		]);
 
-		expect(clock.current()).toBe(0);
+		expect(clockMap.get(THREAD_ID).current()).toBe(0);
 		expect(logger.warn).toHaveBeenCalledWith(
 			"exchange_digest.lamport_overflow",
 			expect.anything(),
@@ -252,18 +298,20 @@ describe("ExchangeDigestUseCase", () => {
 		uc.dispose();
 	});
 
-	// --- 正常な maxLamport は clock に反映される ---
+	// --- 正常な maxLamport は対応スレの clock に反映される ---
 
-	it("test_handleDigest_ValidLamport_UpdatesClock", () => {
-		const clock = new LamportClock();
-		const { uc, triggerDigest } = makeUseCase({ clock });
+	it("test_handleDigest_ValidLamport_UpdatesPerThreadClock", () => {
+		const clockMap = new LamportClockMap();
+		const { uc, triggerDigest } = makeUseCase({ clockMap });
 
 		uc.onPeerConnected("peer-a");
 		triggerDigest("peer-a", BOARD_ID, [
-			{ threadId: THREAD_ID, maxLamport: 42, postCount: 10 },
+			{ threadId: "t-a", maxLamport: 42, postCount: 10 },
+			{ threadId: "t-b", maxLamport: 7, postCount: 2 },
 		]);
 
-		expect(clock.current()).toBe(42);
+		expect(clockMap.get("t-a").current()).toBe(42);
+		expect(clockMap.get("t-b").current()).toBe(7);
 		uc.dispose();
 	});
 
@@ -319,7 +367,7 @@ describe("ExchangeDigestUseCase", () => {
 	});
 
 	// =============================================
-	// Story 13b: Sync Push
+	// Story 13b / 15c: Sync Push
 	// =============================================
 
 	it("test_syncPush_PeerHasLessPosts_SendsSyncToPeer", async () => {
@@ -329,19 +377,18 @@ describe("ExchangeDigestUseCase", () => {
 			makePost({ id: "p2", lamport: 2 }),
 			makePost({ id: "p3", lamport: 3 }),
 		];
-		const { uc, mock, triggerDigest, store } = makeUseCase({ posts: myPosts });
-		vi.mocked(store.getSnapshot).mockReturnValue(myPosts);
+		const { uc, mock, triggerDigest } = makeUseCase({ posts: myPosts });
 
 		uc.onPeerConnected("peer-a");
 		triggerDigest("peer-a", BOARD_ID, [
 			{ threadId: THREAD_ID, maxLamport: 0, postCount: 0 },
 		]);
 
-		// 非同期の sync push 完了を待つ
 		await vi.waitFor(() => expect(mock.sendSync).toHaveBeenCalled());
-		expect(mock.sendSync).toHaveBeenCalledWith(
-			"peer-a",
-			BOARD_ID,
+		const call = vi.mocked(mock.sendSync).mock.calls[0];
+		expect(call?.[0]).toBe("peer-a");
+		expect(call?.[1]).toBe(BOARD_ID);
+		expect(call?.[2]).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({ id: "p1" }),
 				expect.objectContaining({ id: "p2" }),
@@ -351,17 +398,34 @@ describe("ExchangeDigestUseCase", () => {
 		uc.dispose();
 	});
 
+	it("test_syncPush_PeerMissingThread_AttachesThreadEntity", async () => {
+		const thread = makeThread({ threadId: THREAD_ID, boardId: BOARD_ID });
+		const myPosts = [makePost({ id: "p1", lamport: 1 })];
+		const { uc, mock, triggerDigest } = makeUseCase({
+			posts: myPosts,
+			threadStore: makeThreadStore([thread]),
+		});
+
+		uc.onPeerConnected("peer-a");
+		triggerDigest("peer-a", BOARD_ID, [
+			{ threadId: THREAD_ID, maxLamport: 0, postCount: 0 },
+		]);
+
+		await vi.waitFor(() => expect(mock.sendSync).toHaveBeenCalled());
+		const call = vi.mocked(mock.sendSync).mock.calls[0];
+		expect(call?.[3]).toEqual([thread]);
+		uc.dispose();
+	});
+
 	it("test_syncPush_PeerHasSamePostCount_NoSync", async () => {
 		const myPosts = [makePost({ id: "p1", lamport: 1 })];
-		const { uc, mock, triggerDigest, store } = makeUseCase({ posts: myPosts });
-		vi.mocked(store.getSnapshot).mockReturnValue(myPosts);
+		const { uc, mock, triggerDigest } = makeUseCase({ posts: myPosts });
 
 		uc.onPeerConnected("peer-a");
 		triggerDigest("peer-a", BOARD_ID, [
 			{ threadId: THREAD_ID, maxLamport: 1, postCount: 1 },
 		]);
 
-		// 少し待っても sendSync は呼ばれない
 		await Promise.resolve();
 		expect(mock.sendSync).not.toHaveBeenCalled();
 		uc.dispose();
@@ -369,8 +433,7 @@ describe("ExchangeDigestUseCase", () => {
 
 	it("test_syncPush_WrongBoardId_NoSync", async () => {
 		const myPosts = [makePost({ id: "p1", lamport: 1 })];
-		const { uc, mock, triggerDigest, store } = makeUseCase({ posts: myPosts });
-		vi.mocked(store.getSnapshot).mockReturnValue(myPosts);
+		const { uc, mock, triggerDigest } = makeUseCase({ posts: myPosts });
 
 		uc.onPeerConnected("peer-a");
 		triggerDigest("peer-a", "other-board", [
@@ -383,13 +446,11 @@ describe("ExchangeDigestUseCase", () => {
 	});
 
 	it("test_syncPush_SameDigestTwice_SendsOnlyOnce", async () => {
-		// 同じ digest が 2 回届いても、lastSyncedPostCount により 2 回目は送らない
 		const myPosts = [
 			makePost({ id: "p1", lamport: 1 }),
 			makePost({ id: "p2", lamport: 2 }),
 		];
-		const { uc, mock, triggerDigest, store } = makeUseCase({ posts: myPosts });
-		vi.mocked(store.getSnapshot).mockReturnValue(myPosts);
+		const { uc, mock, triggerDigest } = makeUseCase({ posts: myPosts });
 
 		uc.onPeerConnected("peer-a");
 		triggerDigest("peer-a", BOARD_ID, [
@@ -397,7 +458,6 @@ describe("ExchangeDigestUseCase", () => {
 		]);
 		await vi.waitFor(() => expect(mock.sendSync).toHaveBeenCalledOnce());
 
-		// 同じ digest をもう一度受け取っても 2 回目は送らない
 		triggerDigest("peer-a", BOARD_ID, [
 			{ threadId: THREAD_ID, maxLamport: 0, postCount: 0 },
 		]);
@@ -411,8 +471,7 @@ describe("ExchangeDigestUseCase", () => {
 		const myPosts = Array.from({ length: 101 }, (_, i) =>
 			makePost({ id: `p${i}`, lamport: i + 1 }),
 		);
-		const { uc, mock, triggerDigest, store } = makeUseCase({ posts: myPosts });
-		vi.mocked(store.getSnapshot).mockReturnValue(myPosts);
+		const { uc, mock, triggerDigest } = makeUseCase({ posts: myPosts });
 
 		uc.onPeerConnected("peer-a");
 		triggerDigest("peer-a", BOARD_ID, [
@@ -420,21 +479,34 @@ describe("ExchangeDigestUseCase", () => {
 		]);
 
 		await vi.waitFor(() => expect(mock.sendSync).toHaveBeenCalledTimes(2));
-		const calls = vi.mocked(mock.sendSync).mock.calls as [
-			string,
-			string,
-			Post[],
-		][];
+		const calls = vi.mocked(mock.sendSync).mock.calls;
 		expect(calls[0]?.[2]).toHaveLength(100);
 		expect(calls[1]?.[2]).toHaveLength(1);
 		uc.dispose();
 	});
 
+	it("test_syncPush_OnlyNewerThreadSynced_PerThreadDedup", async () => {
+		// t-a はピアに無く、t-b はピアと同じ → t-a だけ sync する
+		const myPosts = [
+			makePost({ id: "a1", threadId: "t-a", lamport: 1 }),
+			makePost({ id: "b1", threadId: "t-b", lamport: 1 }),
+		];
+		const { uc, mock, triggerDigest } = makeUseCase({ posts: myPosts });
+
+		uc.onPeerConnected("peer-a");
+		triggerDigest("peer-a", BOARD_ID, [
+			{ threadId: "t-b", maxLamport: 1, postCount: 1 },
+		]);
+
+		await vi.waitFor(() => expect(mock.sendSync).toHaveBeenCalledOnce());
+		const call = vi.mocked(mock.sendSync).mock.calls[0];
+		expect(call?.[2]?.[0]?.threadId).toBe("t-a");
+		uc.dispose();
+	});
+
 	it("test_syncPush_PeerDisconnected_ClearsLastSyncedState", async () => {
-		// 切断後に再接続すると lastSyncedPostCount がリセットされ再度送信する
 		const myPosts = [makePost({ id: "p1", lamport: 1 })];
-		const { uc, mock, triggerDigest, store } = makeUseCase({ posts: myPosts });
-		vi.mocked(store.getSnapshot).mockReturnValue(myPosts);
+		const { uc, mock, triggerDigest } = makeUseCase({ posts: myPosts });
 
 		uc.onPeerConnected("peer-a");
 		triggerDigest("peer-a", BOARD_ID, [
@@ -442,7 +514,6 @@ describe("ExchangeDigestUseCase", () => {
 		]);
 		await vi.waitFor(() => expect(mock.sendSync).toHaveBeenCalledOnce());
 
-		// 切断 → 再接続
 		uc.onPeerDisconnected("peer-a");
 		uc.onPeerConnected("peer-a");
 		triggerDigest("peer-a", BOARD_ID, [
@@ -454,14 +525,14 @@ describe("ExchangeDigestUseCase", () => {
 	});
 
 	// =============================================
-	// Story 13b: Sync 受信
+	// Story 13b / 15c: Sync 受信
 	// =============================================
 
 	it("test_syncReceive_ValidPosts_VerifiesAndSaves", async () => {
 		const { uc, triggerSync, store } = makeUseCase();
 		const incomingPost = makePost({ id: "incoming-1", lamport: 10 });
 
-		triggerSync("peer-a", BOARD_ID, [incomingPost]);
+		triggerSync("peer-a", BOARD_ID, [incomingPost], []);
 
 		await vi.waitFor(() =>
 			expect(store.save).toHaveBeenCalledWith(incomingPost),
@@ -469,26 +540,53 @@ describe("ExchangeDigestUseCase", () => {
 		uc.dispose();
 	});
 
+	it("test_syncReceive_WithThreads_SavesThreadEntity", async () => {
+		const { uc, triggerSync, threadStore } = makeUseCase();
+		// threadId === String(createdAt) を満たす（makeThread のデフォルト）
+		const thread = makeThread({ boardId: BOARD_ID });
+
+		triggerSync("peer-a", BOARD_ID, [], [thread]);
+
+		await vi.waitFor(() =>
+			expect(threadStore.save).toHaveBeenCalledWith(thread),
+		);
+		uc.dispose();
+	});
+
+	it("test_syncReceive_InvalidThreadSignature_IgnoresThreadSavesPost", async () => {
+		const { uc, triggerSync, threadStore, store, threadSigSpy } = makeUseCase();
+		threadSigSpy.mockResolvedValue(false);
+		const thread = makeThread({ boardId: BOARD_ID });
+		const post = makePost({ id: "incoming-1", lamport: 1 });
+
+		triggerSync("peer-a", BOARD_ID, [post], [thread]);
+
+		await vi.waitFor(() => expect(store.save).toHaveBeenCalledWith(post));
+		expect(threadStore.save).not.toHaveBeenCalled();
+		uc.dispose();
+	});
+
 	it("test_syncReceive_WrongBoardId_Ignored", async () => {
 		const { uc, triggerSync, store } = makeUseCase();
 
-		triggerSync("peer-a", "other-board", [makePost({ id: "x", lamport: 1 })]);
+		triggerSync(
+			"peer-a",
+			"other-board",
+			[makePost({ id: "x", lamport: 1 })],
+			[],
+		);
 
 		await Promise.resolve();
-		// store.save は init 時の posts 以外では呼ばれない
 		expect(store.save).not.toHaveBeenCalled();
 		uc.dispose();
 	});
 
 	it("test_syncReceive_TooManyPosts_Rejected", async () => {
 		const { uc, triggerSync, store, logger } = makeUseCase();
-		// 101 件 → 拒否
 		const posts = Array.from({ length: 101 }, (_, i) =>
 			makePost({ id: `p${i}`, lamport: i + 1 }),
 		);
-		// DataChannelMessageSchema が 100 件 max で弾くため gateway は 101 件を受け取らないが、
-		// ExchangeDigestUseCase 自体も guard する
-		triggerSync("peer-a", BOARD_ID, posts);
+		triggerSync("peer-a", BOARD_ID, posts, []);
 
 		await vi.waitFor(() =>
 			expect(logger.warn).toHaveBeenCalledWith(
@@ -509,10 +607,8 @@ describe("ExchangeDigestUseCase", () => {
 
 		uc.onPeerConnected("peer-a");
 		uc.onPeerConnected("peer-b");
-		// 接続時の sendDigest をリセット
 		vi.mocked(mock.sendDigest).mockClear();
 
-		// 10 秒経過
 		vi.advanceTimersByTime(10_000);
 
 		expect(mock.sendDigest).toHaveBeenCalledWith(
@@ -537,7 +633,6 @@ describe("ExchangeDigestUseCase", () => {
 
 		vi.advanceTimersByTime(10_000);
 
-		// dispose 後はタイマーが止まり送信しない
 		expect(mock.sendDigest).not.toHaveBeenCalled();
 	});
 

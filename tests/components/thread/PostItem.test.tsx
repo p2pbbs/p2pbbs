@@ -50,4 +50,14 @@ describe("PostItem", () => {
 		expect(timeEl).not.toBeNull();
 		expect(timeEl?.getAttribute("dateTime")).toBeTruthy();
 	});
+
+	it("test_PostItem_IsNewTrue_ShowsNewMarker", () => {
+		render(<PostItem post={makeDisplayPost()} isNew={true} />);
+		expect(screen.getByText("新着")).toBeTruthy();
+	});
+
+	it("test_PostItem_IsNewFalse_HidesNewMarker", () => {
+		render(<PostItem post={makeDisplayPost()} isNew={false} />);
+		expect(screen.queryByText("新着")).toBeNull();
+	});
 });

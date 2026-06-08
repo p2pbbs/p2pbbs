@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { WebRTCGateway } from "@/core/adapter/gossip/WebRTCGateway";
 import type { IDataChannel } from "@/core/domain/port/IDataChannel";
-import { makeGossipMessage } from "../../helpers/fixtures";
+import { makeGossipMessage, makeThread } from "../../helpers/fixtures";
 
 const PEER_A = "peer-a";
 
@@ -244,7 +244,7 @@ describe("WebRTCGateway", () => {
 			PEER_A,
 			JSON.stringify({ type: "sync", boardId: "board-1", posts }),
 		);
-		expect(handler).toHaveBeenCalledWith(PEER_A, "board-1", posts);
+		expect(handler).toHaveBeenCalledWith(PEER_A, "board-1", posts, []);
 	});
 
 	it("test_handleIncoming_SyncMessage_PassesPeerId", () => {
@@ -254,7 +254,7 @@ describe("WebRTCGateway", () => {
 			"peer-x",
 			JSON.stringify({ type: "sync", boardId: "board-1", posts: [] }),
 		);
-		expect(handler).toHaveBeenCalledWith("peer-x", "board-1", []);
+		expect(handler).toHaveBeenCalledWith("peer-x", "board-1", [], []);
 	});
 
 	it("test_handleIncoming_Sync_DoesNotCallGossipHandlers", () => {
@@ -291,5 +291,57 @@ describe("WebRTCGateway", () => {
 			JSON.stringify({ type: "sync", boardId: "board-1", posts: [] }),
 		);
 		expect(handler).not.toHaveBeenCalled();
+	});
+
+	// --- sendSync with threads ---
+
+	it("test_sendSync_WithThreads_IncludesThreadsInPayload", () => {
+		const dc = makeMockDc();
+		channels.set(PEER_A, dc);
+		const posts = [makeGossipMessage().post];
+		const threads = [makeThread()];
+		gateway.sendSync(PEER_A, "board-1", posts, threads);
+		expect(dc.send).toHaveBeenCalledWith(
+			JSON.stringify({ type: "sync", boardId: "board-1", posts, threads }),
+		);
+	});
+
+	it("test_sendSync_EmptyThreads_OmitsThreadsField", () => {
+		const dc = makeMockDc();
+		channels.set(PEER_A, dc);
+		gateway.sendSync(PEER_A, "board-1", [], []);
+		const sent = JSON.parse(vi.mocked(dc.send).mock.calls[0]?.[0] as string);
+		expect(sent).not.toHaveProperty("threads");
+	});
+
+	it("test_sendSync_NoThreadsArg_OmitsThreadsField", () => {
+		const dc = makeMockDc();
+		channels.set(PEER_A, dc);
+		gateway.sendSync(PEER_A, "board-1", []);
+		const sent = JSON.parse(vi.mocked(dc.send).mock.calls[0]?.[0] as string);
+		expect(sent).not.toHaveProperty("threads");
+	});
+
+	// --- handleIncoming sync with threads (後方互換) ---
+
+	it("test_handleIncoming_SyncWithThreads_PassesThreadsToHandler", () => {
+		const handler = vi.fn();
+		gateway.onSyncReceive(handler);
+		const threads = [makeThread()];
+		gateway.handleIncoming(
+			PEER_A,
+			JSON.stringify({ type: "sync", boardId: "board-1", posts: [], threads }),
+		);
+		expect(handler).toHaveBeenCalledWith(PEER_A, "board-1", [], threads);
+	});
+
+	it("test_handleIncoming_SyncWithoutThreads_PassesEmptyArrayToHandler", () => {
+		const handler = vi.fn();
+		gateway.onSyncReceive(handler);
+		gateway.handleIncoming(
+			PEER_A,
+			JSON.stringify({ type: "sync", boardId: "board-1", posts: [] }),
+		);
+		expect(handler).toHaveBeenCalledWith(PEER_A, "board-1", [], []);
 	});
 });

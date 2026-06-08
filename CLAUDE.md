@@ -105,6 +105,7 @@ lamport は署名ペイロードおよびコンテンツハッシュの計算に
 | 投稿可能 | Postable | 接続中のピア全員から digest を受信し、投稿フォームが有効化された状態 |
 | データ同期ゲートウェイ | IDataSyncGateway | digest と sync の両方を扱うピア間通信インターフェース。WebRTCGateway が実装する |
 | 投稿インジェスター | PostIngester | 署名・ハッシュ検証・重複排除・保存・clock merge を担う domain service。gossip と sync で共有 |
+| 既読履歴 | ReadHistory | スレ単位で「過去に表示したことのある post.id の集合」を記録したもの。新着判定に使う |
 
 ## Implementation Rules
 

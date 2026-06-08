@@ -2,32 +2,40 @@ import { describe, expect, it, vi } from "vitest";
 import type { ILogger } from "@/core/domain/port/ILogger";
 import type { IPostStore } from "@/core/domain/port/IPostStore";
 import { CryptoService } from "@/core/domain/service/CryptoService";
-import { LamportClock } from "@/core/domain/service/LamportClock";
+import { LamportClockMap } from "@/core/domain/service/LamportClockMap";
 import { PostIngester } from "@/core/domain/service/PostIngester";
 import { makePost } from "../../helpers/fixtures";
+
+/** makePost のデフォルト threadId。clockMap の検証に使う。 */
+const THREAD_ID = "thread-1";
 
 function makePostStore(): IPostStore {
 	return {
 		save: vi.fn().mockResolvedValue(undefined),
 		getSnapshot: vi.fn().mockReturnValue([]),
 		subscribe: vi.fn().mockReturnValue(() => {}),
+		getThreadIds: vi.fn().mockReturnValue([]),
 	};
 }
 
 function makeLogger(): ILogger {
-	return { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+	return { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 }
 
-function makeIngester(clockOverride?: LamportClock) {
+function makeIngester(clockMapOverride?: LamportClockMap) {
 	const postStore = makePostStore();
-	const signer = { generateKeyPair: vi.fn(), sign: vi.fn() };
+	const signer = {
+		generateKeyPair: vi.fn(),
+		sign: vi.fn(),
+		signThread: vi.fn(),
+	};
 	const crypto = new CryptoService(signer);
 	const sigSpy = vi.spyOn(crypto, "verifySignature").mockResolvedValue(true);
 	const hashSpy = vi.spyOn(crypto, "verifyPostHash").mockResolvedValue(true);
-	const clock = clockOverride ?? new LamportClock();
+	const clockMap = clockMapOverride ?? new LamportClockMap();
 	const logger = makeLogger();
-	const ingester = new PostIngester(postStore, crypto, clock, logger);
-	return { ingester, postStore, crypto, clock, logger, sigSpy, hashSpy };
+	const ingester = new PostIngester(postStore, crypto, clockMap, logger);
+	return { ingester, postStore, crypto, clockMap, logger, sigSpy, hashSpy };
 }
 
 describe("PostIngester", () => {
@@ -42,10 +50,19 @@ describe("PostIngester", () => {
 	});
 
 	it("test_ingest_ValidPost_MergesLamportClock", async () => {
-		const clock = new LamportClock();
-		const { ingester } = makeIngester(clock);
+		const clockMap = new LamportClockMap();
+		const { ingester } = makeIngester(clockMap);
 		await ingester.ingest(makePost({ lamport: 7 }));
-		expect(clock.current()).toBe(7);
+		expect(clockMap.get(THREAD_ID).current()).toBe(7);
+	});
+
+	it("test_ingest_PostsInDifferentThreads_MergeIndependentClocks", async () => {
+		const clockMap = new LamportClockMap();
+		const { ingester } = makeIngester(clockMap);
+		await ingester.ingest(makePost({ id: "a", threadId: "t-a", lamport: 5 }));
+		await ingester.ingest(makePost({ id: "b", threadId: "t-b", lamport: 9 }));
+		expect(clockMap.get("t-a").current()).toBe(5);
+		expect(clockMap.get("t-b").current()).toBe(9);
 	});
 
 	// --- 署名検証失敗 ---
@@ -131,17 +148,17 @@ describe("PostIngester", () => {
 	// --- 処理順序: clock.merge は保存後 ---
 
 	it("test_ingest_LamportMerge_HappensAfterSave", async () => {
-		const clock = new LamportClock();
-		const { ingester, postStore } = makeIngester(clock);
+		const clockMap = new LamportClockMap();
+		const { ingester, postStore } = makeIngester(clockMap);
 		let clockAtSave = -1;
 		vi.mocked(postStore.save).mockImplementation(() => {
-			clockAtSave = clock.current();
+			clockAtSave = clockMap.get(THREAD_ID).current();
 			return Promise.resolve();
 		});
 		await ingester.ingest(makePost({ lamport: 5 }));
 		// save 実行時点ではまだ clock は更新されていない
 		expect(clockAtSave).toBe(0);
 		// save 後に merge されて 5 になっている
-		expect(clock.current()).toBe(5);
+		expect(clockMap.get(THREAD_ID).current()).toBe(5);
 	});
 });

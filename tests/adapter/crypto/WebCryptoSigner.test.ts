@@ -1,7 +1,7 @@
 import { IDBFactory } from "fake-indexeddb";
 import { beforeEach, describe, expect, it } from "vitest";
 import { WebCryptoSigner } from "@/core/adapter/crypto/WebCryptoSigner";
-import { makePost } from "../../helpers/fixtures";
+import { makePost, makeThread } from "../../helpers/fixtures";
 
 describe("WebCryptoSigner — 鍵生成と署名", () => {
 	let signer: WebCryptoSigner;
@@ -93,6 +93,43 @@ describe("WebCryptoSigner — IndexedDB 永続化", () => {
 
 		// レースコンディションに関わらず両タブで同じ OD ID になること
 		expect(key1).toBe(key2);
+	});
+
+	it("test_signThread_WithoutKeyPair_Throws", async () => {
+		const signer = new WebCryptoSigner(new IDBFactory());
+		await expect(
+			signer.signThread(makeThread({ signature: "" })),
+		).rejects.toThrow();
+	});
+
+	it("test_signThread_WithKeyPair_ReturnsThreadWithSignature", async () => {
+		const signer = new WebCryptoSigner(new IDBFactory());
+		const { publicKey } = await signer.generateKeyPair();
+		const draft = makeThread({ signature: "", publicKey });
+		const thread = await signer.signThread(draft);
+		expect(thread.signature).toBeTruthy();
+		expect(thread.signature).not.toBe("");
+	});
+
+	it("test_signThread_SameDraft_ReturnsSameSignature", async () => {
+		const signer = new WebCryptoSigner(new IDBFactory());
+		const { publicKey } = await signer.generateKeyPair();
+		const draft = makeThread({ signature: "", publicKey });
+		const t1 = await signer.signThread(draft);
+		const t2 = await signer.signThread(draft);
+		expect(t1.signature).toBe(t2.signature);
+	});
+
+	it("test_signThread_DifferentTitles_ReturnDifferentSignatures", async () => {
+		const signer = new WebCryptoSigner(new IDBFactory());
+		const { publicKey } = await signer.generateKeyPair();
+		const t1 = await signer.signThread(
+			makeThread({ signature: "", publicKey, title: "スレA" }),
+		);
+		const t2 = await signer.signThread(
+			makeThread({ signature: "", publicKey, title: "スレB" }),
+		);
+		expect(t1.signature).not.toBe(t2.signature);
 	});
 
 	it("test_generateKeyPair_IndexedDBUnavailable_FallsBackToEphemeralKey", async () => {

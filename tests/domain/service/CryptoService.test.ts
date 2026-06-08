@@ -2,7 +2,7 @@ import { IDBFactory } from "fake-indexeddb";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { WebCryptoSigner } from "@/core/adapter/crypto/WebCryptoSigner";
 import { CryptoService } from "@/core/domain/service/CryptoService";
-import { makePost } from "../../helpers/fixtures";
+import { makePost, makeThread } from "../../helpers/fixtures";
 
 describe("CryptoService", () => {
 	describe("computePostHash", () => {
@@ -12,6 +12,7 @@ describe("CryptoService", () => {
 			service = new CryptoService({
 				generateKeyPair: vi.fn(),
 				sign: vi.fn(),
+				signThread: vi.fn(),
 			});
 		});
 
@@ -107,7 +108,11 @@ describe("CryptoService", () => {
 		let service: CryptoService;
 
 		beforeEach(() => {
-			service = new CryptoService({ generateKeyPair: vi.fn(), sign: vi.fn() });
+			service = new CryptoService({
+				generateKeyPair: vi.fn(),
+				sign: vi.fn(),
+				signThread: vi.fn(),
+			});
 		});
 
 		it("test_deriveOdId_Returns8HexChars", async () => {
@@ -146,5 +151,49 @@ describe("CryptoService", () => {
 			const expected = await service.computePostHash(draft);
 			expect(signed.id).toBe(expected);
 		});
+	});
+});
+
+describe("CryptoService — verifyThreadSignature", () => {
+	it("test_verifyThreadSignature_ValidSignature_ReturnsTrue", async () => {
+		const signer = new WebCryptoSigner(new IDBFactory());
+		const { publicKey } = await signer.generateKeyPair();
+		const service = new CryptoService(signer);
+		const draft = makeThread({ signature: "", publicKey });
+		const thread = await signer.signThread(draft);
+		expect(await service.verifyThreadSignature(thread)).toBe(true);
+	});
+
+	it("test_verifyThreadSignature_TamperedTitle_ReturnsFalse", async () => {
+		const signer = new WebCryptoSigner(new IDBFactory());
+		const { publicKey } = await signer.generateKeyPair();
+		const service = new CryptoService(signer);
+		const thread = await signer.signThread(
+			makeThread({ signature: "", publicKey }),
+		);
+		const tampered = { ...thread, title: "改竄タイトル" };
+		expect(await service.verifyThreadSignature(tampered)).toBe(false);
+	});
+
+	it("test_verifyThreadSignature_TamperedBoardId_ReturnsFalse", async () => {
+		const signer = new WebCryptoSigner(new IDBFactory());
+		const { publicKey } = await signer.generateKeyPair();
+		const service = new CryptoService(signer);
+		const thread = await signer.signThread(
+			makeThread({ signature: "", publicKey }),
+		);
+		const tampered = { ...thread, boardId: "evil-board" };
+		expect(await service.verifyThreadSignature(tampered)).toBe(false);
+	});
+
+	it("test_verifyThreadSignature_TamperedCreatedAt_ReturnsFalse", async () => {
+		const signer = new WebCryptoSigner(new IDBFactory());
+		const { publicKey } = await signer.generateKeyPair();
+		const service = new CryptoService(signer);
+		const thread = await signer.signThread(
+			makeThread({ signature: "", publicKey }),
+		);
+		const tampered = { ...thread, createdAt: 9999999999999 };
+		expect(await service.verifyThreadSignature(tampered)).toBe(false);
 	});
 });

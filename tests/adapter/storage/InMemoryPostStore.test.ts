@@ -77,4 +77,58 @@ describe("InMemoryPostStore", () => {
 		// 最初の save で 1 回だけ通知される
 		expect(cb).toHaveBeenCalledOnce();
 	});
+
+	// --- getThreadIds ---
+
+	it("test_getThreadIds_NoPostsSaved_ReturnsEmpty", () => {
+		const store = new InMemoryPostStore();
+		expect(store.getThreadIds("board-1")).toHaveLength(0);
+	});
+
+	it("test_getThreadIds_AfterSave_ReturnsThreadId", async () => {
+		const store = new InMemoryPostStore();
+		await store.save(makePost({ boardId: "board-1", threadId: "thread-1" }));
+		expect(store.getThreadIds("board-1")).toEqual(["thread-1"]);
+	});
+
+	it("test_getThreadIds_MultipleThreadsSameBoard_ReturnsAll", async () => {
+		const store = new InMemoryPostStore();
+		await store.save(
+			makePost({ id: "p1", boardId: "board-1", threadId: "thread-a" }),
+		);
+		await store.save(
+			makePost({ id: "p2", boardId: "board-1", threadId: "thread-b" }),
+		);
+		const ids = store.getThreadIds("board-1");
+		expect(ids).toContain("thread-a");
+		expect(ids).toContain("thread-b");
+		expect(ids).toHaveLength(2);
+	});
+
+	it("test_getThreadIds_BoardIsolation_DoesNotReturnOtherBoard", async () => {
+		const store = new InMemoryPostStore();
+		await store.save(makePost({ boardId: "board-1", threadId: "thread-1" }));
+		await store.save(
+			makePost({ id: "p2", boardId: "board-2", threadId: "thread-x" }),
+		);
+		expect(store.getThreadIds("board-1")).toEqual(["thread-1"]);
+		expect(store.getThreadIds("board-2")).toEqual(["thread-x"]);
+	});
+
+	it("test_getThreadIds_DuplicatePostsSameThread_NoDuplicate", async () => {
+		const store = new InMemoryPostStore();
+		await store.save(
+			makePost({ id: "p1", boardId: "board-1", threadId: "thread-1" }),
+		);
+		await store.save(
+			makePost({ id: "p2", boardId: "board-1", threadId: "thread-1" }),
+		);
+		expect(store.getThreadIds("board-1")).toHaveLength(1);
+	});
+
+	it("test_getThreadIds_InitialMap_TracksThreadIds", () => {
+		const post = makePost({ boardId: "board-1", threadId: "thread-x" });
+		const store = new InMemoryPostStore(new Map([["thread-x", [post]]]));
+		expect(store.getThreadIds("board-1")).toEqual(["thread-x"]);
+	});
 });

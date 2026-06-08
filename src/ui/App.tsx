@@ -1,45 +1,29 @@
 import { useEffect, useState } from "react";
+import { HashRouter, Route, Routes } from "react-router-dom";
 import { WebCryptoSigner } from "@/core/adapter/crypto/WebCryptoSigner";
 import { ConsoleLogger } from "@/core/adapter/logging/ConsoleLogger";
 import { BrowserPeerConnectionFactory } from "@/core/adapter/peer/BrowserPeerConnectionFactory";
-import {
-	SignalingTimeoutError,
-	WebSocketSignalingTransport,
-} from "@/core/adapter/signaling/WebSocketSignalingTransport";
+import { WebSocketSignalingTransport } from "@/core/adapter/signaling/WebSocketSignalingTransport";
 import { IndexedDBPostStore } from "@/core/adapter/storage/IndexedDBPostStore";
-import {
-	DEFAULT_BOARD_ID,
-	DEFAULT_THREAD_ID,
-	SIGNALING_URL,
-} from "@/core/config/constants";
-import type { Post } from "@/core/domain/model/Post";
-import type { IGossipMessageGateway } from "@/core/domain/port/IGossipMessageGateway";
+import { IndexedDBThreadStore } from "@/core/adapter/storage/IndexedDBThreadStore";
+import { GENESIS_THREADS, SIGNALING_URL } from "@/core/config/constants";
 import { CryptoService } from "@/core/domain/service/CryptoService";
-import { LamportClock } from "@/core/domain/service/LamportClock";
-import type { ExchangeDigestUseCase } from "@/core/usecase/ExchangeDigestUseCase";
-import type { BootstrapResult } from "./bootstrap";
-import { bootstrap } from "./bootstrap";
-import { BoardPage } from "./components/pages/BoardPage";
-
-const GENESIS_POST: Post = {
-	id: "genesis",
-	name: "名無しさん",
-	body: "このスレを立てました。",
-	odId: "00000000",
-	timestamp: 0,
-	lamport: 0,
-	signature: "",
-	publicKey: "",
-	boardId: DEFAULT_BOARD_ID,
-	threadId: DEFAULT_THREAD_ID,
-};
+import { LamportClockMap } from "@/core/domain/service/LamportClockMap";
+import { BoardLayout } from "./components/pages/BoardLayout";
+import { BoardListView } from "./components/pages/BoardListView";
+import { NotFound } from "./components/pages/NotFound";
+import { ThreadListView } from "./components/pages/ThreadListView";
+import { ThreadPage } from "./components/pages/ThreadPage";
+import type { Session } from "./session";
+import { SessionProvider } from "./session";
 
 // セッション中に1度だけ生成するシングルトン
 const logger = new ConsoleLogger();
 const signer = new WebCryptoSigner();
 const cryptoService = new CryptoService(signer);
-const clock = new LamportClock();
+const clockMap = new LamportClockMap();
 const postStore = new IndexedDBPostStore(logger);
+const threadStore = new IndexedDBThreadStore(logger);
 const signaling = new WebSocketSignalingTransport(SIGNALING_URL, logger);
 const peerConnectionFactory = new BrowserPeerConnectionFactory();
 
@@ -48,81 +32,61 @@ const peerId = crypto.randomUUID();
 
 type InitError = { message: string; reloadable: boolean };
 
-type AppIdentity = {
-	publicKey: string;
-	odId: string;
-	gateway: IGossipMessageGateway;
-	exchangeDigestUseCase: ExchangeDigestUseCase;
-};
+/**
+ * IndexedDB からメモリに復元し、ジェネシススレを初期ロードする。
+ * LamportClock の初期化は板選択時（bootstrapBoard）に接続先板の分だけ行う。
+ */
+async function initStores(): Promise<void> {
+	await Promise.all([postStore.load(), threadStore.load()]);
+
+	for (const genesis of Object.values(GENESIS_THREADS)) {
+		await threadStore.save(genesis);
+	}
+}
 
 function App() {
-	const [identity, setIdentity] = useState<AppIdentity | null>(null);
+	const [session, setSession] = useState<Session | null>(null);
 	const [initError, setInitError] = useState<InitError | null>(null);
 
 	useEffect(() => {
 		let active = true;
-		let result: BootstrapResult | null = null;
 
 		(async () => {
 			try {
-				// IndexedDB からメモリに復元し、LamportClock を最大 lamport 値で初期化する
-				const { maxLamport } = await postStore.load();
-				clock.merge(maxLamport);
+				await initStores();
 
-				// 初回起動時のみジェネシス投稿を保存する
-				if (postStore.getSnapshot(DEFAULT_THREAD_ID).length === 0) {
-					await postStore.save(GENESIS_POST);
-				}
-
+				// Ed25519 非対応ブラウザはここで throw する（fatal）
 				const { publicKey } = await signer.generateKeyPair();
 				const odId = await cryptoService.deriveOdId(publicKey);
 				if (!active) return;
 
-				result = bootstrap(
-					signaling,
-					peerConnectionFactory,
-					peerId,
+				// signaling への join は板入場時に板ごとに行う（BoardLayout）。
+				// WebSocket 接続自体は使い回す。
+				setSession({
 					postStore,
-					cryptoService,
-					clock,
-					logger,
-				);
-				result.controller.start();
-
-				const peers = await signaling.discover(peerId);
-				if (!active) return;
-
-				for (const remotePeerId of peers) {
-					result.peerManager.connectTo(remotePeerId);
-				}
-
-				setIdentity({
+					threadStore,
+					crypto: cryptoService,
+					clockMap,
+					peerId,
 					publicKey,
 					odId,
-					gateway: result.gateway,
-					exchangeDigestUseCase: result.exchangeDigestUseCase,
+					signaling,
+					factory: peerConnectionFactory,
+					discoverPeers: (boardId) => signaling.discover(peerId, boardId),
+					logger,
 				});
 			} catch (err) {
 				if (!active) return;
-				if (err instanceof SignalingTimeoutError) {
-					setInitError({
-						message: "シグナリングサーバーに接続できません... orz",
-						reloadable: true,
-					});
-				} else {
-					setInitError({
-						message: "Web Crypto API に対応していないブラウザです。",
-						reloadable: false,
-					});
-				}
+				logger.error("app.init_failed", { err });
+				setInitError({
+					message: "初期化に失敗しました（Web Crypto API 非対応の可能性）。",
+					reloadable: false,
+				});
 			}
 		})();
 
 		return () => {
 			active = false;
-			result?.controller.stop();
-			result?.peerManager.dispose();
-			result?.exchangeDigestUseCase.dispose();
 		};
 	}, []);
 
@@ -143,25 +107,30 @@ function App() {
 		);
 	}
 
-	if (!identity) {
+	if (!session) {
 		return (
 			<div className="flex items-center justify-center h-screen text-sm text-gray-500">
-				シグナリングサーバーに接続中...
+				初期化中...
 			</div>
 		);
 	}
 
 	return (
-		<BoardPage
-			store={postStore}
-			cryptoService={cryptoService}
-			clock={clock}
-			publicKey={identity.publicKey}
-			odId={identity.odId}
-			peerId={peerId}
-			gateway={identity.gateway}
-			exchangeDigestUseCase={identity.exchangeDigestUseCase}
-		/>
+		<SessionProvider value={session}>
+			<HashRouter>
+				<Routes>
+					<Route path="/" element={<BoardListView />} />
+					<Route path="/board/:boardId" element={<BoardLayout />}>
+						<Route index element={<ThreadListView />} />
+						<Route path=":threadId" element={<ThreadPage />} />
+					</Route>
+					<Route
+						path="*"
+						element={<NotFound message="ページが見つかりません" />}
+					/>
+				</Routes>
+			</HashRouter>
+		</SessionProvider>
 	);
 }
 

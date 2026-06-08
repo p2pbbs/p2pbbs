@@ -1,11 +1,15 @@
-import type { ThreadDigest } from "@/core/domain/model/DataChannelMessage";
 import { SYNC_MAX_POSTS } from "@/core/domain/model/DataChannelMessage";
 import type { Post } from "@/core/domain/model/Post";
+import type { Thread } from "@/core/domain/model/Thread";
+import type { ThreadDigest } from "@/core/domain/model/ThreadDigest";
 import type { IDataSyncGateway } from "@/core/domain/port/IDataSyncGateway";
 import type { ILogger } from "@/core/domain/port/ILogger";
 import type { IPostStore } from "@/core/domain/port/IPostStore";
+import type { IThreadStore } from "@/core/domain/port/IThreadStore";
 import { LamportClock } from "@/core/domain/service/LamportClock";
+import type { LamportClockMap } from "@/core/domain/service/LamportClockMap";
 import type { PostIngester } from "@/core/domain/service/PostIngester";
+import type { ThreadIngester } from "@/core/domain/service/ThreadIngester";
 
 type DigestStatus = "awaiting" | "received";
 
@@ -16,23 +20,24 @@ const DIGEST_INTERVAL_MS = 10_000;
  * Digest 交換・投稿可能判定・過去データ Sync を管理する UseCase（板単位）。
  *
  * 【Digest 交換フロー】
- * ピア接続時に双方が自分の digest を送りつけ合い、
+ * ピア接続時に双方が自分の全スレ digest を送りつけ合い、
  * 全直接ピアから digest が届いた時点で canPost() が true になる。
  * canPost() は一度 true になると以降変化しない。
  *
  * 【Sync フロー】
- * digest を受信したとき、相手より自分が多く持つ投稿を sync として push する。
- * 受信した sync 投稿は PostVerifier で検証・保存する（ファンアウトしない）。
+ * digest を受信したとき、相手より自分が多く持つ投稿をスレ単位で sync として push する。
+ * 相手が持っていない Thread エンティティは sync に同梱して送る（anti-entropy 経路のスレ発見）。
+ * 受信した sync は ThreadIngester / PostIngester で検証・保存する（ファンアウトしない）。
  * 定期的に digest を送信し、後から接続したピアへの差分 sync を促す。
  */
 export class ExchangeDigestUseCase {
 	private readonly boardId: string;
-	// TODO: 複数スレ対応時は IPostStore から動的取得に変更する
-	private readonly threadId: string;
 	private readonly store: IPostStore;
+	private readonly threadStore: IThreadStore;
 	private readonly ingester: PostIngester;
+	private readonly threadIngester: ThreadIngester;
 	private readonly digestGateway: IDataSyncGateway;
-	private readonly clock: LamportClock;
+	private readonly clockMap: LamportClockMap;
 	private readonly logger: ILogger;
 
 	/** DC open 中の全ピアの digest 受信状態。DC close でエントリ削除。 */
@@ -41,10 +46,11 @@ export class ExchangeDigestUseCase {
 	private readonly handlers = new Set<() => void>();
 
 	/**
-	 * 各ピアへ最後に sync push した時点の自分の postCount。
-	 * 同じ内容の sync を重複送信しないための最適化。DC close でエントリ削除。
+	 * 各ピア・スレへ最後に sync push した時点の自分の postCount。
+	 * 同じ内容の sync を重複送信しないための最適化。DC close でピアごとエントリ削除。
+	 * 構造: Map<peerId, Map<threadId, postCount>>
 	 */
-	private readonly lastSyncedPostCount = new Map<string, number>();
+	private readonly lastSyncedPostCount = new Map<string, Map<string, number>>();
 
 	private readonly unsubDigest: () => void;
 	private readonly unsubSync: () => void;
@@ -52,19 +58,21 @@ export class ExchangeDigestUseCase {
 
 	constructor(
 		boardId: string,
-		threadId: string,
 		store: IPostStore,
+		threadStore: IThreadStore,
 		ingester: PostIngester,
+		threadIngester: ThreadIngester,
 		digestGateway: IDataSyncGateway,
-		clock: LamportClock,
+		clockMap: LamportClockMap,
 		logger: ILogger,
 	) {
 		this.boardId = boardId;
-		this.threadId = threadId;
 		this.store = store;
+		this.threadStore = threadStore;
 		this.ingester = ingester;
+		this.threadIngester = threadIngester;
 		this.digestGateway = digestGateway;
-		this.clock = clock;
+		this.clockMap = clockMap;
 		this.logger = logger;
 
 		this.unsubDigest = digestGateway.onDigestReceive(
@@ -72,13 +80,17 @@ export class ExchangeDigestUseCase {
 				this.handleDigestReceived(peerId, incomingBoardId, threads),
 		);
 		this.unsubSync = digestGateway.onSyncReceive(
-			(peerId, incomingBoardId, posts) =>
-				void this.handleSyncReceived(peerId, incomingBoardId, posts).catch(
-					(err) =>
-						this.logger.error("exchange_digest.sync_receive_error", {
-							peerId,
-							err,
-						}),
+			(peerId, incomingBoardId, posts, threads) =>
+				void this.handleSyncReceived(
+					peerId,
+					incomingBoardId,
+					posts,
+					threads,
+				).catch((err) =>
+					this.logger.error("exchange_digest.sync_receive_error", {
+						peerId,
+						err,
+					}),
 				),
 		);
 		this.intervalId = setInterval(
@@ -117,13 +129,17 @@ export class ExchangeDigestUseCase {
 		clearInterval(this.intervalId);
 	}
 
+	/** 自分が投稿を持つ全スレの ThreadDigest を動的に構築する。 */
+	private buildDigests(): ThreadDigest[] {
+		return this.store.getThreadIds(this.boardId).map((threadId) => {
+			const posts = this.store.getSnapshot(threadId);
+			const maxLamport = posts.reduce((max, p) => Math.max(max, p.lamport), 0);
+			return { threadId, maxLamport, postCount: posts.length };
+		});
+	}
+
 	private sendDigestTo(peerId: string): void {
-		const posts = this.store.getSnapshot(this.threadId);
-		const maxLamport = posts.reduce((max, p) => Math.max(max, p.lamport), 0);
-		const threads: ThreadDigest[] = [
-			{ threadId: this.threadId, maxLamport, postCount: posts.length },
-		];
-		this.digestGateway.sendDigest(peerId, this.boardId, threads);
+		this.digestGateway.sendDigest(peerId, this.boardId, this.buildDigests());
 	}
 
 	private sendDigestToAll(): void {
@@ -152,7 +168,7 @@ export class ExchangeDigestUseCase {
 					maxLamport: thread.maxLamport,
 				});
 			}
-			this.clock.safeMerge(thread.maxLamport);
+			this.clockMap.get(thread.threadId).safeMerge(thread.maxLamport);
 		}
 
 		// 状態遷移は常に行う。checkCanPost の呼び出しだけ canPost 前にガードする
@@ -178,6 +194,7 @@ export class ExchangeDigestUseCase {
 		peerId: string,
 		incomingBoardId: string,
 		posts: Post[],
+		threads: Thread[],
 	): Promise<void> {
 		if (incomingBoardId !== this.boardId) return;
 
@@ -190,6 +207,10 @@ export class ExchangeDigestUseCase {
 			return;
 		}
 
+		// Thread を先に取り込む（署名検証失敗時は無視し、Post のみ保存する）
+		for (const thread of threads) {
+			await this.threadIngester.ingest(thread);
+		}
 		for (const post of posts) {
 			await this.ingester.ingest(post);
 		}
@@ -199,9 +220,23 @@ export class ExchangeDigestUseCase {
 		peerId: string,
 		peerThreads: ThreadDigest[],
 	): Promise<void> {
-		const myPosts = this.store.getSnapshot(this.threadId);
+		const peerByThread = new Map(peerThreads.map((t) => [t.threadId, t]));
 
-		const peerThread = peerThreads.find((t) => t.threadId === this.threadId);
+		for (const threadId of this.store.getThreadIds(this.boardId)) {
+			await this.pushThreadSyncIfNeeded(
+				peerId,
+				threadId,
+				peerByThread.get(threadId),
+			);
+		}
+	}
+
+	private async pushThreadSyncIfNeeded(
+		peerId: string,
+		threadId: string,
+		peerThread: ThreadDigest | undefined,
+	): Promise<void> {
+		const myPosts = this.store.getSnapshot(threadId);
 		const peerPostCount = peerThread?.postCount ?? 0;
 		const peerMaxLamport = peerThread?.maxLamport ?? 0;
 
@@ -209,7 +244,8 @@ export class ExchangeDigestUseCase {
 		if (myPosts.length <= peerPostCount) return;
 
 		// 直前の sync push 以降に新しい投稿が増えていなければ送らない
-		const lastSynced = this.lastSyncedPostCount.get(peerId) ?? -1;
+		const peerSynced = this.lastSyncedPostCount.get(peerId);
+		const lastSynced = peerSynced?.get(threadId) ?? -1;
 		if (myPosts.length <= lastSynced) return;
 
 		// NOTE: lamport ベースの差分抽出。ピアが持つ投稿に「穴」がある場合は検知できない。
@@ -217,17 +253,36 @@ export class ExchangeDigestUseCase {
 		const missing = myPosts.filter((p) => p.lamport > peerMaxLamport);
 		if (missing.length === 0) return;
 
+		// 相手が持っていない可能性のある Thread エンティティを先頭バッチに同梱する
+		const threadEntity = this.threadStore.get(threadId);
+		const threadsToSend = threadEntity ? [threadEntity] : undefined;
+
 		// SYNC_MAX_POSTS 件ずつ分割して送信
 		for (let i = 0; i < missing.length; i += SYNC_MAX_POSTS) {
 			const batch = missing.slice(i, i + SYNC_MAX_POSTS);
-			this.digestGateway.sendSync(peerId, this.boardId, batch);
+			const attachThreads = i === 0 ? threadsToSend : undefined;
+			this.digestGateway.sendSync(peerId, this.boardId, batch, attachThreads);
 		}
 
-		this.lastSyncedPostCount.set(peerId, myPosts.length);
+		this.markSynced(peerId, threadId, myPosts.length);
 		this.logger.info("exchange_digest.sync_pushed", {
 			peerId,
+			threadId,
 			count: missing.length,
 		});
+	}
+
+	private markSynced(
+		peerId: string,
+		threadId: string,
+		postCount: number,
+	): void {
+		let perThread = this.lastSyncedPostCount.get(peerId);
+		if (!perThread) {
+			perThread = new Map();
+			this.lastSyncedPostCount.set(peerId, perThread);
+		}
+		perThread.set(threadId, postCount);
 	}
 
 	private checkCanPost(): void {

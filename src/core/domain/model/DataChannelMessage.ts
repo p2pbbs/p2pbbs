@@ -1,14 +1,11 @@
 import { z } from "zod";
 import { GossipMessageSchema } from "./GossipMessage";
 import { PostSchema } from "./Post";
+import { ThreadSchema } from "./Thread";
+import { ThreadDigestSchema } from "./ThreadDigest";
 
-export const ThreadDigestSchema = z.object({
-	threadId: z.string(),
-	maxLamport: z.number().int().min(0),
-	postCount: z.number().int().min(0),
-});
-
-export type ThreadDigest = z.infer<typeof ThreadDigestSchema>;
+export type { ThreadDigest } from "./ThreadDigest";
+export { ThreadDigestSchema } from "./ThreadDigest";
 
 /** sync 1 メッセージあたりの最大投稿件数。100 件 × 約 500 bytes ≒ 50 KB。 */
 export const SYNC_MAX_POSTS = 100;
@@ -25,6 +22,8 @@ export const DataChannelMessageSchema = z.union([
 		type: z.literal("sync"),
 		boardId: z.string(),
 		posts: z.array(PostSchema).max(SYNC_MAX_POSTS),
+		/** 旧バージョンのピアとの後方互換のためオプショナル。 */
+		threads: z.array(ThreadSchema).optional(),
 	}),
 ]);
 

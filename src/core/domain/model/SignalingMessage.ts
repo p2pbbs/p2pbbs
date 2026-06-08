@@ -4,7 +4,13 @@ import type { SignalingErrorCode } from "./SignalingErrorCode";
 
 /** クライアント → サーバー */
 export const ClientMessageSchema = z.union([
-	z.object({ type: z.literal("join"), peerId: z.string() }),
+	// boardId は required（板別マッチング）。旧クライアント（boardId なし）は
+	// parse 失敗で reject される。プレローンチのため互換性は不要。
+	z.object({
+		type: z.literal("join"),
+		peerId: z.string(),
+		boardId: z.string(),
+	}),
 	z.object({ type: z.literal("signal"), envelope: SignalingEnvelopeSchema }),
 ]);
 

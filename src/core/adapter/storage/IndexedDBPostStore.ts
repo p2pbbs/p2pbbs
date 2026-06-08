@@ -31,12 +31,12 @@ export class IndexedDBPostStore implements IPostStore {
 
 	/**
 	 * IndexedDB を開き、全投稿をメモリに読み込む。起動時に1回だけ呼ぶこと。
-	 * @returns 読み込んだ投稿の最大 lamport 値（LamportClock.merge() での復元に使う）
+	 * lamport の復元はスレ単位で行うため、呼び出し側が getThreadIds / getSnapshot から
+	 * 各スレの最大値を算出して LamportClockMap に merge する。
 	 */
-	async load(): Promise<{ maxLamport: number }> {
+	async load(): Promise<void> {
 		this.db = await this.openDB();
 		const raws = await this.getAllFromDB();
-		let maxLamport = 0;
 		for (const raw of raws) {
 			const result = PostSchema.safeParse(raw);
 			if (!result.success) {
@@ -47,15 +47,15 @@ export class IndexedDBPostStore implements IPostStore {
 			}
 			const post: Post = result.data;
 			await this.memory.save(post);
-			if (post.lamport > maxLamport) {
-				maxLamport = post.lamport;
-			}
 		}
-		return { maxLamport };
 	}
 
 	getSnapshot(threadId: string): Post[] {
 		return this.memory.getSnapshot(threadId);
+	}
+
+	getThreadIds(boardId: string): string[] {
+		return this.memory.getThreadIds(boardId);
 	}
 
 	subscribe(threadId: string, callback: () => void): () => void {

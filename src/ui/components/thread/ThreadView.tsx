@@ -1,9 +1,10 @@
-import type { DisplayPost } from "@/ui/hooks/usePosts";
+import type { DisplayPost } from "@/ui/hooks/usePostList";
 import { PostItem } from "./PostItem";
 
 type Props = {
 	title: string;
-	posts: DisplayPost[];
+	/** isNew は省略可。新着マーカーを出さない呼び出し（テスト等）にも対応する。 */
+	posts: ReadonlyArray<DisplayPost & { isNew?: boolean }>;
 };
 
 export function ThreadView({ title, posts }: Props) {
@@ -13,7 +14,7 @@ export function ThreadView({ title, posts }: Props) {
 			<ol>
 				{posts.map((post) => (
 					<li key={post.id}>
-						<PostItem post={post} />
+						<PostItem post={post} isNew={post.isNew ?? false} />
 					</li>
 				))}
 			</ol>

@@ -5,6 +5,10 @@ import type { ILogger } from "@/core/domain/port/ILogger";
  * イベントIDで識別する。メッセージ文字列ではなくイベントIDで検索する。
  */
 export class ConsoleLogger implements ILogger {
+	debug(eventId: string, data?: Record<string, unknown>): void {
+		console.debug(`[nch] ${eventId}`, data ?? "");
+	}
+
 	info(eventId: string, data?: Record<string, unknown>): void {
 		console.info(`[nch] ${eventId}`, data ?? "");
 	}

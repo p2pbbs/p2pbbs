@@ -21,11 +21,16 @@ function makeHttpServer(): Server {
 		: createServer(app);
 }
 
-function listenOn(server: Server, port: number, host: string): Promise<void> {
+function listenOn(
+	server: Server,
+	port: number,
+	host: string,
+	ipv6Only = false,
+): Promise<void> {
 	return new Promise((resolve, reject) => {
 		const onError = (err: Error) => reject(err);
 		server.once("error", onError);
-		server.listen(port, host, () => {
+		server.listen({ port, host, ipv6Only }, () => {
 			server.off("error", onError);
 			resolve();
 		});
@@ -44,7 +49,7 @@ const protocol = tlsCertPath !== undefined ? "wss" : "ws";
 try {
 	await Promise.all([
 		listenOn(httpV4, PORT, "0.0.0.0"),
-		listenOn(httpV6, PORT, "::"),
+		listenOn(httpV6, PORT, "::", true),
 	]);
 	console.log(
 		`Signaling server listening on ${protocol}://0.0.0.0:${PORT} and ${protocol}://[::]:${PORT}`,

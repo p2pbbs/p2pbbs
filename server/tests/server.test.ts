@@ -38,6 +38,10 @@ function sentMessages(ws: WebSocket): ServerMessage[] {
 	);
 }
 
+function joinMsg(peerId: string, boardId: string): string {
+	return JSON.stringify({ type: "join", peerId, boardId });
+}
+
 const dummyEnvelope: SignalingEnvelope = {
 	from: "peer-a",
 	to: "peer-b",
@@ -53,35 +57,74 @@ describe("PeerRegistry", () => {
 		registry = new PeerRegistry();
 	});
 
-	it("test_add_newPeer_sizeIncreases", () => {
-		registry.add("peer-1", mockWs());
+	it("test_join_newPeer_sizeIncreasesAndBoardRecorded", () => {
+		registry.join("peer-1", "mona", mockWs());
 		expect(registry.size()).toBe(1);
 		expect(registry.has("peer-1")).toBe(true);
+		expect(registry.boardOf("peer-1")).toBe("mona");
 	});
 
-	it("test_remove_existingPeer_sizeDecreases", () => {
-		registry.add("peer-1", mockWs());
+	it("test_remove_existingPeer_sizeDecreasesAndBoardCleared", () => {
+		registry.join("peer-1", "mona", mockWs());
 		registry.remove("peer-1");
 		expect(registry.size()).toBe(0);
 		expect(registry.has("peer-1")).toBe(false);
+		expect(registry.boardOf("peer-1")).toBeUndefined();
 	});
 
-	it("test_randomPeers_fivePeers_returnsUpToThree", () => {
-		for (let i = 1; i <= 5; i++) registry.add(`peer-${i}`, mockWs());
-		const result = registry.randomPeers("peer-1", 3);
-		expect(result).toHaveLength(3);
+	it("test_join_reHomeToOtherBoard_movesPeerBetweenBoards", () => {
+		registry.join("peer-1", "mona", mockWs());
+		registry.join("peer-2", "mona", mockWs());
+		// peer-1 を yaruo に付け替える
+		registry.join("peer-1", "yaruo", mockWs());
+
+		expect(registry.boardOf("peer-1")).toBe("yaruo");
+		// mona の同板ピアからは外れている
+		expect(registry.randomPeers("peer-2", "mona", 3)).toEqual([]);
+		// yaruo 側に居る
+		expect(registry.randomPeers("other", "yaruo", 3)).toEqual(["peer-1"]);
+	});
+
+	it("test_randomPeers_sameBoardOnly_excludesOtherBoardsAndSelf", () => {
+		registry.join("peer-1", "mona", mockWs());
+		registry.join("peer-2", "mona", mockWs());
+		registry.join("peer-3", "mona", mockWs());
+		registry.join("peer-x", "yaruo", mockWs());
+
+		const result = registry.randomPeers("peer-1", "mona", 3);
+		expect(result).toHaveLength(2);
 		expect(result).not.toContain("peer-1");
+		expect(result).not.toContain("peer-x");
+		expect(new Set(result)).toEqual(new Set(["peer-2", "peer-3"]));
 	});
 
-	it("test_randomPeers_onlyOnePeer_returnsEmptyList", () => {
-		registry.add("peer-1", mockWs());
-		expect(registry.randomPeers("peer-1", 3)).toHaveLength(0);
+	it("test_randomPeers_capAtCount", () => {
+		for (let i = 1; i <= 5; i++) registry.join(`peer-${i}`, "mona", mockWs());
+		expect(registry.randomPeers("peer-1", "mona", 3)).toHaveLength(3);
 	});
 
-	it("test_randomPeers_twoTotalPeers_returnsOneOther", () => {
-		registry.add("peer-1", mockWs());
-		registry.add("peer-2", mockWs());
-		expect(registry.randomPeers("peer-1", 3)).toEqual(["peer-2"]);
+	it("test_randomPeers_onlySelfInBoard_returnsEmpty", () => {
+		registry.join("peer-1", "mona", mockWs());
+		expect(registry.randomPeers("peer-1", "mona", 3)).toEqual([]);
+	});
+
+	it("test_removeIfCurrent_wsMatches_removes", () => {
+		const ws = mockWs();
+		registry.join("peer-1", "mona", ws);
+		expect(registry.removeIfCurrent("peer-1", ws)).toBe(true);
+		expect(registry.has("peer-1")).toBe(false);
+	});
+
+	it("test_removeIfCurrent_wsReplacedByReHome_doesNotRemove", () => {
+		const oldWs = mockWs();
+		const newWs = mockWs();
+		registry.join("peer-1", "mona", oldWs);
+		// 別接続で再 join（last-writer-wins で newWs に置換）
+		registry.join("peer-1", "mona", newWs);
+		// 旧 ws が遅れて close しても、現役の登録は消えない
+		expect(registry.removeIfCurrent("peer-1", oldWs)).toBe(false);
+		expect(registry.has("peer-1")).toBe(true);
+		expect(registry.get("peer-1")).toBe(newWs);
 	});
 });
 
@@ -114,54 +157,47 @@ describe("handleClientMessage — join", () => {
 		onJoin = vi.fn();
 	});
 
-	it("test_join_firstPeer_receivesEmptyPeerList", () => {
-		handleClientMessage(
-			JSON.stringify({ type: "join", peerId: "peer-a" }),
-			ws,
-			registry,
-			onJoin,
-		);
+	it("test_join_firstPeerInBoard_receivesEmptyPeerList", () => {
+		handleClientMessage(joinMsg("peer-a", "mona"), ws, registry, onJoin);
 
 		expect(sentMessages(ws)).toEqual([{ type: "peers", peers: [] }]);
 		expect(onJoin).toHaveBeenCalledWith("peer-a");
 		expect(registry.has("peer-a")).toBe(true);
+		expect(registry.boardOf("peer-a")).toBe("mona");
 	});
 
-	it("test_join_threeExistingPeers_receivesUpToThreePeers", () => {
-		for (const id of ["peer-b", "peer-c", "peer-d"]) {
-			registry.add(id, mockWs());
-		}
-		handleClientMessage(
-			JSON.stringify({ type: "join", peerId: "peer-a" }),
-			ws,
-			registry,
-			onJoin,
-		);
+	it("test_join_sameBoardPeers_receivesThem", () => {
+		for (const id of ["peer-b", "peer-c"]) registry.join(id, "mona", mockWs());
+		handleClientMessage(joinMsg("peer-a", "mona"), ws, registry, onJoin);
 
 		const msgs = sentMessages(ws);
 		expect(msgs[0]?.type).toBe("peers");
 		if (msgs[0]?.type === "peers") {
-			expect(msgs[0].peers.length).toBeLessThanOrEqual(3);
-			expect(msgs[0].peers).not.toContain("peer-a");
+			expect(new Set(msgs[0].peers)).toEqual(new Set(["peer-b", "peer-c"]));
 		}
 	});
 
-	it("test_join_duplicatePeerId_sendsErrorAndCloses", () => {
-		registry.add("peer-a", mockWs());
-		handleClientMessage(
-			JSON.stringify({ type: "join", peerId: "peer-a" }),
-			ws,
-			registry,
-			onJoin,
-		);
+	it("test_join_otherBoardPeersNotReturned", () => {
+		registry.join("peer-x", "yaruo", mockWs());
+		handleClientMessage(joinMsg("peer-a", "mona"), ws, registry, onJoin);
 
 		const msgs = sentMessages(ws);
-		expect(msgs[0]?.type).toBe("error");
-		if (msgs[0]?.type === "error") {
-			expect(msgs[0].code).toBe(SignalingErrorCode.INVALID_MESSAGE);
+		expect(msgs[0]?.type).toBe("peers");
+		if (msgs[0]?.type === "peers") {
+			expect(msgs[0].peers).toEqual([]);
 		}
-		expect(ws.close).toHaveBeenCalledWith(1008);
-		expect(onJoin).not.toHaveBeenCalled();
+	});
+
+	it("test_join_duplicatePeerId_reHomesWithoutErrorOrClose", () => {
+		registry.join("peer-a", "mona", mockWs());
+		handleClientMessage(joinMsg("peer-a", "yaruo"), ws, registry, onJoin);
+
+		const msgs = sentMessages(ws);
+		// エラーや close ではなく peers を返す（re-home）
+		expect(msgs[0]?.type).toBe("peers");
+		expect(ws.close).not.toHaveBeenCalled();
+		expect(onJoin).toHaveBeenCalledWith("peer-a");
+		expect(registry.boardOf("peer-a")).toBe("yaruo");
 	});
 });
 
@@ -176,11 +212,11 @@ describe("handleClientMessage — signal", () => {
 		registry = new PeerRegistry();
 		senderWs = mockWs();
 		targetWs = mockWs();
-		registry.add("peer-a", senderWs);
-		registry.add("peer-b", targetWs);
+		registry.join("peer-a", "mona", senderWs);
+		registry.join("peer-b", "mona", targetWs);
 	});
 
-	it("test_signal_targetOnline_forwardsEnvelope", () => {
+	it("test_signal_sameBoardTargetOnline_forwardsEnvelope", () => {
 		handleClientMessage(
 			JSON.stringify({ type: "signal", envelope: dummyEnvelope }),
 			senderWs,
@@ -193,9 +229,23 @@ describe("handleClientMessage — signal", () => {
 		]);
 	});
 
+	it("test_signal_crossBoard_dropsEnvelope", () => {
+		// peer-b を別板に移す → 板またぎ signal は drop
+		const otherWs = mockWs();
+		registry.join("peer-b", "yaruo", otherWs);
+
+		handleClientMessage(
+			JSON.stringify({ type: "signal", envelope: dummyEnvelope }),
+			senderWs,
+			registry,
+			vi.fn(),
+		);
+		expect(otherWs.send).not.toHaveBeenCalled();
+	});
+
 	it("test_signal_targetDisconnected_silentlyDrops", () => {
 		const disconnectedWs = mockWs(WebSocket.CLOSED);
-		registry.add("peer-c", disconnectedWs);
+		registry.join("peer-c", "mona", disconnectedWs);
 		handleClientMessage(
 			JSON.stringify({
 				type: "signal",
@@ -250,9 +300,21 @@ describe("handleClientMessage — invalid input", () => {
 		expect(ws.close).not.toHaveBeenCalled();
 	});
 
+	it("test_joinMissingBoardId_ignoresAndDoesNotClose", () => {
+		handleClientMessage(
+			JSON.stringify({ type: "join", peerId: "peer-a" }),
+			ws,
+			registry,
+			vi.fn(),
+		);
+		expect(ws.send).not.toHaveBeenCalled();
+		expect(ws.close).not.toHaveBeenCalled();
+		expect(registry.has("peer-a")).toBe(false);
+	});
+
 	it("test_joinMissingPeerId_ignoresAndDoesNotClose", () => {
 		handleClientMessage(
-			JSON.stringify({ type: "join" }),
+			JSON.stringify({ type: "join", boardId: "mona" }),
 			ws,
 			registry,
 			vi.fn(),
@@ -273,7 +335,7 @@ describe("createConnectionHandler", () => {
 
 	it("test_connection_capacityExceeded_sendsErrorAndCloses", () => {
 		for (let i = 0; i < MAX_CONNECTIONS; i++) {
-			registry.add(`peer-${i}`, mockWs());
+			registry.join(`peer-${i}`, "mona", mockWs());
 		}
 
 		const ws = mockWs();
@@ -291,7 +353,7 @@ describe("createConnectionHandler", () => {
 		const ws = mockWs();
 		createConnectionHandler(registry)(ws);
 
-		ws.emit("message", JSON.stringify({ type: "join", peerId: "peer-a" }));
+		ws.emit("message", joinMsg("peer-a", "mona"));
 
 		expect(registry.has("peer-a")).toBe(true);
 	});
@@ -300,7 +362,7 @@ describe("createConnectionHandler", () => {
 		const ws = mockWs();
 		createConnectionHandler(registry)(ws);
 
-		ws.emit("message", JSON.stringify({ type: "join", peerId: "peer-a" }));
+		ws.emit("message", joinMsg("peer-a", "mona"));
 		expect(registry.has("peer-a")).toBe(true);
 
 		ws.emit("close");
@@ -311,7 +373,7 @@ describe("createConnectionHandler", () => {
 		const ws = mockWs();
 		createConnectionHandler(registry)(ws);
 
-		ws.emit("message", JSON.stringify({ type: "join", peerId: "peer-a" }));
+		ws.emit("message", joinMsg("peer-a", "mona"));
 		ws.emit("error", new Error("network error"));
 		expect(registry.has("peer-a")).toBe(false);
 	});
@@ -326,10 +388,27 @@ describe("createConnectionHandler", () => {
 		const ws = mockWs();
 		createConnectionHandler(registry)(ws);
 
-		ws.emit("message", JSON.stringify({ type: "join", peerId: "peer-a" }));
+		ws.emit("message", joinMsg("peer-a", "mona"));
 		ws.emit("close");
 		ws.emit("close");
 
 		expect(registry.size()).toBe(0);
+	});
+
+	it("test_connection_reHomeAcrossConnections_oldCloseKeepsReHomedPeer", () => {
+		// 接続1 で join → 接続2 で同じ peerId が再 join（再接続レース）
+		const ws1 = mockWs();
+		const ws2 = mockWs();
+		createConnectionHandler(registry)(ws1);
+		createConnectionHandler(registry)(ws2);
+
+		ws1.emit("message", joinMsg("peer-a", "mona"));
+		ws2.emit("message", joinMsg("peer-a", "mona"));
+		expect(registry.get("peer-a")).toBe(ws2);
+
+		// 旧接続が遅れて close しても、現役の peer-a は残る
+		ws1.emit("close");
+		expect(registry.has("peer-a")).toBe(true);
+		expect(registry.get("peer-a")).toBe(ws2);
 	});
 });

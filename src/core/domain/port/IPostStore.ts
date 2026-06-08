@@ -11,4 +11,6 @@ export interface IPostStore {
 	subscribe(threadId: string, callback: () => void): () => void;
 	/** 投稿を保存する。保存先は post.threadId で決定する。 */
 	save(post: Post): Promise<void>;
+	/** 指定板に投稿が存在するスレッド ID の一覧を返す。 */
+	getThreadIds(boardId: string): string[];
 }

@@ -2,7 +2,7 @@ import type { Post } from "@/core/domain/model/Post";
 import type { ILogger } from "@/core/domain/port/ILogger";
 import type { IPostStore } from "@/core/domain/port/IPostStore";
 import type { CryptoService } from "@/core/domain/service/CryptoService";
-import type { LamportClock } from "@/core/domain/service/LamportClock";
+import type { LamportClockMap } from "@/core/domain/service/LamportClockMap";
 
 /**
  * 投稿の受け入れパイプライン。gossip 受信と sync 受信で共有する。
@@ -22,18 +22,18 @@ export class PostIngester {
 	private readonly seen = new Set<string>();
 	private readonly postStore: IPostStore;
 	private readonly crypto: CryptoService;
-	private readonly clock: LamportClock;
+	private readonly clockMap: LamportClockMap;
 	private readonly logger: ILogger;
 
 	constructor(
 		postStore: IPostStore,
 		crypto: CryptoService,
-		clock: LamportClock,
+		clockMap: LamportClockMap,
 		logger: ILogger,
 	) {
 		this.postStore = postStore;
 		this.crypto = crypto;
-		this.clock = clock;
+		this.clockMap = clockMap;
 		this.logger = logger;
 	}
 
@@ -53,7 +53,7 @@ export class PostIngester {
 		if (this.seen.has(post.id)) return false;
 		this.seen.add(post.id);
 		await this.postStore.save(post);
-		this.clock.merge(post.lamport);
+		this.clockMap.get(post.threadId).merge(post.lamport);
 		return true;
 	}
 }

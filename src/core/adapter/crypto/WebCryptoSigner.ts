@@ -1,5 +1,7 @@
 import type { Post } from "@/core/domain/model/Post";
+import type { Thread } from "@/core/domain/model/Thread";
 import type { ISigner } from "@/core/domain/port/ISigner";
+import { buildSignaturePayload } from "@/core/domain/service/CryptoService";
 
 const CRYPTO_DB_NAME = "nch-crypto";
 const CRYPTO_DB_VERSION = 1;
@@ -44,16 +46,14 @@ export class WebCryptoSigner implements ISigner {
 		}
 
 		// 署名ペイロード: CryptoService.verifySignature と一致させること
-		const payload = new TextEncoder().encode(
-			[
-				draft.name,
-				draft.body,
-				draft.timestamp,
-				draft.boardId,
-				draft.threadId,
-				draft.lamport,
-			].join("|"),
-		);
+		const payload = buildSignaturePayload([
+			draft.name,
+			draft.body,
+			draft.timestamp,
+			draft.boardId,
+			draft.threadId,
+			draft.lamport,
+		]);
 		const sigBuf = await crypto.subtle.sign(
 			"Ed25519",
 			this.keyPair.privateKey,
@@ -80,6 +80,27 @@ export class WebCryptoSigner implements ISigner {
 			.join("");
 
 		return { ...draft, id, signature };
+	}
+
+	async signThread(draft: Omit<Thread, "signature">): Promise<Thread> {
+		if (!this.keyPair) {
+			throw new Error("generateKeyPair() を先に呼んでください");
+		}
+
+		// 署名ペイロード: CryptoService.verifyThreadSignature と一致させること
+		const payload = buildSignaturePayload([
+			draft.threadId,
+			draft.boardId,
+			draft.title,
+			draft.createdAt,
+			draft.publicKey,
+		]);
+		const sigBuf = await crypto.subtle.sign(
+			"Ed25519",
+			this.keyPair.privateKey,
+			payload,
+		);
+		return { ...draft, signature: bytesToBase64(new Uint8Array(sigBuf)) };
 	}
 
 	/**

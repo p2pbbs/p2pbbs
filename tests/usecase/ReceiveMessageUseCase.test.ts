@@ -1,43 +1,74 @@
 import { describe, expect, it, vi } from "vitest";
 import type { GossipMessage } from "@/core/domain/model/GossipMessage";
+import type { IThreadStore } from "@/core/domain/port/IThreadStore";
 import { CryptoService } from "@/core/domain/service/CryptoService";
-import { LamportClock } from "@/core/domain/service/LamportClock";
+import { LamportClockMap } from "@/core/domain/service/LamportClockMap";
 import { PostIngester } from "@/core/domain/service/PostIngester";
+import { ThreadIngester } from "@/core/domain/service/ThreadIngester";
 import { ReceiveMessageUseCase } from "@/core/usecase/ReceiveMessageUseCase";
-import { makeGossipMessage, makePost } from "../helpers/fixtures";
+import {
+	makeGossipMessage,
+	makePost,
+	makeThreadCreatedMessage,
+	makeThreadStore,
+} from "../helpers/fixtures";
 
 const SELF_ID = "self-node";
+const POST_THREAD_ID = "thread-1";
 
-function makeUsecase(clockOverride?: LamportClock) {
+function makeUsecase(options?: {
+	clockMap?: LamportClockMap;
+	threadStore?: IThreadStore;
+}) {
 	const postStore = {
 		save: vi.fn().mockResolvedValue(undefined),
 		getSnapshot: vi.fn().mockReturnValue([]),
 		subscribe: vi.fn(),
+		getThreadIds: vi.fn().mockReturnValue([]),
 	};
 	const signer = {
 		generateKeyPair: vi.fn(),
 		sign: vi.fn(),
+		signThread: vi.fn(),
 	};
 	const crypto = new CryptoService(signer);
 	const sigSpy = vi.spyOn(crypto, "verifySignature").mockResolvedValue(true);
 	const hashSpy = vi.spyOn(crypto, "verifyPostHash").mockResolvedValue(true);
-	const clock = clockOverride ?? new LamportClock();
-	const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
-	const ingester = new PostIngester(postStore, crypto, clock, logger);
+	const threadSigSpy = vi
+		.spyOn(crypto, "verifyThreadSignature")
+		.mockResolvedValue(true);
+	const clockMap = options?.clockMap ?? new LamportClockMap();
+	const logger = {
+		debug: vi.fn(),
+		info: vi.fn(),
+		warn: vi.fn(),
+		error: vi.fn(),
+	};
+	const threadStore = options?.threadStore ?? makeThreadStore();
+	const ingester = new PostIngester(postStore, crypto, clockMap, logger);
+	const threadIngester = new ThreadIngester(threadStore, crypto, logger);
 	const gateway = {
 		send: vi.fn(),
 		onReceive: vi.fn().mockReturnValue(vi.fn()),
 	};
-	const usecase = new ReceiveMessageUseCase(ingester, SELF_ID, gateway, logger);
+	const usecase = new ReceiveMessageUseCase(
+		ingester,
+		threadIngester,
+		SELF_ID,
+		gateway,
+		logger,
+	);
 	return {
 		usecase,
 		postStore,
+		threadStore,
 		crypto,
-		clock,
+		clockMap,
 		gateway,
 		logger,
 		sigSpy,
 		hashSpy,
+		threadSigSpy,
 	};
 }
 
@@ -69,12 +100,12 @@ describe("ReceiveMessageUseCase", () => {
 	});
 
 	it("test_execute_ValidMessage_MergesLamportClock", async () => {
-		const clock = new LamportClock();
-		const { usecase } = makeUsecase(clock);
+		const clockMap = new LamportClockMap();
+		const { usecase } = makeUsecase({ clockMap });
 		await usecase.execute(
 			makeGossipMessage({ post: makePost({ lamport: 5 }) }),
 		);
-		expect(clock.current()).toBe(5);
+		expect(clockMap.get(POST_THREAD_ID).current()).toBe(5);
 	});
 
 	it("test_execute_ConcurrentPosts_BothAreSaved", async () => {
@@ -219,11 +250,11 @@ describe("ReceiveMessageUseCase", () => {
 	// --- 処理順序: clock.merge は保存後 ---
 
 	it("test_execute_LamportMerge_HappensAfterSave", async () => {
-		const clock = new LamportClock();
-		const { usecase, postStore } = makeUsecase(clock);
+		const clockMap = new LamportClockMap();
+		const { usecase, postStore } = makeUsecase({ clockMap });
 		let clockAtSave = -1;
 		postStore.save.mockImplementation(() => {
-			clockAtSave = clock.current();
+			clockAtSave = clockMap.get(POST_THREAD_ID).current();
 			return Promise.resolve();
 		});
 		await usecase.execute(
@@ -232,6 +263,112 @@ describe("ReceiveMessageUseCase", () => {
 		// save 実行時点ではまだ clock は更新されていない
 		expect(clockAtSave).toBe(0);
 		// save 後に merge されて 8 になっている
-		expect(clock.current()).toBe(8);
+		expect(clockMap.get(POST_THREAD_ID).current()).toBe(8);
+	});
+
+	// =============================================
+	// Story 15c: thread_created 受信
+	// =============================================
+
+	it("test_execute_ValidThreadCreated_SavesThreadAndPost", async () => {
+		const { usecase, postStore, threadStore } = makeUsecase();
+		const msg = makeThreadCreatedMessage();
+		await usecase.execute(msg);
+		expect(threadStore.save).toHaveBeenCalledOnce();
+		expect(postStore.save).toHaveBeenCalledOnce();
+	});
+
+	it("test_execute_ValidThreadCreated_FansOut", async () => {
+		const { usecase, gateway } = makeUsecase();
+		await usecase.execute(
+			makeThreadCreatedMessage({ ttl: 3, path: ["peer-a"] }),
+		);
+		expect(gateway.send).toHaveBeenCalledOnce();
+		const forwarded = gateway.send.mock.calls[0]?.[0] as GossipMessage;
+		expect(forwarded.type).toBe("thread_created");
+		expect(forwarded.ttl).toBe(2);
+		expect(forwarded.path).toContain(SELF_ID);
+	});
+
+	it("test_execute_ThreadInvalidSignature_DoesNotSaveThreadButSavesPost", async () => {
+		const { usecase, postStore, threadStore, threadSigSpy } = makeUsecase();
+		threadSigSpy.mockResolvedValue(false);
+		await usecase.execute(makeThreadCreatedMessage());
+		// Thread は無視。Post は独立して有効なので保存される
+		expect(threadStore.save).not.toHaveBeenCalled();
+		expect(postStore.save).toHaveBeenCalledOnce();
+	});
+
+	it("test_execute_ThreadIdMismatchCreatedAt_DoesNotSaveThread", async () => {
+		const { usecase, threadStore } = makeUsecase();
+		// threadId が String(createdAt) と一致しない
+		const msg = makeThreadCreatedMessage({
+			thread: {
+				threadId: "9999999999999",
+				boardId: "mona",
+				title: "テストスレ",
+				createdAt: 1700000000000,
+				signature: "valid-sig",
+				publicKey: "pubkey-base64",
+			},
+			post: makePost({
+				threadId: "9999999999999",
+				boardId: "mona",
+				lamport: 1,
+			}),
+		});
+		await usecase.execute(msg);
+		expect(threadStore.save).not.toHaveBeenCalled();
+	});
+
+	it("test_execute_PostThreadIdMismatchThread_DoesNotSaveThread", async () => {
+		const { usecase, threadStore, postStore, logger } = makeUsecase();
+		// post.threadId が thread.threadId と紐づかない
+		const msg = makeThreadCreatedMessage({
+			post: makePost({
+				threadId: "different-thread",
+				boardId: "mona",
+				lamport: 1,
+			}),
+		});
+		await usecase.execute(msg);
+		expect(threadStore.save).not.toHaveBeenCalled();
+		// Post 自体は有効なので保存される
+		expect(postStore.save).toHaveBeenCalledOnce();
+		expect(logger.warn).toHaveBeenCalledWith(
+			"receive.thread_post_mismatch",
+			expect.anything(),
+		);
+	});
+
+	it("test_execute_DuplicateThreadCreated_SavesOnlyOnceAndFansOutOnce", async () => {
+		const { usecase, threadStore, gateway } = makeUsecase();
+		const msg = makeThreadCreatedMessage();
+		await usecase.execute(msg);
+		await usecase.execute(msg);
+		expect(threadStore.save).toHaveBeenCalledOnce();
+		expect(gateway.send).toHaveBeenCalledOnce();
+	});
+
+	it("test_execute_ThreadKnownButPostNew_SavesPostAndFansOut", async () => {
+		// Thread は既知（has=true）だが Post は新規 → Post 保存 + 伝播
+		const existing = makeThreadCreatedMessage();
+		const thread = (
+			existing as Extract<GossipMessage, { type: "thread_created" }>
+		).thread;
+		const { usecase, postStore, gateway } = makeUsecase({
+			threadStore: makeThreadStore([thread]),
+		});
+		await usecase.execute(existing);
+		expect(postStore.save).toHaveBeenCalledOnce();
+		expect(gateway.send).toHaveBeenCalledOnce();
+	});
+
+	it("test_execute_ThreadCreatedTtlZero_SavesButDoesNotFanOut", async () => {
+		const { usecase, threadStore, postStore, gateway } = makeUsecase();
+		await usecase.execute(makeThreadCreatedMessage({ ttl: 0 }));
+		expect(threadStore.save).toHaveBeenCalledOnce();
+		expect(postStore.save).toHaveBeenCalledOnce();
+		expect(gateway.send).not.toHaveBeenCalled();
 	});
 });
