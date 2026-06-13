@@ -6,6 +6,7 @@ import { LamportClockMap } from "@/core/domain/service/LamportClockMap";
 import { PostIngester } from "@/core/domain/service/PostIngester";
 import { ThreadIngester } from "@/core/domain/service/ThreadIngester";
 import { ReceiveMessageUseCase } from "@/core/usecase/ReceiveMessageUseCase";
+import { TEST_BOARD_ID, TEST_THREAD_ID } from "../helpers/constants";
 import {
 	makeGossipMessage,
 	makePost,
@@ -14,7 +15,7 @@ import {
 } from "../helpers/fixtures";
 
 const SELF_ID = "self-node";
-const POST_THREAD_ID = "thread-1";
+const POST_THREAD_ID = TEST_THREAD_ID;
 
 function makeUsecase(options?: {
 	clockMap?: LamportClockMap;
@@ -305,7 +306,7 @@ describe("ReceiveMessageUseCase", () => {
 		const msg = makeThreadCreatedMessage({
 			thread: {
 				threadId: "9999999999999",
-				boardId: "mona",
+				boardId: TEST_BOARD_ID,
 				title: "テストスレ",
 				createdAt: 1700000000000,
 				signature: "valid-sig",
@@ -313,7 +314,7 @@ describe("ReceiveMessageUseCase", () => {
 			},
 			post: makePost({
 				threadId: "9999999999999",
-				boardId: "mona",
+				boardId: TEST_BOARD_ID,
 				lamport: 1,
 			}),
 		});
@@ -327,7 +328,7 @@ describe("ReceiveMessageUseCase", () => {
 		const msg = makeThreadCreatedMessage({
 			post: makePost({
 				threadId: "different-thread",
-				boardId: "mona",
+				boardId: TEST_BOARD_ID,
 				lamport: 1,
 			}),
 		});

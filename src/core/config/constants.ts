@@ -10,15 +10,6 @@ export const MAX_POST_BYTES = 4096;
 /** ゴシップメッセージの初期 TTL（ホップ上限）。 */
 export const TTL_INITIAL = 7;
 
-/** MVP で使用する固定の板 ID。 */
-export const DEFAULT_BOARD_ID = "board-1";
-
-/** MVP で使用する固定のスレ ID。 */
-export const DEFAULT_THREAD_ID = "thread-1";
-
-/** MVP で使用する固定のスレタイトル。 */
-export const DEFAULT_THREAD_TITLE = "nch 雑談スレ";
-
 /** シグナリングサーバーのデフォルト WebSocket URL。 */
 export const SIGNALING_URL =
 	import.meta.env.VITE_SIGNALING_URL ?? "ws://[::1]:8765";

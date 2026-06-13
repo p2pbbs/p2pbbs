@@ -12,10 +12,11 @@ import { LamportClockMap } from "@/core/domain/service/LamportClockMap";
 import { PostIngester } from "@/core/domain/service/PostIngester";
 import { ThreadIngester } from "@/core/domain/service/ThreadIngester";
 import { ExchangeDigestUseCase } from "@/core/usecase/ExchangeDigestUseCase";
+import { TEST_BOARD_ID, TEST_THREAD_ID } from "../helpers/constants";
 import { makePost, makeThread, makeThreadStore } from "../helpers/fixtures";
 
-const BOARD_ID = "board-1";
-const THREAD_ID = "thread-1";
+const BOARD_ID = TEST_BOARD_ID;
+const THREAD_ID = TEST_THREAD_ID;
 
 type DigestHandler = (
 	peerId: string,

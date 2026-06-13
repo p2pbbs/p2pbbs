@@ -6,6 +6,7 @@ import type { BoardSession } from "@/ui/bootstrap";
 import { ThreadListView } from "@/ui/components/pages/ThreadListView";
 import type { Session } from "@/ui/session";
 import { BoardSessionProvider, SessionProvider } from "@/ui/session";
+import { TEST_BOARD_ID } from "../../helpers/constants";
 import { makePost, makeThread, makeThreadStore } from "../../helpers/fixtures";
 
 function renderView(opts: { session: Session; board: BoardSession }) {
@@ -31,7 +32,7 @@ function makeSession(overrides: Partial<Session>): Session {
 
 function makeBoard(overrides: Partial<BoardSession>): BoardSession {
 	return {
-		boardId: "mona",
+		boardId: TEST_BOARD_ID,
 		exchangeDigestUseCase: {
 			canPost: () => true,
 			subscribe: () => () => {},
@@ -44,7 +45,7 @@ function makeBoard(overrides: Partial<BoardSession>): BoardSession {
 describe("ThreadListView", () => {
 	it("test_ThreadListView_RendersThreadsFromStore", () => {
 		const threadStore = makeThreadStore([
-			makeThread({ threadId: "t1", boardId: "mona", title: "既存スレ" }),
+			makeThread({ threadId: "t1", boardId: TEST_BOARD_ID, title: "既存スレ" }),
 		]);
 		const postStore = new InMemoryPostStore(
 			new Map([["t1", [makePost({ id: "p1", threadId: "t1", lamport: 1 })]]]),

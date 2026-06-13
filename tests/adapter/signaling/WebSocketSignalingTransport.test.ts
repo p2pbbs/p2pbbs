@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { SignalingEnvelope } from "@/core/domain/model/SignalingEnvelope";
+import { TEST_BOARD_ID, TEST_BOARD_ID_ALT } from "../../helpers/constants";
 import {
 	dummyIceCandidate,
 	dummySdp,
@@ -7,7 +8,7 @@ import {
 } from "../../helpers/mockSignaling";
 
 const PEER_ID = "my-peer-uuid";
-const BOARD_ID = "mona";
+const BOARD_ID = TEST_BOARD_ID;
 
 // reconnecting-websocket を最小スタブに差し替える
 let lastWs: {
@@ -141,14 +142,18 @@ describe("WebSocketSignalingTransport", () => {
 	it("test_discover_switchBoard_reconnectResendsLatestBoardId", async () => {
 		const { transport, ws } = await makeTransport();
 		ws.simulateOpen();
-		void transport.discover(PEER_ID, "mona");
-		void transport.discover(PEER_ID, "yaruo");
+		void transport.discover(PEER_ID, TEST_BOARD_ID);
+		void transport.discover(PEER_ID, TEST_BOARD_ID_ALT);
 		ws.send.mockClear();
 
 		// 板切り替え後の再接続では最新の板で再 join する
 		ws.simulateOpen();
 		const msg = JSON.parse(ws.send.mock.calls[0]?.[0] as string);
-		expect(msg).toEqual({ type: "join", peerId: PEER_ID, boardId: "yaruo" });
+		expect(msg).toEqual({
+			type: "join",
+			peerId: PEER_ID,
+			boardId: TEST_BOARD_ID_ALT,
+		});
 	});
 
 	// --- send / onMessage ---

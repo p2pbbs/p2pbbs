@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { WebRTCGateway } from "@/core/adapter/gossip/WebRTCGateway";
 import type { IDataChannel } from "@/core/domain/port/IDataChannel";
+import { TEST_BOARD_ID } from "../../helpers/constants";
 import { makeGossipMessage, makeThread } from "../../helpers/fixtures";
 
 const PEER_A = "peer-a";
@@ -144,15 +145,15 @@ describe("WebRTCGateway", () => {
 		const dc = makeMockDc();
 		channels.set(PEER_A, dc);
 		const threads = [{ threadId: "t1", maxLamport: 5, postCount: 3 }];
-		gateway.sendDigest(PEER_A, "board-1", threads);
+		gateway.sendDigest(PEER_A, TEST_BOARD_ID, threads);
 		expect(dc.send).toHaveBeenCalledWith(
-			JSON.stringify({ type: "digest", boardId: "board-1", threads }),
+			JSON.stringify({ type: "digest", boardId: TEST_BOARD_ID, threads }),
 		);
 	});
 
 	it("test_sendDigest_UnknownPeer_DoesNotThrow", () => {
 		expect(() =>
-			gateway.sendDigest("unknown-peer", "board-1", []),
+			gateway.sendDigest("unknown-peer", TEST_BOARD_ID, []),
 		).not.toThrow();
 	});
 
@@ -162,7 +163,7 @@ describe("WebRTCGateway", () => {
 			throw new Error("dc closing");
 		});
 		channels.set(PEER_A, dc);
-		expect(() => gateway.sendDigest(PEER_A, "board-1", [])).not.toThrow();
+		expect(() => gateway.sendDigest(PEER_A, TEST_BOARD_ID, [])).not.toThrow();
 	});
 
 	// --- handleIncoming / onDigestReceive (digest) ---
@@ -173,9 +174,9 @@ describe("WebRTCGateway", () => {
 		const threads = [{ threadId: "t1", maxLamport: 5, postCount: 3 }];
 		gateway.handleIncoming(
 			PEER_A,
-			JSON.stringify({ type: "digest", boardId: "board-1", threads }),
+			JSON.stringify({ type: "digest", boardId: TEST_BOARD_ID, threads }),
 		);
-		expect(handler).toHaveBeenCalledWith(PEER_A, "board-1", threads);
+		expect(handler).toHaveBeenCalledWith(PEER_A, TEST_BOARD_ID, threads);
 	});
 
 	it("test_handleIncoming_DigestMessage_PassesPeerId", () => {
@@ -183,9 +184,9 @@ describe("WebRTCGateway", () => {
 		gateway.onDigestReceive(handler);
 		gateway.handleIncoming(
 			"peer-x",
-			JSON.stringify({ type: "digest", boardId: "board-1", threads: [] }),
+			JSON.stringify({ type: "digest", boardId: TEST_BOARD_ID, threads: [] }),
 		);
-		expect(handler).toHaveBeenCalledWith("peer-x", "board-1", []);
+		expect(handler).toHaveBeenCalledWith("peer-x", TEST_BOARD_ID, []);
 	});
 
 	it("test_handleIncoming_Digest_DoesNotCallGossipHandlers", () => {
@@ -193,7 +194,7 @@ describe("WebRTCGateway", () => {
 		gateway.onReceive(gossipHandler);
 		gateway.handleIncoming(
 			PEER_A,
-			JSON.stringify({ type: "digest", boardId: "board-1", threads: [] }),
+			JSON.stringify({ type: "digest", boardId: TEST_BOARD_ID, threads: [] }),
 		);
 		expect(gossipHandler).not.toHaveBeenCalled();
 	});
@@ -204,7 +205,7 @@ describe("WebRTCGateway", () => {
 		unsub();
 		gateway.handleIncoming(
 			PEER_A,
-			JSON.stringify({ type: "digest", boardId: "board-1", threads: [] }),
+			JSON.stringify({ type: "digest", boardId: TEST_BOARD_ID, threads: [] }),
 		);
 		expect(handler).not.toHaveBeenCalled();
 	});
@@ -215,14 +216,16 @@ describe("WebRTCGateway", () => {
 		const dc = makeMockDc();
 		channels.set(PEER_A, dc);
 		const posts = [makeGossipMessage().post];
-		gateway.sendSync(PEER_A, "board-1", posts);
+		gateway.sendSync(PEER_A, TEST_BOARD_ID, posts);
 		expect(dc.send).toHaveBeenCalledWith(
-			JSON.stringify({ type: "sync", boardId: "board-1", posts }),
+			JSON.stringify({ type: "sync", boardId: TEST_BOARD_ID, posts }),
 		);
 	});
 
 	it("test_sendSync_UnknownPeer_DoesNotThrow", () => {
-		expect(() => gateway.sendSync("unknown-peer", "board-1", [])).not.toThrow();
+		expect(() =>
+			gateway.sendSync("unknown-peer", TEST_BOARD_ID, []),
+		).not.toThrow();
 	});
 
 	it("test_sendSync_ChannelThrows_DoesNotPropagateError", () => {
@@ -231,7 +234,7 @@ describe("WebRTCGateway", () => {
 			throw new Error("dc closing");
 		});
 		channels.set(PEER_A, dc);
-		expect(() => gateway.sendSync(PEER_A, "board-1", [])).not.toThrow();
+		expect(() => gateway.sendSync(PEER_A, TEST_BOARD_ID, [])).not.toThrow();
 	});
 
 	// --- handleIncoming / onSyncReceive (sync) ---
@@ -242,9 +245,9 @@ describe("WebRTCGateway", () => {
 		const posts = [makeGossipMessage().post];
 		gateway.handleIncoming(
 			PEER_A,
-			JSON.stringify({ type: "sync", boardId: "board-1", posts }),
+			JSON.stringify({ type: "sync", boardId: TEST_BOARD_ID, posts }),
 		);
-		expect(handler).toHaveBeenCalledWith(PEER_A, "board-1", posts, []);
+		expect(handler).toHaveBeenCalledWith(PEER_A, TEST_BOARD_ID, posts, []);
 	});
 
 	it("test_handleIncoming_SyncMessage_PassesPeerId", () => {
@@ -252,9 +255,9 @@ describe("WebRTCGateway", () => {
 		gateway.onSyncReceive(handler);
 		gateway.handleIncoming(
 			"peer-x",
-			JSON.stringify({ type: "sync", boardId: "board-1", posts: [] }),
+			JSON.stringify({ type: "sync", boardId: TEST_BOARD_ID, posts: [] }),
 		);
-		expect(handler).toHaveBeenCalledWith("peer-x", "board-1", [], []);
+		expect(handler).toHaveBeenCalledWith("peer-x", TEST_BOARD_ID, [], []);
 	});
 
 	it("test_handleIncoming_Sync_DoesNotCallGossipHandlers", () => {
@@ -262,7 +265,7 @@ describe("WebRTCGateway", () => {
 		gateway.onReceive(gossipHandler);
 		gateway.handleIncoming(
 			PEER_A,
-			JSON.stringify({ type: "sync", boardId: "board-1", posts: [] }),
+			JSON.stringify({ type: "sync", boardId: TEST_BOARD_ID, posts: [] }),
 		);
 		expect(gossipHandler).not.toHaveBeenCalled();
 	});
@@ -277,7 +280,11 @@ describe("WebRTCGateway", () => {
 		);
 		gateway.handleIncoming(
 			PEER_A,
-			JSON.stringify({ type: "sync", boardId: "board-1", posts: tooManyPosts }),
+			JSON.stringify({
+				type: "sync",
+				boardId: TEST_BOARD_ID,
+				posts: tooManyPosts,
+			}),
 		);
 		expect(handler).not.toHaveBeenCalled();
 	});
@@ -288,7 +295,7 @@ describe("WebRTCGateway", () => {
 		unsub();
 		gateway.handleIncoming(
 			PEER_A,
-			JSON.stringify({ type: "sync", boardId: "board-1", posts: [] }),
+			JSON.stringify({ type: "sync", boardId: TEST_BOARD_ID, posts: [] }),
 		);
 		expect(handler).not.toHaveBeenCalled();
 	});
@@ -300,16 +307,16 @@ describe("WebRTCGateway", () => {
 		channels.set(PEER_A, dc);
 		const posts = [makeGossipMessage().post];
 		const threads = [makeThread()];
-		gateway.sendSync(PEER_A, "board-1", posts, threads);
+		gateway.sendSync(PEER_A, TEST_BOARD_ID, posts, threads);
 		expect(dc.send).toHaveBeenCalledWith(
-			JSON.stringify({ type: "sync", boardId: "board-1", posts, threads }),
+			JSON.stringify({ type: "sync", boardId: TEST_BOARD_ID, posts, threads }),
 		);
 	});
 
 	it("test_sendSync_EmptyThreads_OmitsThreadsField", () => {
 		const dc = makeMockDc();
 		channels.set(PEER_A, dc);
-		gateway.sendSync(PEER_A, "board-1", [], []);
+		gateway.sendSync(PEER_A, TEST_BOARD_ID, [], []);
 		const sent = JSON.parse(vi.mocked(dc.send).mock.calls[0]?.[0] as string);
 		expect(sent).not.toHaveProperty("threads");
 	});
@@ -317,7 +324,7 @@ describe("WebRTCGateway", () => {
 	it("test_sendSync_NoThreadsArg_OmitsThreadsField", () => {
 		const dc = makeMockDc();
 		channels.set(PEER_A, dc);
-		gateway.sendSync(PEER_A, "board-1", []);
+		gateway.sendSync(PEER_A, TEST_BOARD_ID, []);
 		const sent = JSON.parse(vi.mocked(dc.send).mock.calls[0]?.[0] as string);
 		expect(sent).not.toHaveProperty("threads");
 	});
@@ -330,9 +337,14 @@ describe("WebRTCGateway", () => {
 		const threads = [makeThread()];
 		gateway.handleIncoming(
 			PEER_A,
-			JSON.stringify({ type: "sync", boardId: "board-1", posts: [], threads }),
+			JSON.stringify({
+				type: "sync",
+				boardId: TEST_BOARD_ID,
+				posts: [],
+				threads,
+			}),
 		);
-		expect(handler).toHaveBeenCalledWith(PEER_A, "board-1", [], threads);
+		expect(handler).toHaveBeenCalledWith(PEER_A, TEST_BOARD_ID, [], threads);
 	});
 
 	it("test_handleIncoming_SyncWithoutThreads_PassesEmptyArrayToHandler", () => {
@@ -340,8 +352,8 @@ describe("WebRTCGateway", () => {
 		gateway.onSyncReceive(handler);
 		gateway.handleIncoming(
 			PEER_A,
-			JSON.stringify({ type: "sync", boardId: "board-1", posts: [] }),
+			JSON.stringify({ type: "sync", boardId: TEST_BOARD_ID, posts: [] }),
 		);
-		expect(handler).toHaveBeenCalledWith(PEER_A, "board-1", [], []);
+		expect(handler).toHaveBeenCalledWith(PEER_A, TEST_BOARD_ID, [], []);
 	});
 });

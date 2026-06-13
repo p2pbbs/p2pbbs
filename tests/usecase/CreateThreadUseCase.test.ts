@@ -10,9 +10,10 @@ import { CryptoService } from "@/core/domain/service/CryptoService";
 import { LamportClockMap } from "@/core/domain/service/LamportClockMap";
 import { ThreadIngester } from "@/core/domain/service/ThreadIngester";
 import { CreateThreadUseCase } from "@/core/usecase/CreateThreadUseCase";
+import { TEST_BOARD_ID } from "../helpers/constants";
 import { makeThread, makeThreadStore } from "../helpers/fixtures";
 
-const BOARD = "mona";
+const BOARD = TEST_BOARD_ID;
 const PUBLIC_KEY = "pubkey-base64";
 const OD_ID = "abcd1234";
 const PEER_ID = "550e8400-e29b-41d4-a716-446655440000";

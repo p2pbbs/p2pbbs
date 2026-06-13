@@ -2,6 +2,7 @@ import { IDBFactory } from "fake-indexeddb";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { WebCryptoSigner } from "@/core/adapter/crypto/WebCryptoSigner";
 import { CryptoService } from "@/core/domain/service/CryptoService";
+import { TEST_BOARD_ID } from "../../helpers/constants";
 import { makePost, makeThread } from "../../helpers/fixtures";
 
 describe("CryptoService", () => {
@@ -37,7 +38,7 @@ describe("CryptoService", () => {
 
 		it("test_computePostHash_DifferentBoardId_ReturnsDifferentHash", async () => {
 			const h1 = await service.computePostHash(
-				makePost({ boardId: "board-1" }),
+				makePost({ boardId: TEST_BOARD_ID }),
 			);
 			const h2 = await service.computePostHash(
 				makePost({ boardId: "board-2" }),

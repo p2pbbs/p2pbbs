@@ -2,6 +2,7 @@ import { IDBFactory } from "fake-indexeddb";
 import { describe, expect, it, vi } from "vitest";
 import { IndexedDBPostStore } from "@/core/adapter/storage/IndexedDBPostStore";
 import type { ILogger } from "@/core/domain/port/ILogger";
+import { TEST_THREAD_ID } from "../../helpers/constants";
 import { makePost } from "../../helpers/fixtures";
 
 function makeLogger(): ILogger {
@@ -17,7 +18,7 @@ describe("IndexedDBPostStore", () => {
 	it("test_load_EmptyDB_GetSnapshotReturnsEmpty", async () => {
 		const store = makeStore();
 		await store.load();
-		expect(store.getSnapshot("thread-1")).toHaveLength(0);
+		expect(store.getSnapshot(TEST_THREAD_ID)).toHaveLength(0);
 	});
 
 	it("test_load_WithSavedPosts_RestoresPostsToMemory", async () => {
@@ -40,7 +41,7 @@ describe("IndexedDBPostStore", () => {
 		await store.load();
 		await store.save(makePost({ id: "sync-test" }));
 		// getSnapshot は同期で返ること（Promise でなく Post[] を直接返す）
-		const result = store.getSnapshot("thread-1");
+		const result = store.getSnapshot(TEST_THREAD_ID);
 		expect(result).toHaveLength(1);
 	});
 
@@ -49,12 +50,12 @@ describe("IndexedDBPostStore", () => {
 		const store = new IndexedDBPostStore(makeLogger(), idb);
 		// load() を呼ばずに save() — メモリには書くが IndexedDB には書かない
 		await store.save(makePost({ id: "pre-load" }));
-		expect(store.getSnapshot("thread-1")).toHaveLength(1);
+		expect(store.getSnapshot(TEST_THREAD_ID)).toHaveLength(1);
 
 		// 別インスタンスで load しても pre-load 投稿は存在しない
 		const store2 = new IndexedDBPostStore(makeLogger(), idb);
 		await store2.load();
-		expect(store2.getSnapshot("thread-1")).toHaveLength(0);
+		expect(store2.getSnapshot(TEST_THREAD_ID)).toHaveLength(0);
 	});
 
 	it("test_save_DuplicatePost_DoesNotDuplicate", async () => {
@@ -70,7 +71,7 @@ describe("IndexedDBPostStore", () => {
 		const store = makeStore();
 		await store.load();
 		const cb = vi.fn();
-		store.subscribe("thread-1", cb);
+		store.subscribe(TEST_THREAD_ID, cb);
 		await store.save(makePost());
 		expect(cb).toHaveBeenCalledOnce();
 	});
@@ -79,7 +80,7 @@ describe("IndexedDBPostStore", () => {
 		const store = makeStore();
 		await store.load();
 		const cb = vi.fn();
-		const unsub = store.subscribe("thread-1", cb);
+		const unsub = store.subscribe(TEST_THREAD_ID, cb);
 		unsub();
 		await store.save(makePost());
 		expect(cb).not.toHaveBeenCalled();
@@ -110,7 +111,7 @@ describe("IndexedDBPostStore", () => {
 		await store.load();
 
 		// 破損投稿は safeParse 失敗 → スキップされる
-		expect(store.getSnapshot("thread-1")).toHaveLength(0);
+		expect(store.getSnapshot(TEST_THREAD_ID)).toHaveLength(0);
 		// storage.load_corrupt で warn が記録されること
 		expect(logger.warn).toHaveBeenCalledWith(
 			"storage.load_corrupt",

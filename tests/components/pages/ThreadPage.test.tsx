@@ -6,6 +6,7 @@ import type { BoardSession } from "@/ui/bootstrap";
 import { ThreadPage } from "@/ui/components/pages/ThreadPage";
 import type { Session } from "@/ui/session";
 import { BoardSessionProvider, SessionProvider } from "@/ui/session";
+import { TEST_BOARD_ID } from "../../helpers/constants";
 import { makePost, makeThread, makeThreadStore } from "../../helpers/fixtures";
 
 function renderPage(opts: {
@@ -14,7 +15,7 @@ function renderPage(opts: {
 	threadId: string;
 }) {
 	return render(
-		<MemoryRouter initialEntries={[`/board/mona/${opts.threadId}`]}>
+		<MemoryRouter initialEntries={[`/board/${TEST_BOARD_ID}/${opts.threadId}`]}>
 			<SessionProvider value={opts.session}>
 				<BoardSessionProvider value={opts.board}>
 					<Routes>
@@ -42,7 +43,7 @@ function makeSession(overrides: Partial<Session>): Session {
 
 function makeBoard(): BoardSession {
 	return {
-		boardId: "mona",
+		boardId: TEST_BOARD_ID,
 		gateway: {},
 		exchangeDigestUseCase: {
 			canPost: () => true,
@@ -54,7 +55,11 @@ function makeBoard(): BoardSession {
 describe("ThreadPage", () => {
 	it("test_ThreadPage_ExistingThread_RendersTitleAndPosts", () => {
 		const threadStore = makeThreadStore([
-			makeThread({ threadId: "t1", boardId: "mona", title: "テストスレ" }),
+			makeThread({
+				threadId: "t1",
+				boardId: TEST_BOARD_ID,
+				title: "テストスレ",
+			}),
 		]);
 		const postStore = new InMemoryPostStore(
 			new Map([

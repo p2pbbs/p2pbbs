@@ -5,9 +5,10 @@ import type { ILogger } from "@/core/domain/port/ILogger";
 import type { IThreadStore } from "@/core/domain/port/IThreadStore";
 import { CryptoService } from "@/core/domain/service/CryptoService";
 import { ThreadIngester } from "@/core/domain/service/ThreadIngester";
+import { TEST_BOARD_ID } from "../../helpers/constants";
 import { makeThread, makeThreadStore } from "../../helpers/fixtures";
 
-const BOARD_ID = "mona";
+const BOARD_ID = TEST_BOARD_ID;
 
 function makeLogger(): ILogger {
 	return { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() };

@@ -5,10 +5,11 @@ import type { Post } from "@/core/domain/model/Post";
 import { CryptoService } from "@/core/domain/service/CryptoService";
 import { LamportClockMap } from "@/core/domain/service/LamportClockMap";
 import { PostMessageUseCase } from "@/core/usecase/PostMessageUseCase";
+import { TEST_BOARD_ID, TEST_THREAD_ID } from "../helpers/constants";
 import { makePost } from "../helpers/fixtures";
 
-const THREAD = "thread-1";
-const BOARD = "board-1";
+const THREAD = TEST_THREAD_ID;
+const BOARD = TEST_BOARD_ID;
 const PUBLIC_KEY = "pubkey-base64";
 const OD_ID = "abcd1234";
 const PEER_ID = "550e8400-e29b-41d4-a716-446655440000";

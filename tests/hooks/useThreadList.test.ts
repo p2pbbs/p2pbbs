@@ -2,6 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { InMemoryPostStore } from "@/core/adapter/storage/InMemoryPostStore";
 import { useThreadList } from "@/ui/hooks/useThreadList";
+import { TEST_BOARD_ID, TEST_BOARD_ID_ALT } from "../helpers/constants";
 import { makePost, makeThread, makeThreadStore } from "../helpers/fixtures";
 
 const DAY = 86_400_000;
@@ -11,12 +12,12 @@ describe("useThreadList", () => {
 		const now = Date.now();
 		const slow = makeThread({
 			threadId: "slow",
-			boardId: "mona",
+			boardId: TEST_BOARD_ID,
 			createdAt: now - 10 * DAY,
 		});
 		const hot = makeThread({
 			threadId: "hot",
-			boardId: "mona",
+			boardId: TEST_BOARD_ID,
 			createdAt: now - 1 * DAY,
 		});
 		const threadStore = makeThreadStore([slow, hot]);
@@ -35,7 +36,7 @@ describe("useThreadList", () => {
 		);
 
 		const { result } = renderHook(() =>
-			useThreadList(threadStore, postStore, "mona"),
+			useThreadList(threadStore, postStore, TEST_BOARD_ID),
 		);
 
 		expect(result.current.items.map((i) => i.thread.threadId)).toEqual([
@@ -47,12 +48,12 @@ describe("useThreadList", () => {
 
 	it("test_useThreadList_OnlyReturnsThreadsForGivenBoard", () => {
 		const threadStore = makeThreadStore([
-			makeThread({ threadId: "m1", boardId: "mona" }),
-			makeThread({ threadId: "y1", boardId: "yaruo" }),
+			makeThread({ threadId: "m1", boardId: TEST_BOARD_ID }),
+			makeThread({ threadId: "y1", boardId: TEST_BOARD_ID_ALT }),
 		]);
 		const postStore = new InMemoryPostStore();
 		const { result } = renderHook(() =>
-			useThreadList(threadStore, postStore, "mona"),
+			useThreadList(threadStore, postStore, TEST_BOARD_ID),
 		);
 		expect(result.current.items.map((i) => i.thread.threadId)).toEqual(["m1"]);
 	});
@@ -61,7 +62,7 @@ describe("useThreadList", () => {
 		const threadStore = makeThreadStore([
 			makeThread({
 				threadId: "future",
-				boardId: "mona",
+				boardId: TEST_BOARD_ID,
 				createdAt: Date.now() + DAY,
 			}),
 		]);
@@ -71,7 +72,7 @@ describe("useThreadList", () => {
 			]),
 		);
 		const { result } = renderHook(() =>
-			useThreadList(threadStore, postStore, "mona"),
+			useThreadList(threadStore, postStore, TEST_BOARD_ID),
 		);
 		expect(result.current.items[0]?.momentum).toBeTypeOf("number");
 		expect(Number.isFinite(result.current.items[0]?.momentum)).toBe(true);
@@ -79,11 +80,11 @@ describe("useThreadList", () => {
 
 	it("test_useThreadList_WithoutRefresh_DoesNotAutoUpdate", async () => {
 		const threadStore = makeThreadStore([
-			makeThread({ threadId: "t1", boardId: "mona" }),
+			makeThread({ threadId: "t1", boardId: TEST_BOARD_ID }),
 		]);
 		const postStore = new InMemoryPostStore();
 		const { result } = renderHook(() =>
-			useThreadList(threadStore, postStore, "mona"),
+			useThreadList(threadStore, postStore, TEST_BOARD_ID),
 		);
 		expect(result.current.items[0]?.postCount).toBe(0);
 

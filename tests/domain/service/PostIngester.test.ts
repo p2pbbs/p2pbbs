@@ -4,10 +4,11 @@ import type { IPostStore } from "@/core/domain/port/IPostStore";
 import { CryptoService } from "@/core/domain/service/CryptoService";
 import { LamportClockMap } from "@/core/domain/service/LamportClockMap";
 import { PostIngester } from "@/core/domain/service/PostIngester";
+import { TEST_THREAD_ID } from "../../helpers/constants";
 import { makePost } from "../../helpers/fixtures";
 
 /** makePost のデフォルト threadId。clockMap の検証に使う。 */
-const THREAD_ID = "thread-1";
+const THREAD_ID = TEST_THREAD_ID;
 
 function makePostStore(): IPostStore {
 	return {

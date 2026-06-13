@@ -2,6 +2,7 @@ import { IDBFactory } from "fake-indexeddb";
 import { describe, expect, it, vi } from "vitest";
 import { IndexedDBThreadStore } from "@/core/adapter/storage/IndexedDBThreadStore";
 import type { ILogger } from "@/core/domain/port/ILogger";
+import { TEST_BOARD_ID } from "../../helpers/constants";
 import { makeThread } from "../../helpers/fixtures";
 
 function makeLogger(): ILogger {
@@ -18,19 +19,22 @@ describe("IndexedDBThreadStore", () => {
 	it("test_load_EmptyDB_GetByBoardReturnsEmpty", async () => {
 		const store = makeStore();
 		await store.load();
-		expect(store.getByBoard("mona")).toHaveLength(0);
+		expect(store.getByBoard(TEST_BOARD_ID)).toHaveLength(0);
 	});
 
 	it("test_load_WithSavedThreads_RestoresThreadsToMemory", async () => {
 		const idb = new IDBFactory();
 		const store1 = new IndexedDBThreadStore(makeLogger(), idb);
 		await store1.load();
-		const thread = makeThread({ threadId: "t-restore", boardId: "mona" });
+		const thread = makeThread({
+			threadId: "t-restore",
+			boardId: TEST_BOARD_ID,
+		});
 		await store1.save(thread);
 
 		const store2 = new IndexedDBThreadStore(makeLogger(), idb);
 		await store2.load();
-		const threads = store2.getByBoard("mona");
+		const threads = store2.getByBoard(TEST_BOARD_ID);
 		expect(threads).toHaveLength(1);
 		expect(threads[0]?.threadId).toBe("t-restore");
 	});
@@ -61,7 +65,7 @@ describe("IndexedDBThreadStore", () => {
 		const store = new IndexedDBThreadStore(logger, idb);
 		await store.load();
 
-		expect(store.getByBoard("mona")).toHaveLength(0);
+		expect(store.getByBoard(TEST_BOARD_ID)).toHaveLength(0);
 		expect(logger.warn).toHaveBeenCalledWith(
 			"thread_store.load_corrupt",
 			expect.objectContaining({ error: expect.any(String) }),
@@ -74,22 +78,22 @@ describe("IndexedDBThreadStore", () => {
 		const idb = new IDBFactory();
 		const store = new IndexedDBThreadStore(makeLogger(), idb);
 		await store.save(makeThread({ threadId: "pre-load" }));
-		expect(store.getByBoard("mona")).toHaveLength(1);
+		expect(store.getByBoard(TEST_BOARD_ID)).toHaveLength(1);
 
 		const store2 = new IndexedDBThreadStore(makeLogger(), idb);
 		await store2.load();
-		expect(store2.getByBoard("mona")).toHaveLength(0);
+		expect(store2.getByBoard(TEST_BOARD_ID)).toHaveLength(0);
 	});
 
 	it("test_save_AfterLoad_PersistsToIndexedDB", async () => {
 		const idb = new IDBFactory();
 		const store1 = new IndexedDBThreadStore(makeLogger(), idb);
 		await store1.load();
-		await store1.save(makeThread({ threadId: "t1", boardId: "mona" }));
+		await store1.save(makeThread({ threadId: "t1", boardId: TEST_BOARD_ID }));
 
 		const store2 = new IndexedDBThreadStore(makeLogger(), idb);
 		await store2.load();
-		expect(store2.getByBoard("mona")).toHaveLength(1);
+		expect(store2.getByBoard(TEST_BOARD_ID)).toHaveLength(1);
 	});
 
 	it("test_save_DuplicateThreadId_FirstWins", async () => {
@@ -100,8 +104,8 @@ describe("IndexedDBThreadStore", () => {
 		const second = makeThread({ threadId: "t1", title: "後からのタイトル" });
 		await store.save(first);
 		await store.save(second);
-		expect(store.getByBoard("mona")).toHaveLength(1);
-		expect(store.getByBoard("mona")[0]?.title).toBe("最初のタイトル");
+		expect(store.getByBoard(TEST_BOARD_ID)).toHaveLength(1);
+		expect(store.getByBoard(TEST_BOARD_ID)[0]?.title).toBe("最初のタイトル");
 	});
 
 	it("test_save_DuplicateThreadId_AfterReload_FirstWinsInDB", async () => {
@@ -117,7 +121,7 @@ describe("IndexedDBThreadStore", () => {
 
 		const store2 = new IndexedDBThreadStore(makeLogger(), idb);
 		await store2.load();
-		expect(store2.getByBoard("mona")[0]?.title).toBe("最初のタイトル");
+		expect(store2.getByBoard(TEST_BOARD_ID)[0]?.title).toBe("最初のタイトル");
 	});
 
 	// --- has ---
@@ -141,13 +145,13 @@ describe("IndexedDBThreadStore", () => {
 		const idb = new IDBFactory();
 		const store1 = new IndexedDBThreadStore(makeLogger(), idb);
 		await store1.load();
-		await store1.save(makeThread({ threadId: "t1", boardId: "mona" }));
+		await store1.save(makeThread({ threadId: "t1", boardId: TEST_BOARD_ID }));
 		await store1.delete("t1");
 		expect(store1.has("t1")).toBe(false);
 
 		const store2 = new IndexedDBThreadStore(makeLogger(), idb);
 		await store2.load();
-		expect(store2.getByBoard("mona")).toHaveLength(0);
+		expect(store2.getByBoard(TEST_BOARD_ID)).toHaveLength(0);
 	});
 
 	it("test_delete_UnknownThread_DoesNotThrow", async () => {
@@ -162,8 +166,8 @@ describe("IndexedDBThreadStore", () => {
 		const store = makeStore();
 		await store.load();
 		const cb = vi.fn();
-		store.subscribe("mona", cb);
-		await store.save(makeThread({ boardId: "mona" }));
+		store.subscribe(TEST_BOARD_ID, cb);
+		await store.save(makeThread({ boardId: TEST_BOARD_ID }));
 		expect(cb).toHaveBeenCalledOnce();
 	});
 
@@ -171,9 +175,9 @@ describe("IndexedDBThreadStore", () => {
 		const store = makeStore();
 		await store.load();
 		const cb = vi.fn();
-		const unsub = store.subscribe("mona", cb);
+		const unsub = store.subscribe(TEST_BOARD_ID, cb);
 		unsub();
-		await store.save(makeThread({ boardId: "mona" }));
+		await store.save(makeThread({ boardId: TEST_BOARD_ID }));
 		expect(cb).not.toHaveBeenCalled();
 	});
 
@@ -183,7 +187,7 @@ describe("IndexedDBThreadStore", () => {
 		const store = makeStore();
 		await store.load();
 		await store.save(makeThread({ threadId: "t1" }));
-		const result = store.getByBoard("mona");
+		const result = store.getByBoard(TEST_BOARD_ID);
 		expect(result).toHaveLength(1);
 	});
 });

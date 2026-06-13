@@ -1,30 +1,31 @@
 import { describe, expect, it } from "vitest";
 import { LamportClockMap } from "@/core/domain/service/LamportClockMap";
+import { TEST_THREAD_ID } from "../../helpers/constants";
 
 describe("LamportClockMap", () => {
 	it("test_get_UnknownThreadId_ReturnsFreshClock", () => {
 		const map = new LamportClockMap();
-		const clock = map.get("thread-1");
+		const clock = map.get(TEST_THREAD_ID);
 		expect(clock.current()).toBe(0);
 	});
 
 	it("test_get_SameThreadId_ReturnsSameInstance", () => {
 		const map = new LamportClockMap();
-		const clock1 = map.get("thread-1");
-		const clock2 = map.get("thread-1");
+		const clock1 = map.get(TEST_THREAD_ID);
+		const clock2 = map.get(TEST_THREAD_ID);
 		expect(clock1).toBe(clock2);
 	});
 
 	it("test_get_DifferentThreadIds_ReturnDifferentInstances", () => {
 		const map = new LamportClockMap();
-		const clock1 = map.get("thread-1");
+		const clock1 = map.get(TEST_THREAD_ID);
 		const clock2 = map.get("thread-2");
 		expect(clock1).not.toBe(clock2);
 	});
 
 	it("test_get_ThreadTicksDoNotAffectOtherThread", () => {
 		const map = new LamportClockMap();
-		const clock1 = map.get("thread-1");
+		const clock1 = map.get(TEST_THREAD_ID);
 		clock1.tick();
 		clock1.tick();
 		clock1.tick();

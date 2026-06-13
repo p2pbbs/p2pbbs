@@ -4,6 +4,12 @@ import type { Post } from "../../src/core/domain/model/Post";
 import type { Thread } from "../../src/core/domain/model/Thread";
 import type { IThreadStore } from "../../src/core/domain/port/IThreadStore";
 import type { DisplayPost } from "../../src/ui/hooks/usePostList";
+import {
+	TEST_BOARD_ID,
+	TEST_THREAD_CREATED_AT,
+	TEST_THREAD_ID,
+	TEST_THREAD_TITLE,
+} from "./constants";
 
 export function makePost(overrides: Partial<Post> = {}): Post {
 	return {
@@ -15,8 +21,8 @@ export function makePost(overrides: Partial<Post> = {}): Post {
 		lamport: 1,
 		signature: "valid-sig",
 		publicKey: "pubkey-base64",
-		boardId: "board-1",
-		threadId: "thread-1",
+		boardId: TEST_BOARD_ID,
+		threadId: TEST_THREAD_ID,
 		...overrides,
 	};
 }
@@ -30,10 +36,10 @@ export function makeDisplayPost(
 
 export function makeThread(overrides: Partial<Thread> = {}): Thread {
 	return {
-		threadId: "1700000000000",
-		boardId: "mona",
-		title: "テストスレ",
-		createdAt: 1700000000000,
+		threadId: TEST_THREAD_ID,
+		boardId: TEST_BOARD_ID,
+		title: TEST_THREAD_TITLE,
+		createdAt: TEST_THREAD_CREATED_AT,
 		signature: "valid-sig",
 		publicKey: "pubkey-base64",
 		...overrides,

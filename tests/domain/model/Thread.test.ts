@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { ThreadSchema } from "@/core/domain/model/Thread";
+import { TEST_BOARD_ID, TEST_THREAD_ID } from "../../helpers/constants";
 
 function makeValidThread(overrides: Record<string, unknown> = {}) {
 	return {
-		threadId: "1700000000000",
-		boardId: "mona",
+		threadId: TEST_THREAD_ID,
+		boardId: TEST_BOARD_ID,
 		title: "テストスレ",
 		createdAt: 1700000000000,
 		signature: "valid-sig",

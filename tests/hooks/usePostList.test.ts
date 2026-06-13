@@ -3,9 +3,10 @@ import { StrictMode } from "react";
 import { describe, expect, it } from "vitest";
 import { InMemoryPostStore } from "@/core/adapter/storage/InMemoryPostStore";
 import { sortPosts, usePostList } from "@/ui/hooks/usePostList";
+import { TEST_THREAD_ID } from "../helpers/constants";
 import { makePost } from "../helpers/fixtures";
 
-const THREAD = "thread-1";
+const THREAD = TEST_THREAD_ID;
 // makePost のデフォルト publicKey ("pubkey-base64") とは別の値。
 // これにより既存テストの投稿は「自分の投稿ではない」扱いになる。
 const SELF_PK = "self-pubkey";
@@ -188,14 +189,17 @@ describe("usePostList", () => {
 	it("test_usePostList_ThreadNavigation_RefreezesBaselinePerThread", () => {
 		const store = new InMemoryPostStore(
 			new Map([
-				["thread-1", [makePost({ id: "a", threadId: "thread-1", lamport: 1 })]],
+				[
+					TEST_THREAD_ID,
+					[makePost({ id: "a", threadId: TEST_THREAD_ID, lamport: 1 })],
+				],
 				["thread-2", [makePost({ id: "b", threadId: "thread-2", lamport: 1 })]],
 			]),
 		);
 		const readHistory = new Map<string, Set<string>>();
 		const { result, rerender } = renderHook(
 			({ threadId }) => usePostList(store, threadId, SELF_PK, readHistory),
-			{ initialProps: { threadId: "thread-1" } },
+			{ initialProps: { threadId: TEST_THREAD_ID } },
 		);
 		// 初訪問の thread-1: a が新着
 		expect(result.current.posts[0]?.isNew).toBe(true);
@@ -206,7 +210,7 @@ describe("usePostList", () => {
 		expect(result.current.posts[0]?.isNew).toBe(true);
 
 		// thread-1 へ戻る: 既読なので a は新着でない（スレ単位で基準を取り直す）
-		rerender({ threadId: "thread-1" });
+		rerender({ threadId: TEST_THREAD_ID });
 		expect(result.current.posts.map((p) => p.id)).toEqual(["a"]);
 		expect(result.current.posts[0]?.isNew).toBe(false);
 	});
