@@ -31,8 +31,8 @@ export const MAX_ACTIVE_PEERS = 8;
 
 /** 利用可能な板の一覧。 */
 export const BOARDS = [
-	{ boardId: "mona", name: "モナー" },
-	{ boardId: "yaruo", name: "やる夫" },
+	{ boardId: "tech", name: "プログラム技術" },
+	{ boardId: "chat", name: "雑談" },
 ] as const;
 
 /** 1板あたりのスレ上限。超過時は最古スレを FIFO evict する。 */
@@ -43,29 +43,3 @@ export const MAX_POSTS_PER_THREAD = 1000;
 
 /** スレタイトルの最大バイト数（UTF-8）。Thread.ts の ThreadSchema でも参照する。 */
 export const MAX_THREAD_TITLE_BYTES = 150;
-
-/**
- * 各板のジェネシススレ。bootstrap 時に IThreadStore に初期ロードする。
- * signature / publicKey は "genesis" センチネル値。
- * 検証パイプライン（Story 15c）はジェネシス threadId をスキップして保存する。
- *
- * Thread 型は import せず構造的互換を保つ（Thread.ts → constants.ts の循環依存を防ぐ）。
- */
-export const GENESIS_THREADS = {
-	mona: {
-		threadId: "1700000000000",
-		boardId: "mona",
-		title: "モナー雑談スレ",
-		createdAt: 1700000000000,
-		signature: "genesis" as string,
-		publicKey: "genesis" as string,
-	},
-	yaruo: {
-		threadId: "1700000000001",
-		boardId: "yaruo",
-		title: "やる夫雑談スレ",
-		createdAt: 1700000000001,
-		signature: "genesis" as string,
-		publicKey: "genesis" as string,
-	},
-} as const;

@@ -35,7 +35,11 @@ export function CreateThreadForm({
 		isBodyOver;
 
 	const buttonLabel =
-		notice != null ? "作成できません" : disabled ? "同期中..." : "スレを立てる";
+		notice != null
+			? "作成できません"
+			: disabled
+				? "ピア接続待ち..."
+				: "スレを立てる";
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();

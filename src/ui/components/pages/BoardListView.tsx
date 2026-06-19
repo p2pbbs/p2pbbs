@@ -20,6 +20,10 @@ export function BoardListView() {
 					</li>
 				))}
 			</ul>
+			<p className="mt-8 text-xs leading-relaxed text-gray-400 dark:text-gray-500">
+				違法な投稿は禁止です。投稿の責任は各投稿者にあります。本サイトは P2P
+				型で、板を開くと他の利用者の投稿の中継が始まります。
+			</p>
 		</main>
 	);
 }

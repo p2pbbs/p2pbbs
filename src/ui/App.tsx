@@ -6,7 +6,7 @@ import { BrowserPeerConnectionFactory } from "@/core/adapter/peer/BrowserPeerCon
 import { WebSocketSignalingTransport } from "@/core/adapter/signaling/WebSocketSignalingTransport";
 import { IndexedDBPostStore } from "@/core/adapter/storage/IndexedDBPostStore";
 import { IndexedDBThreadStore } from "@/core/adapter/storage/IndexedDBThreadStore";
-import { GENESIS_THREADS, SIGNALING_URL } from "@/core/config/constants";
+import { SIGNALING_URL } from "@/core/config/constants";
 import { CryptoService } from "@/core/domain/service/CryptoService";
 import { LamportClockMap } from "@/core/domain/service/LamportClockMap";
 import { BoardLayout } from "./components/pages/BoardLayout";
@@ -33,15 +33,11 @@ const peerId = crypto.randomUUID();
 type InitError = { message: string; reloadable: boolean };
 
 /**
- * IndexedDB からメモリに復元し、ジェネシススレを初期ロードする。
+ * IndexedDB からメモリに復元する。
  * LamportClock の初期化は板選択時（bootstrapBoard）に接続先板の分だけ行う。
  */
 async function initStores(): Promise<void> {
 	await Promise.all([postStore.load(), threadStore.load()]);
-
-	for (const genesis of Object.values(GENESIS_THREADS)) {
-		await threadStore.save(genesis);
-	}
 }
 
 function App() {

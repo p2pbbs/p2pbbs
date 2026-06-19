@@ -18,13 +18,10 @@ export const ThreadSchema = z
 			),
 		/** Unix ms。threadId === String(createdAt) が成立する。 */
 		createdAt: z.number().int().min(0),
-		/** Ed25519 署名（base64）。
-		 * TODO: min(1) を追加する。genesis センチネル（"genesis"）の扱いを
-		 * 15c 検証パイプラインで確定してから制約を強化すること。
-		 */
-		signature: z.string(),
-		/** TODO: min(1) を追加する（signature と同様の理由）。 */
-		publicKey: z.string(),
+		/** Ed25519 署名（base64）。 */
+		signature: z.string().min(1),
+		/** Ed25519 公開鍵（base64）。 */
+		publicKey: z.string().min(1),
 	})
 	.readonly();
 

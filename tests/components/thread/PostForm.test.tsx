@@ -69,7 +69,9 @@ describe("PostForm", () => {
 
 	it("test_render_DisabledTrue_ShowsSyncingLabel", () => {
 		render(<PostForm onSubmit={vi.fn()} disabled={true} />);
-		expect(screen.getByRole("button", { name: "同期中..." })).toBeTruthy();
+		expect(
+			screen.getByRole("button", { name: "ピア接続待ち..." }),
+		).toBeTruthy();
 	});
 
 	it("test_render_DisabledTrue_SubmitButtonDisabledEvenWithBody", () => {
@@ -78,8 +80,11 @@ describe("PostForm", () => {
 			target: { value: "本文" },
 		});
 		expect(
-			(screen.getByRole("button", { name: "同期中..." }) as HTMLButtonElement)
-				.disabled,
+			(
+				screen.getByRole("button", {
+					name: "ピア接続待ち...",
+				}) as HTMLButtonElement
+			).disabled,
 		).toBe(true);
 	});
 
@@ -89,7 +94,7 @@ describe("PostForm", () => {
 		fireEvent.change(screen.getByPlaceholderText("本文を入力..."), {
 			target: { value: "本文" },
 		});
-		fireEvent.click(screen.getByRole("button", { name: "同期中..." }));
+		fireEvent.click(screen.getByRole("button", { name: "ピア接続待ち..." }));
 		expect(onSubmit).not.toHaveBeenCalled();
 	});
 

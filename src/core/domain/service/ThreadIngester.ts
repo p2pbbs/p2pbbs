@@ -54,8 +54,7 @@ export class ThreadIngester {
 
 	/**
 	 * 署名検証を例外安全に行う。
-	 * publicKey が base64 として不正（例: genesis センチネル "genesis"）な場合、
-	 * importKey が例外を投げるため false に倒す。ネットワーク経由のジェネシス偽装を弾く。
+	 * publicKey が base64 として不正な場合、importKey が例外を投げるため false に倒す。
 	 */
 	private async verifySignatureSafe(thread: Thread): Promise<boolean> {
 		try {

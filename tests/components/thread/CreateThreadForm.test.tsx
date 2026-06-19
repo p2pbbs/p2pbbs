@@ -63,7 +63,9 @@ describe("CreateThreadForm", () => {
 
 	it("test_render_DisabledTrue_ShowsSyncingLabel", () => {
 		render(<CreateThreadForm onSubmit={vi.fn()} disabled={true} />);
-		expect(screen.getByRole("button", { name: "同期中..." })).toBeTruthy();
+		expect(
+			screen.getByRole("button", { name: "ピア接続待ち..." }),
+		).toBeTruthy();
 	});
 
 	it("test_render_NoticeSet_DisablesFormAndShowsNotice", () => {

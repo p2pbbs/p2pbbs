@@ -19,7 +19,11 @@ export function PostForm({ onSubmit, disabled = false, notice }: Props) {
 		disabled || notice != null || body.trim() === "" || isOverLimit;
 
 	const buttonLabel =
-		notice != null ? "書き込めません" : disabled ? "同期中..." : "書き込む";
+		notice != null
+			? "書き込めません"
+			: disabled
+				? "ピア接続待ち..."
+				: "書き込む";
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();

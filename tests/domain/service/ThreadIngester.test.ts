@@ -67,7 +67,7 @@ describe("ThreadIngester", () => {
 	});
 
 	it("test_ingest_SignatureVerifyThrows_TreatedAsInvalid", async () => {
-		// genesis センチネル等で importKey が例外を投げても false に倒す
+		// 不正な base64 公開鍵等で importKey が例外を投げても false に倒す
 		const { ingester, store, sigSpy } = makeIngester();
 		sigSpy.mockRejectedValue(new Error("invalid key"));
 		const result = await ingester.ingest(makeValidThread(1700000000000));

@@ -95,7 +95,9 @@ describe("ThreadListView", () => {
 			}),
 		});
 		fireEvent.click(screen.getByRole("button", { name: "スレ作成" }));
-		expect(screen.getByRole("button", { name: "同期中..." })).toBeTruthy();
+		expect(
+			screen.getByRole("button", { name: "ピア接続待ち..." }),
+		).toBeTruthy();
 	});
 
 	it("test_ThreadListView_FabClosed_FormNotVisible", () => {
