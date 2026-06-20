@@ -3,11 +3,11 @@ import type { DisplayPost } from "@/ui/hooks/usePostList";
 
 type Props = {
 	post: DisplayPost;
-	/** 前回の表示以降に届いた新着レスなら true。 */
-	isNew?: boolean;
+	/** まだ読んでいない未読レスなら true。 */
+	isUnread?: boolean;
 };
 
-export function PostItem({ post, isNew = false }: Props) {
+export function PostItem({ post, isUnread = false }: Props) {
 	const name = post.name !== "" ? post.name : DEFAULT_NAME;
 	const dateStr = new Date(post.timestamp).toLocaleString("ja-JP");
 
@@ -20,9 +20,9 @@ export function PostItem({ post, isNew = false }: Props) {
 				<span>{name}</span>
 				<time dateTime={new Date(post.timestamp).toISOString()}>{dateStr}</time>
 				<span className="font-mono text-xs">ID:{post.odId}</span>
-				{isNew && (
+				{isUnread && (
 					<span className="rounded bg-rose-500 px-1.5 py-0.5 text-xs font-bold text-white">
-						新着
+						未読
 					</span>
 				)}
 			</div>

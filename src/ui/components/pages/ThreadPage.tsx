@@ -19,12 +19,13 @@ export function ThreadPage() {
 		session.postStore,
 		threadId,
 		session.publicKey,
+		session.readHistory,
 	);
 	const canPost = useCanPost(board.exchangeDigestUseCase);
 
 	// 初回 sync 完了（canPost: false→true）で 1 回だけ自動リロードする。
 	// canPost は一方向遷移。ref で「初回の 1 回だけ」に限定し、スレ遷移で refresh の
-	// 識別子が変わっても再発火させない（入場時の新着バッジを消さないため）。
+	// 識別子が変わっても再発火させない（入場時の未読バッジを消さないため）。
 	const syncedRef = useRef(false);
 	useEffect(() => {
 		if (canPost && !syncedRef.current) {

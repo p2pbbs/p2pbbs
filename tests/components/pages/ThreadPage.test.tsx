@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { InMemoryPostStore } from "@/core/adapter/storage/InMemoryPostStore";
+import { InMemoryReadHistoryStore } from "@/core/adapter/storage/InMemoryReadHistoryStore";
 import type { BoardSession } from "@/ui/bootstrap";
 import { ThreadPage } from "@/ui/components/pages/ThreadPage";
 import type { Session } from "@/ui/session";
@@ -31,6 +32,7 @@ function makeSession(overrides: Partial<Session>): Session {
 	return {
 		threadStore: makeThreadStore(),
 		postStore: new InMemoryPostStore(),
+		readHistory: new InMemoryReadHistoryStore(),
 		crypto: {},
 		clockMap: {},
 		peerId: "self",

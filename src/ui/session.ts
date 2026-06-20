@@ -2,6 +2,7 @@ import { createContext, useContext } from "react";
 import type { ILogger } from "@/core/domain/port/ILogger";
 import type { IPeerConnectionFactory } from "@/core/domain/port/IPeerConnectionFactory";
 import type { IPostStore } from "@/core/domain/port/IPostStore";
+import type { IReadHistoryStore } from "@/core/domain/port/IReadHistoryStore";
 import type { ISignalingTransport } from "@/core/domain/port/ISignalingTransport";
 import type { IThreadStore } from "@/core/domain/port/IThreadStore";
 import type { CryptoService } from "@/core/domain/service/CryptoService";
@@ -16,6 +17,8 @@ import type { BoardSession } from "./bootstrap";
 export type Session = {
 	postStore: IPostStore;
 	threadStore: IThreadStore;
+	/** 既読履歴。スレ単位で表示済み post.id を保持し、未読判定に使う。 */
+	readHistory: IReadHistoryStore;
 	crypto: CryptoService;
 	clockMap: LamportClockMap;
 	/** タブごとのランダム UUID（Peer ID）。 */

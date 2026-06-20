@@ -51,13 +51,13 @@ describe("PostItem", () => {
 		expect(timeEl?.getAttribute("dateTime")).toBeTruthy();
 	});
 
-	it("test_PostItem_IsNewTrue_ShowsNewMarker", () => {
-		render(<PostItem post={makeDisplayPost()} isNew={true} />);
-		expect(screen.getByText("新着")).toBeTruthy();
+	it("test_PostItem_IsUnreadTrue_ShowsUnreadMarker", () => {
+		render(<PostItem post={makeDisplayPost()} isUnread={true} />);
+		expect(screen.getByText("未読")).toBeTruthy();
 	});
 
-	it("test_PostItem_IsNewFalse_HidesNewMarker", () => {
-		render(<PostItem post={makeDisplayPost()} isNew={false} />);
-		expect(screen.queryByText("新着")).toBeNull();
+	it("test_PostItem_IsUnreadFalse_HidesUnreadMarker", () => {
+		render(<PostItem post={makeDisplayPost()} isUnread={false} />);
+		expect(screen.queryByText("未読")).toBeNull();
 	});
 });

@@ -5,6 +5,7 @@ import { ConsoleLogger } from "@/core/adapter/logging/ConsoleLogger";
 import { BrowserPeerConnectionFactory } from "@/core/adapter/peer/BrowserPeerConnectionFactory";
 import { WebSocketSignalingTransport } from "@/core/adapter/signaling/WebSocketSignalingTransport";
 import { IndexedDBPostStore } from "@/core/adapter/storage/IndexedDBPostStore";
+import { IndexedDBReadHistoryStore } from "@/core/adapter/storage/IndexedDBReadHistoryStore";
 import { IndexedDBThreadStore } from "@/core/adapter/storage/IndexedDBThreadStore";
 import { SIGNALING_URL } from "@/core/config/constants";
 import { CryptoService } from "@/core/domain/service/CryptoService";
@@ -24,6 +25,7 @@ const cryptoService = new CryptoService(signer);
 const clockMap = new LamportClockMap();
 const postStore = new IndexedDBPostStore(logger);
 const threadStore = new IndexedDBThreadStore(logger);
+const readHistory = new IndexedDBReadHistoryStore(logger);
 const signaling = new WebSocketSignalingTransport(SIGNALING_URL, logger);
 const peerConnectionFactory = new BrowserPeerConnectionFactory();
 
@@ -37,7 +39,7 @@ type InitError = { message: string; reloadable: boolean };
  * LamportClock の初期化は板選択時（bootstrapBoard）に接続先板の分だけ行う。
  */
 async function initStores(): Promise<void> {
-	await Promise.all([postStore.load(), threadStore.load()]);
+	await Promise.all([postStore.load(), threadStore.load(), readHistory.load()]);
 }
 
 function App() {
@@ -61,6 +63,7 @@ function App() {
 				setSession({
 					postStore,
 					threadStore,
+					readHistory,
 					crypto: cryptoService,
 					clockMap,
 					peerId,

@@ -3,8 +3,8 @@ import { PostItem } from "./PostItem";
 
 type Props = {
 	title: string;
-	/** isNew は省略可。新着マーカーを出さない呼び出し（テスト等）にも対応する。 */
-	posts: ReadonlyArray<DisplayPost & { isNew?: boolean }>;
+	/** isUnread は省略可。未読マーカーを出さない呼び出し（テスト等）にも対応する。 */
+	posts: ReadonlyArray<DisplayPost & { isUnread?: boolean }>;
 };
 
 export function ThreadView({ title, posts }: Props) {
@@ -14,7 +14,7 @@ export function ThreadView({ title, posts }: Props) {
 			<ol>
 				{posts.map((post) => (
 					<li key={post.id}>
-						<PostItem post={post} isNew={post.isNew ?? false} />
+						<PostItem post={post} isUnread={post.isUnread ?? false} />
 					</li>
 				))}
 			</ol>

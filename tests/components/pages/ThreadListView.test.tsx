@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { InMemoryPostStore } from "@/core/adapter/storage/InMemoryPostStore";
+import { InMemoryReadHistoryStore } from "@/core/adapter/storage/InMemoryReadHistoryStore";
 import type { BoardSession } from "@/ui/bootstrap";
 import { ThreadListView } from "@/ui/components/pages/ThreadListView";
 import type { Session } from "@/ui/session";
@@ -25,6 +26,8 @@ function makeSession(overrides: Partial<Session>): Session {
 	return {
 		threadStore: makeThreadStore(),
 		postStore: new InMemoryPostStore(),
+		readHistory: new InMemoryReadHistoryStore(),
+		publicKey: "self-pk",
 		logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 		...overrides,
 	} as unknown as Session;
@@ -56,6 +59,45 @@ describe("ThreadListView", () => {
 		});
 		expect(screen.getByText("既存スレ")).toBeTruthy();
 		expect(screen.getByText("1レス")).toBeTruthy();
+	});
+
+	it("test_ThreadListView_UnreadPosts_ShowsUnreadBadge", () => {
+		const threadStore = makeThreadStore([
+			makeThread({ threadId: "t1", boardId: TEST_BOARD_ID, title: "未読あり" }),
+		]);
+		const postStore = new InMemoryPostStore(
+			new Map([
+				[
+					"t1",
+					[
+						makePost({ id: "p1", threadId: "t1", lamport: 1 }),
+						makePost({ id: "p2", threadId: "t1", lamport: 2 }),
+					],
+				],
+			]),
+		);
+		// 既読履歴が空 = 未訪問 → 他人の投稿 2 件が未読
+		renderView({
+			session: makeSession({ threadStore, postStore }),
+			board: makeBoard({}),
+		});
+		expect(screen.getByText("2")).toBeTruthy();
+	});
+
+	it("test_ThreadListView_NoUnread_HidesUnreadBadge", () => {
+		const threadStore = makeThreadStore([
+			makeThread({ threadId: "t1", boardId: TEST_BOARD_ID, title: "既読のみ" }),
+		]);
+		const postStore = new InMemoryPostStore(
+			new Map([["t1", [makePost({ id: "p1", threadId: "t1", lamport: 1 })]]]),
+		);
+		const readHistory = new InMemoryReadHistoryStore(new Map([["t1", ["p1"]]]));
+		renderView({
+			session: makeSession({ threadStore, postStore, readHistory }),
+			board: makeBoard({}),
+		});
+		// 既読のみ → 未読バッジ（"0"）は出ない。レス数バッジのみ。
+		expect(screen.queryByText("0")).toBeNull();
 	});
 
 	it("test_ThreadListView_CreateForm_CallsCreateThreadUseCase", async () => {

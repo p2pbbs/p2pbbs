@@ -16,7 +16,9 @@ export function ThreadListView() {
 	const { items, refresh } = useThreadList(
 		session.threadStore,
 		session.postStore,
+		session.readHistory,
 		board.boardId,
+		session.publicKey,
 	);
 	const canPost = useCanPost(board.exchangeDigestUseCase);
 
@@ -90,6 +92,11 @@ export function ThreadListView() {
 									{i + 1}
 								</span>
 								<span className="flex-1 font-medium">{item.thread.title}</span>
+								{item.unreadCount > 0 && (
+									<span className="rounded-full bg-rose-500 px-2 py-0.5 text-xs font-bold text-white">
+										{item.unreadCount}
+									</span>
+								)}
 								<span className="text-sm text-gray-400">
 									{item.postCount}レス
 								</span>
