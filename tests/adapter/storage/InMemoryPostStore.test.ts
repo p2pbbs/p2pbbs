@@ -136,4 +136,81 @@ describe("InMemoryPostStore", () => {
 		const store = new InMemoryPostStore(new Map([["thread-x", [post]]]));
 		expect(store.getThreadIds(TEST_BOARD_ID)).toEqual(["thread-x"]);
 	});
+
+	// --- 板単位リビジョン / 購読（未反映バッジ用） ---
+
+	it("test_getBoardRevision_NoSave_ReturnsZero", () => {
+		const store = new InMemoryPostStore();
+		expect(store.getBoardRevision(TEST_BOARD_ID)).toBe(0);
+	});
+
+	it("test_save_NewPost_IncrementsBoardRevision", async () => {
+		const store = new InMemoryPostStore();
+		await store.save(
+			makePost({ id: "p1", boardId: TEST_BOARD_ID, threadId: "thread-a" }),
+		);
+		expect(store.getBoardRevision(TEST_BOARD_ID)).toBe(1);
+		await store.save(
+			makePost({ id: "p2", boardId: TEST_BOARD_ID, threadId: "thread-b" }),
+		);
+		expect(store.getBoardRevision(TEST_BOARD_ID)).toBe(2);
+	});
+
+	it("test_save_DuplicatePostId_DoesNotIncrementBoardRevision", async () => {
+		const store = new InMemoryPostStore();
+		const post = makePost({ id: "dup", boardId: TEST_BOARD_ID });
+		await store.save(post);
+		await store.save(post);
+		// dedup early-return の後で ++ するため再配信では増えない
+		expect(store.getBoardRevision(TEST_BOARD_ID)).toBe(1);
+	});
+
+	it("test_subscribeBoard_AfterSave_CallsCallback", async () => {
+		const store = new InMemoryPostStore();
+		const cb = vi.fn();
+		store.subscribeBoard(TEST_BOARD_ID, cb);
+		await store.save(makePost({ boardId: TEST_BOARD_ID }));
+		expect(cb).toHaveBeenCalledOnce();
+	});
+
+	it("test_subscribeBoard_NewThreadInBoard_CallsCallback", async () => {
+		// 新スレの >>1 も board への save なので拾える
+		const store = new InMemoryPostStore();
+		const cb = vi.fn();
+		store.subscribeBoard(TEST_BOARD_ID, cb);
+		await store.save(
+			makePost({ id: "p1", boardId: TEST_BOARD_ID, threadId: "thread-a" }),
+		);
+		await store.save(
+			makePost({ id: "p2", boardId: TEST_BOARD_ID, threadId: "thread-b" }),
+		);
+		expect(cb).toHaveBeenCalledTimes(2);
+	});
+
+	it("test_subscribeBoard_DuplicatePostId_DoesNotCallCallback", async () => {
+		const store = new InMemoryPostStore();
+		const cb = vi.fn();
+		store.subscribeBoard(TEST_BOARD_ID, cb);
+		const post = makePost({ id: "dup", boardId: TEST_BOARD_ID });
+		await store.save(post);
+		await store.save(post);
+		expect(cb).toHaveBeenCalledOnce();
+	});
+
+	it("test_subscribeBoard_OtherBoardSave_DoesNotCallCallback", async () => {
+		const store = new InMemoryPostStore();
+		const cb = vi.fn();
+		store.subscribeBoard(TEST_BOARD_ID, cb);
+		await store.save(makePost({ boardId: "board-2", threadId: "thread-x" }));
+		expect(cb).not.toHaveBeenCalled();
+	});
+
+	it("test_subscribeBoard_AfterUnsubscribe_DoesNotCallCallback", async () => {
+		const store = new InMemoryPostStore();
+		const cb = vi.fn();
+		const unsub = store.subscribeBoard(TEST_BOARD_ID, cb);
+		unsub();
+		await store.save(makePost({ boardId: TEST_BOARD_ID }));
+		expect(cb).not.toHaveBeenCalled();
+	});
 });

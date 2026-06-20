@@ -62,6 +62,14 @@ export class IndexedDBPostStore implements IPostStore {
 		return this.memory.subscribe(threadId, callback);
 	}
 
+	subscribeBoard(boardId: string, callback: () => void): () => void {
+		return this.memory.subscribeBoard(boardId, callback);
+	}
+
+	getBoardRevision(boardId: string): number {
+		return this.memory.getBoardRevision(boardId);
+	}
+
 	async save(post: Post): Promise<void> {
 		await this.memory.save(post);
 		await this.putToDB(post);

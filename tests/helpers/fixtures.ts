@@ -70,6 +70,37 @@ export function makeThreadStore(initial: Thread[] = []): IThreadStore {
 	};
 }
 
+/** flip() で canPost を false→true へ遷移させ購読者へ通知できる digest 模擬。 */
+export type ControllableDigest = {
+	canPost: () => boolean;
+	subscribe: (cb: () => void) => () => void;
+	/** canPost を true にして購読者へ通知する。初回 sync 完了を再現する。 */
+	flip: () => void;
+};
+
+/**
+ * ExchangeDigestUseCase の最小模擬。canPost を後から flip でき、初回 sync 完了
+ * （canPost: false→true）の到着順をテストで再現する。useCanPost の useSyncExternalStore
+ * と同形の subscribe/canPost を持つ。
+ */
+export function makeControllableDigest(
+	initialCanPost: boolean,
+): ControllableDigest {
+	let postable = initialCanPost;
+	const subs = new Set<() => void>();
+	return {
+		canPost: () => postable,
+		subscribe: (cb) => {
+			subs.add(cb);
+			return () => subs.delete(cb);
+		},
+		flip() {
+			postable = true;
+			for (const cb of subs) cb();
+		},
+	};
+}
+
 type PostGossipMessage = Extract<GossipMessage, { type: "post" }>;
 
 export function makeGossipMessage(

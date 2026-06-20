@@ -26,6 +26,8 @@ function makeUsecase(options?: {
 		getSnapshot: vi.fn().mockReturnValue([]),
 		subscribe: vi.fn(),
 		getThreadIds: vi.fn().mockReturnValue([]),
+		subscribeBoard: vi.fn().mockReturnValue(() => {}),
+		getBoardRevision: vi.fn().mockReturnValue(0),
 	};
 	const signer = {
 		generateKeyPair: vi.fn(),

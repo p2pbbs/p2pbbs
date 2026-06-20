@@ -107,6 +107,7 @@ lamport は署名ペイロードおよびコンテンツハッシュの計算に
 | 投稿インジェスター | PostIngester | 署名・ハッシュ検証・重複排除・保存・clock merge を担う domain service。gossip と sync で共有 |
 | 既読履歴 | ReadHistory | スレ単位で「過去に表示したことのある post.id の集合」を記録したもの。未読判定に使う |
 | 未読 | Unread | 既読履歴に無いレス（自分の投稿は除く）。ユーザー視点で「まだ読んでいない」レスを指す。ノード視点でローカルに未保有の差分（digest 比較で得られる保有差分）は new/新着 とは呼ばない |
+| 未反映 | Undisplayed | ストアには保存済みだが現在表示中のビューにまだ取り込まれていないレス。基準はストアとビューの差分（pull＝更新で反映される）。未読（基準は ReadHistory）・ピア保有差分（基準は digest）とは異なる第三の概念。識別子は `hasUndisplayed` |
 
 ## Implementation Rules
 

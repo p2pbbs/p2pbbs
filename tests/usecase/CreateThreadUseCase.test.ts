@@ -28,6 +28,8 @@ function makeUsecase(options?: { threadStore?: IThreadStore }) {
 		getSnapshot: vi.fn().mockReturnValue([]),
 		subscribe: vi.fn(),
 		getThreadIds: vi.fn().mockReturnValue([]),
+		subscribeBoard: vi.fn().mockReturnValue(() => {}),
+		getBoardRevision: vi.fn().mockReturnValue(0),
 	};
 	const threadStore = options?.threadStore ?? makeThreadStore();
 	const signer = {

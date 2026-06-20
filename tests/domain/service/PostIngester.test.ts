@@ -16,6 +16,8 @@ function makePostStore(): IPostStore {
 		getSnapshot: vi.fn().mockReturnValue([]),
 		subscribe: vi.fn().mockReturnValue(() => {}),
 		getThreadIds: vi.fn().mockReturnValue([]),
+		subscribeBoard: vi.fn().mockReturnValue(() => {}),
+		getBoardRevision: vi.fn().mockReturnValue(0),
 	};
 }
 

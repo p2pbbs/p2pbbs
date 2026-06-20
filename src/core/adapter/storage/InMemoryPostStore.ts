@@ -7,6 +7,9 @@ export class InMemoryPostStore implements IPostStore {
 	private readonly posts: Map<string, Post[]>;
 	private readonly boardThreadIds = new Map<string, Set<string>>();
 	private readonly listeners = new Map<string, Set<() => void>>();
+	// 板単位の変更検知（未反映バッジ用）。新規 save のたびに revision を ++ する。
+	private readonly boardRevisions = new Map<string, number>();
+	private readonly boardListeners = new Map<string, Set<() => void>>();
 
 	constructor(initial: Map<string, Post[]> = new Map()) {
 		this.posts = new Map(initial);
@@ -37,6 +40,22 @@ export class InMemoryPostStore implements IPostStore {
 		};
 	}
 
+	subscribeBoard(boardId: string, callback: () => void): () => void {
+		let set = this.boardListeners.get(boardId);
+		if (set === undefined) {
+			set = new Set();
+			this.boardListeners.set(boardId, set);
+		}
+		set.add(callback);
+		return () => {
+			this.boardListeners.get(boardId)?.delete(callback);
+		};
+	}
+
+	getBoardRevision(boardId: string): number {
+		return this.boardRevisions.get(boardId) ?? 0;
+	}
+
 	async save(post: Post): Promise<void> {
 		const { threadId } = post;
 		const current = this.posts.get(threadId) ?? [];
@@ -45,6 +64,15 @@ export class InMemoryPostStore implements IPostStore {
 		this.posts.set(threadId, [...current, post]);
 		this.trackBoardThread(post.boardId, threadId);
 		for (const cb of this.listeners.get(threadId) ?? []) {
+			cb();
+		}
+		// dedup early-return の後でのみ revision を ++ する。これにより再配信では
+		// revision が増えず、板の未反映バッジが誤点灯しない。
+		this.boardRevisions.set(
+			post.boardId,
+			this.getBoardRevision(post.boardId) + 1,
+		);
+		for (const cb of this.boardListeners.get(post.boardId) ?? []) {
 			cb();
 		}
 	}

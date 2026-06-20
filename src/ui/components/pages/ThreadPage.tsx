@@ -7,6 +7,7 @@ import { PostForm } from "@/ui/components/thread/PostForm";
 import { ThreadView } from "@/ui/components/thread/ThreadView";
 import { useCanPost } from "@/ui/hooks/useCanPost";
 import { usePostList } from "@/ui/hooks/usePostList";
+import { useUndisplayed } from "@/ui/hooks/useUndisplayed";
 import { useBoardSession, useSession } from "@/ui/session";
 import { NotFound } from "./NotFound";
 
@@ -22,17 +23,30 @@ export function ThreadPage() {
 		session.readHistory,
 	);
 	const canPost = useCanPost(board.exchangeDigestUseCase);
+	const { hasUndisplayed, clear } = useUndisplayed(session.postStore, threadId);
+
+	// 更新は表示の取り込み（refresh）と未反映バッジの消灯（clear）を同時に行う。
+	// clear は baseline を更新後の件数へ貼り直すだけで、以降に届いた分は意図通り点灯する。
+	const refreshAndClear = useCallback(() => {
+		refresh();
+		clear();
+	}, [refresh, clear]);
 
 	// 初回 sync 完了（canPost: false→true）で 1 回だけ自動リロードする。
 	// canPost は一方向遷移。ref で「初回の 1 回だけ」に限定し、スレ遷移で refresh の
 	// 識別子が変わっても再発火させない（入場時の未読バッジを消さないため）。
+	//
+	// ここで clear を併発するのは点灯抑制のためではない。canPost flip 時点で baseline を
+	// 貼り直すだけで、その後の到着（継続 backfill 含む）は意図通り点灯する。clear が要るのは、
+	// sync がこのワンショットより先に着く「速い順」のとき、すでに表示へ取り込めるのにボタンが
+	// 点灯したまま残るのを防ぐため（refresh だけでは baseline が古いままで消灯しない）。
 	const syncedRef = useRef(false);
 	useEffect(() => {
 		if (canPost && !syncedRef.current) {
 			syncedRef.current = true;
-			refresh();
+			refreshAndClear();
 		}
-	}, [canPost, refresh]);
+	}, [canPost, refreshAndClear]);
 
 	const usecase = useMemo(
 		() =>
@@ -55,7 +69,7 @@ export function ThreadPage() {
 		(name: string, body: string) => {
 			usecase
 				.execute({ name, body, threadId })
-				.then(() => refresh())
+				.then(() => refreshAndClear())
 				.catch((err: unknown) => {
 					if (err instanceof NchError) {
 						session.logger.warn("thread_page.post_rejected", {
@@ -66,7 +80,7 @@ export function ThreadPage() {
 					}
 				});
 		},
-		[usecase, threadId, refresh, session.logger],
+		[usecase, threadId, refreshAndClear, session.logger],
 	);
 
 	const thread = session.threadStore.get(threadId);
@@ -91,10 +105,23 @@ export function ThreadPage() {
 				</Link>
 				<button
 					type="button"
-					onClick={refresh}
-					className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+					onClick={refreshAndClear}
+					aria-label={hasUndisplayed ? "未反映のレスがあります。更新" : "更新"}
+					className={
+						hasUndisplayed
+							? "text-sm text-amber-600 dark:text-amber-400 hover:underline"
+							: "text-sm text-blue-600 dark:text-blue-400 hover:underline"
+					}
 				>
 					更新
+					{hasUndisplayed && (
+						// 数字なしのドットバッジ。色のみに依存しないよう、ドットの有無を
+						// 非色の手がかりとして兼ねる。読み上げは button の aria-label が担う。
+						<span
+							aria-hidden="true"
+							className="ml-1 inline-block h-2 w-2 rounded-full bg-amber-500 align-middle"
+						/>
+					)}
 				</button>
 			</div>
 			<ThreadView title={title} posts={posts} />
