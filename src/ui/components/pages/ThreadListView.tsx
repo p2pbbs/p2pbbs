@@ -6,24 +6,24 @@ import { CreateThreadForm } from "@/ui/components/thread/CreateThreadForm";
 import { useCanPost } from "@/ui/hooks/useCanPost";
 import { useThreadList } from "@/ui/hooks/useThreadList";
 import { useBoardUndisplayed } from "@/ui/hooks/useUndisplayed";
-import { useBoardSession, useSession } from "@/ui/session";
+import { useBoardSession, useNodeContext } from "@/ui/nodeContext";
 
 export function ThreadListView() {
-	const session = useSession();
+	const nodeCtx = useNodeContext();
 	const board = useBoardSession();
 	const boardName =
 		BOARDS.find((b) => b.boardId === board.boardId)?.name ?? board.boardId;
 
 	const { items, refresh } = useThreadList(
-		session.threadStore,
-		session.postStore,
-		session.readHistory,
+		nodeCtx.threadStore,
+		nodeCtx.postStore,
+		nodeCtx.readHistory,
 		board.boardId,
-		session.publicKey,
+		nodeCtx.publicKey,
 	);
 	const canPost = useCanPost(board.exchangeDigestUseCase);
 	const { hasUndisplayed, clear } = useBoardUndisplayed(
-		session.postStore,
+		nodeCtx.postStore,
 		board.boardId,
 	);
 
@@ -63,15 +63,15 @@ export function ThreadListView() {
 				})
 				.catch((err: unknown) => {
 					if (err instanceof NchError) {
-						session.logger.warn("thread_list.create_rejected", {
+						nodeCtx.logger.warn("thread_list.create_rejected", {
 							code: err.code,
 						});
 					} else {
-						session.logger.error("thread_list.create_error", { err });
+						nodeCtx.logger.error("thread_list.create_error", { err });
 					}
 				});
 		},
-		[board.createThreadUseCase, refreshAndClear, session.logger],
+		[board.createThreadUseCase, refreshAndClear, nodeCtx.logger],
 	);
 
 	return (

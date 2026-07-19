@@ -1,5 +1,6 @@
 import ReconnectingWebSocket from "reconnecting-websocket";
 import { SIGNALING_DISCOVER_TIMEOUT_MS } from "@/core/config/constants";
+import type { PeerId } from "@/core/domain/model/ids";
 import type { SignalingEnvelope } from "@/core/domain/model/SignalingEnvelope";
 import { ServerMessageSchema } from "@/core/domain/model/SignalingMessage";
 import type { ILogger } from "@/core/domain/port/ILogger";
@@ -26,9 +27,9 @@ export class WebSocketSignalingTransport
 	private readonly handlers = new Set<(envelope: SignalingEnvelope) => void>();
 	private readonly logger: ILogger;
 	/** discover() で登録した一時ハンドラ。peers 受信後に解除する。 */
-	private pendingPeersResolve: ((peers: string[]) => void) | undefined;
+	private pendingPeersResolve: ((peers: PeerId[]) => void) | undefined;
 	/** 再接続時に join を再送するために保持する Peer ID。 */
-	private joinedPeerId: string | undefined;
+	private joinedPeerId: PeerId | undefined;
 	/** 再接続時の join 再送に含める板 ID。板切り替えで上書きされる。 */
 	private joinedBoardId: string | undefined;
 
@@ -58,13 +59,13 @@ export class WebSocketSignalingTransport
 	 * 再接続後も自動で join を再送するため Peer ID と板 ID を内部に保持する。
 	 * SIGNALING_DISCOVER_TIMEOUT_MS 以内に応答がなければ SignalingTimeoutError を throw する。
 	 */
-	discover(myPeerId: string, boardId: string): Promise<string[]> {
+	discover(myPeerId: PeerId, boardId: string): Promise<PeerId[]> {
 		this.joinedPeerId = myPeerId;
 		this.joinedBoardId = boardId;
 		return new Promise((resolve, reject) => {
 			// resolver 自身を識別子に使い、後続の discover に追い越された古い timer が
 			// 新しい discover の resolver を消さないようガードする（板の連続切り替え対策）。
-			const resolver = (peers: string[]) => {
+			const resolver = (peers: PeerId[]) => {
 				clearTimeout(timer);
 				if (this.pendingPeersResolve === resolver) {
 					this.pendingPeersResolve = undefined;

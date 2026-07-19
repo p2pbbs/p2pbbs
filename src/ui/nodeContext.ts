@@ -1,4 +1,5 @@
 import { createContext, useContext } from "react";
+import type { OdId, PeerId } from "@/core/domain/model/ids";
 import type { ILogger } from "@/core/domain/port/ILogger";
 import type { IPeerConnectionFactory } from "@/core/domain/port/IPeerConnectionFactory";
 import type { IPostStore } from "@/core/domain/port/IPostStore";
@@ -10,22 +11,20 @@ import type { LamportClockMap } from "@/core/domain/service/LamportClockMap";
 import type { BoardSession } from "./bootstrap";
 
 /**
- * セッション全体で 1 度だけ生成する依存の束。
- * 板をまたいで共有される（ストア・鍵・シグナリング）。
+ * このタブ = 1 つの P2P ノードの文脈。タブ起動時に一度だけ生成する資源の束
+ * （鍵・peerId・ストア・シグナリング）。板をまたいで共有される。
  * 板単位の P2P レイヤは BoardSession 側が持つ。
  */
-export type Session = {
+export type NodeContext = {
 	postStore: IPostStore;
 	threadStore: IThreadStore;
 	/** 既読履歴。スレ単位で表示済み post.id を保持し、未読判定に使う。 */
 	readHistory: IReadHistoryStore;
 	crypto: CryptoService;
 	clockMap: LamportClockMap;
-	/** タブごとのランダム UUID（Peer ID）。 */
-	peerId: string;
+	peerId: PeerId;
 	publicKey: string;
-	/** 表示用 ID（公開鍵ハッシュ先頭8文字）。 */
-	odId: string;
+	odId: OdId;
 	signaling: ISignalingTransport;
 	factory: IPeerConnectionFactory;
 	/**
@@ -33,19 +32,19 @@ export type Session = {
 	 * WebSocket 接続は使い回し、板切り替えは新 boardId で join を再送するだけ。
 	 * サーバーは同一 peerId の再 join を re-home（板の付け替え）として扱う。
 	 */
-	discoverPeers: (boardId: string) => Promise<string[]>;
+	discoverPeers: (boardId: string) => Promise<PeerId[]>;
 	logger: ILogger;
 };
 
-const SessionContext = createContext<Session | null>(null);
-export const SessionProvider = SessionContext.Provider;
+const NodeContextContext = createContext<NodeContext | null>(null);
+export const NodeContextProvider = NodeContextContext.Provider;
 
-export function useSession(): Session {
-	const session = useContext(SessionContext);
-	if (!session) {
-		throw new Error("useSession must be used within a SessionProvider");
+export function useNodeContext(): NodeContext {
+	const nodeCtx = useContext(NodeContextContext);
+	if (!nodeCtx) {
+		throw new Error("useNodeContext must be used within a NodeContextProvider");
 	}
-	return session;
+	return nodeCtx;
 }
 
 /**

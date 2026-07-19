@@ -8,6 +8,7 @@ import { IndexedDBPostStore } from "@/core/adapter/storage/IndexedDBPostStore";
 import { IndexedDBReadHistoryStore } from "@/core/adapter/storage/IndexedDBReadHistoryStore";
 import { IndexedDBThreadStore } from "@/core/adapter/storage/IndexedDBThreadStore";
 import { SIGNALING_URL } from "@/core/config/constants";
+import type { PeerId } from "@/core/domain/model/ids";
 import { CryptoService } from "@/core/domain/service/CryptoService";
 import { LamportClockMap } from "@/core/domain/service/LamportClockMap";
 import { BoardLayout } from "./components/pages/BoardLayout";
@@ -15,8 +16,8 @@ import { BoardListView } from "./components/pages/BoardListView";
 import { NotFound } from "./components/pages/NotFound";
 import { ThreadListView } from "./components/pages/ThreadListView";
 import { ThreadPage } from "./components/pages/ThreadPage";
-import type { Session } from "./session";
-import { SessionProvider } from "./session";
+import type { NodeContext } from "./nodeContext";
+import { NodeContextProvider } from "./nodeContext";
 
 // セッション中に1度だけ生成するシングルトン
 const logger = new ConsoleLogger();
@@ -30,7 +31,7 @@ const signaling = new WebSocketSignalingTransport(SIGNALING_URL, logger);
 const peerConnectionFactory = new BrowserPeerConnectionFactory();
 
 // タブ起動ごとにランダム UUID を生成する。セッションをまたいで変わってよい
-const peerId = crypto.randomUUID();
+const peerId: PeerId = crypto.randomUUID();
 
 type InitError = { message: string; reloadable: boolean };
 
@@ -43,7 +44,7 @@ async function initStores(): Promise<void> {
 }
 
 function App() {
-	const [session, setSession] = useState<Session | null>(null);
+	const [nodeCtx, setNodeCtx] = useState<NodeContext | null>(null);
 	const [initError, setInitError] = useState<InitError | null>(null);
 
 	useEffect(() => {
@@ -60,7 +61,7 @@ function App() {
 
 				// signaling への join は板入場時に板ごとに行う（BoardLayout）。
 				// WebSocket 接続自体は使い回す。
-				setSession({
+				setNodeCtx({
 					postStore,
 					threadStore,
 					readHistory,
@@ -106,7 +107,7 @@ function App() {
 		);
 	}
 
-	if (!session) {
+	if (!nodeCtx) {
 		return (
 			<div className="flex items-center justify-center h-screen text-sm text-gray-500">
 				初期化中...
@@ -115,7 +116,7 @@ function App() {
 	}
 
 	return (
-		<SessionProvider value={session}>
+		<NodeContextProvider value={nodeCtx}>
 			<HashRouter>
 				<Routes>
 					<Route path="/" element={<BoardListView />} />
@@ -129,7 +130,7 @@ function App() {
 					/>
 				</Routes>
 			</HashRouter>
-		</SessionProvider>
+		</NodeContextProvider>
 	);
 }
 

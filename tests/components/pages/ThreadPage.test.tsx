@@ -5,8 +5,8 @@ import { InMemoryPostStore } from "@/core/adapter/storage/InMemoryPostStore";
 import { InMemoryReadHistoryStore } from "@/core/adapter/storage/InMemoryReadHistoryStore";
 import type { BoardSession } from "@/ui/bootstrap";
 import { ThreadPage } from "@/ui/components/pages/ThreadPage";
-import type { Session } from "@/ui/session";
-import { BoardSessionProvider, SessionProvider } from "@/ui/session";
+import type { NodeContext } from "@/ui/nodeContext";
+import { BoardSessionProvider, NodeContextProvider } from "@/ui/nodeContext";
 import { TEST_BOARD_ID } from "../../helpers/constants";
 import {
 	makeControllableDigest,
@@ -16,24 +16,24 @@ import {
 } from "../../helpers/fixtures";
 
 function renderPage(opts: {
-	session: Session;
+	nodeCtx: NodeContext;
 	board: BoardSession;
 	threadId: string;
 }) {
 	return render(
 		<MemoryRouter initialEntries={[`/board/${TEST_BOARD_ID}/${opts.threadId}`]}>
-			<SessionProvider value={opts.session}>
+			<NodeContextProvider value={opts.nodeCtx}>
 				<BoardSessionProvider value={opts.board}>
 					<Routes>
 						<Route path="/board/:boardId/:threadId" element={<ThreadPage />} />
 					</Routes>
 				</BoardSessionProvider>
-			</SessionProvider>
+			</NodeContextProvider>
 		</MemoryRouter>,
 	);
 }
 
-function makeSession(overrides: Partial<Session>): Session {
+function makeNodeContext(overrides: Partial<NodeContext>): NodeContext {
 	return {
 		threadStore: makeThreadStore(),
 		postStore: new InMemoryPostStore(),
@@ -45,7 +45,7 @@ function makeSession(overrides: Partial<Session>): Session {
 		odId: "od",
 		logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 		...overrides,
-	} as unknown as Session;
+	} as unknown as NodeContext;
 }
 
 function makeBoard(overrides: Partial<BoardSession> = {}): BoardSession {
@@ -85,7 +85,7 @@ describe("ThreadPage", () => {
 			]),
 		);
 		renderPage({
-			session: makeSession({ threadStore, postStore }),
+			nodeCtx: makeNodeContext({ threadStore, postStore }),
 			board: makeBoard(),
 			threadId: "t1",
 		});
@@ -106,7 +106,7 @@ describe("ThreadPage", () => {
 			]),
 		);
 		renderPage({
-			session: makeSession({ threadStore, postStore }),
+			nodeCtx: makeNodeContext({ threadStore, postStore }),
 			board: makeBoard(),
 			threadId: "t1",
 		});
@@ -149,7 +149,7 @@ describe("ThreadPage", () => {
 			]),
 		);
 		renderPage({
-			session: makeSession({ threadStore, postStore }),
+			nodeCtx: makeNodeContext({ threadStore, postStore }),
 			board: makeBoard({
 				exchangeDigestUseCase:
 					digest as unknown as BoardSession["exchangeDigestUseCase"],
@@ -179,7 +179,7 @@ describe("ThreadPage", () => {
 
 	it("test_ThreadPage_UnknownThread_ShowsNotFound", () => {
 		renderPage({
-			session: makeSession({}),
+			nodeCtx: makeNodeContext({}),
 			board: makeBoard(),
 			threadId: "nonexistent",
 		});

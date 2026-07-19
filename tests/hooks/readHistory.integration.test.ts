@@ -30,7 +30,7 @@ describe("ReadHistory — usePostList と useThreadList の共有挙動", () => 
 				],
 			]),
 		);
-		// 2 フックで共有する単一インスタンス（Session が配るものに相当）
+		// 2 フックで共有する単一インスタンス（NodeContext が配るものに相当）
 		const readHistory = new InMemoryReadHistoryStore();
 
 		// 一覧（未訪問）: 他人のレス 2 件が未読

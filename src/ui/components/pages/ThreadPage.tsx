@@ -2,28 +2,28 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import { MAX_POSTS_PER_THREAD } from "@/core/config/constants";
 import { NchError } from "@/core/domain/error/NchError";
-import { PostMessageUseCase } from "@/core/usecase/PostMessageUseCase";
+import { SubmitPostUseCase } from "@/core/usecase/SubmitPostUseCase";
 import { PostForm } from "@/ui/components/thread/PostForm";
 import { ThreadView } from "@/ui/components/thread/ThreadView";
 import { useCanPost } from "@/ui/hooks/useCanPost";
 import { usePostList } from "@/ui/hooks/usePostList";
 import { useUndisplayed } from "@/ui/hooks/useUndisplayed";
-import { useBoardSession, useSession } from "@/ui/session";
+import { useBoardSession, useNodeContext } from "@/ui/nodeContext";
 import { NotFound } from "./NotFound";
 
 export function ThreadPage() {
-	const session = useSession();
+	const nodeCtx = useNodeContext();
 	const board = useBoardSession();
 	const { threadId = "" } = useParams();
 
 	const { posts, refresh } = usePostList(
-		session.postStore,
+		nodeCtx.postStore,
 		threadId,
-		session.publicKey,
-		session.readHistory,
+		nodeCtx.publicKey,
+		nodeCtx.readHistory,
 	);
 	const canPost = useCanPost(board.exchangeDigestUseCase);
-	const { hasUndisplayed, clear } = useUndisplayed(session.postStore, threadId);
+	const { hasUndisplayed, clear } = useUndisplayed(nodeCtx.postStore, threadId);
 
 	// 更新は表示の取り込み（refresh）と未反映バッジの消灯（clear）を同時に行う。
 	// clear は baseline を更新後の件数へ貼り直すだけで、以降に届いた分は意図通り点灯する。
@@ -50,19 +50,19 @@ export function ThreadPage() {
 
 	const usecase = useMemo(
 		() =>
-			new PostMessageUseCase(
-				session.postStore,
-				session.crypto,
-				session.clockMap,
+			new SubmitPostUseCase(
+				nodeCtx.postStore,
+				nodeCtx.crypto,
+				nodeCtx.clockMap,
 				{
-					publicKey: session.publicKey,
-					odId: session.odId,
-					peerId: session.peerId,
+					publicKey: nodeCtx.publicKey,
+					odId: nodeCtx.odId,
+					peerId: nodeCtx.peerId,
 					boardId: board.boardId,
 				},
 				board.gateway,
 			),
-		[session, board.boardId, board.gateway],
+		[nodeCtx, board.boardId, board.gateway],
 	);
 
 	const handleSubmit = useCallback(
@@ -72,18 +72,18 @@ export function ThreadPage() {
 				.then(() => refreshAndClear())
 				.catch((err: unknown) => {
 					if (err instanceof NchError) {
-						session.logger.warn("thread_page.post_rejected", {
+						nodeCtx.logger.warn("thread_page.post_rejected", {
 							code: err.code,
 						});
 					} else {
-						session.logger.error("thread_page.post_error", { err });
+						nodeCtx.logger.error("thread_page.post_error", { err });
 					}
 				});
 		},
-		[usecase, threadId, refreshAndClear, session.logger],
+		[usecase, threadId, refreshAndClear, nodeCtx.logger],
 	);
 
-	const thread = session.threadStore.get(threadId);
+	const thread = nodeCtx.threadStore.get(threadId);
 
 	// Thread エンティティも投稿も無いスレは「見つからない」として扱う。
 	// （Post だけ先着して Thread 未着のケースは投稿が表示されるので除外）

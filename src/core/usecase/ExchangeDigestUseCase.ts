@@ -1,4 +1,5 @@
 import { SYNC_MAX_POSTS } from "@/core/domain/model/DataChannelMessage";
+import type { PeerId } from "@/core/domain/model/ids";
 import type { Post } from "@/core/domain/model/Post";
 import type { Thread } from "@/core/domain/model/Thread";
 import type { ThreadDigest } from "@/core/domain/model/ThreadDigest";
@@ -41,7 +42,7 @@ export class ExchangeDigestUseCase {
 	private readonly logger: ILogger;
 
 	/** DC open 中の全ピアの digest 受信状態。DC close でエントリ削除。 */
-	private readonly connectedPeers = new Map<string, DigestStatus>();
+	private readonly connectedPeers = new Map<PeerId, DigestStatus>();
 	private canPostState = false;
 	private readonly handlers = new Set<() => void>();
 
@@ -50,7 +51,7 @@ export class ExchangeDigestUseCase {
 	 * 同じ内容の sync を重複送信しないための最適化。DC close でピアごとエントリ削除。
 	 * 構造: Map<peerId, Map<threadId, postCount>>
 	 */
-	private readonly lastSyncedPostCount = new Map<string, Map<string, number>>();
+	private readonly lastSyncedPostCount = new Map<PeerId, Map<string, number>>();
 
 	private readonly unsubDigest: () => void;
 	private readonly unsubSync: () => void;
@@ -100,13 +101,13 @@ export class ExchangeDigestUseCase {
 	}
 
 	/** DataChannel open 時に呼ぶ。自分の digest を送信し、接続ピア集合に追加する。 */
-	onPeerConnected(peerId: string): void {
+	onPeerConnected(peerId: PeerId): void {
 		this.connectedPeers.set(peerId, "awaiting");
 		this.sendDigestTo(peerId);
 	}
 
 	/** DataChannel close 時に呼ぶ。接続ピア集合から除外して canPost を再判定する。 */
-	onPeerDisconnected(peerId: string): void {
+	onPeerDisconnected(peerId: PeerId): void {
 		this.lastSyncedPostCount.delete(peerId);
 		if (this.connectedPeers.delete(peerId)) {
 			this.checkCanPost();
@@ -138,7 +139,7 @@ export class ExchangeDigestUseCase {
 		});
 	}
 
-	private sendDigestTo(peerId: string): void {
+	private sendDigestTo(peerId: PeerId): void {
 		this.digestGateway.sendDigest(peerId, this.boardId, this.buildDigests());
 	}
 
@@ -149,7 +150,7 @@ export class ExchangeDigestUseCase {
 	}
 
 	private handleDigestReceived(
-		peerId: string,
+		peerId: PeerId,
 		incomingBoardId: string,
 		threads: ThreadDigest[],
 	): void {
@@ -191,7 +192,7 @@ export class ExchangeDigestUseCase {
 	}
 
 	private async handleSyncReceived(
-		peerId: string,
+		peerId: PeerId,
 		incomingBoardId: string,
 		posts: Post[],
 		threads: Thread[],
@@ -217,7 +218,7 @@ export class ExchangeDigestUseCase {
 	}
 
 	private async pushSyncIfNeeded(
-		peerId: string,
+		peerId: PeerId,
 		peerThreads: ThreadDigest[],
 	): Promise<void> {
 		const peerByThread = new Map(peerThreads.map((t) => [t.threadId, t]));
@@ -232,7 +233,7 @@ export class ExchangeDigestUseCase {
 	}
 
 	private async pushThreadSyncIfNeeded(
-		peerId: string,
+		peerId: PeerId,
 		threadId: string,
 		peerThread: ThreadDigest | undefined,
 	): Promise<void> {
@@ -273,7 +274,7 @@ export class ExchangeDigestUseCase {
 	}
 
 	private markSynced(
-		peerId: string,
+		peerId: PeerId,
 		threadId: string,
 		postCount: number,
 	): void {

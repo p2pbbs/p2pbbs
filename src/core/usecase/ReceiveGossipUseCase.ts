@@ -1,5 +1,6 @@
 import type { GossipMessage } from "@/core/domain/model/GossipMessage";
 import { GossipMessageSchema } from "@/core/domain/model/GossipMessage";
+import type { PeerId } from "@/core/domain/model/ids";
 import type { IGossipMessageGateway } from "@/core/domain/port/IGossipMessageGateway";
 import type { ILogger } from "@/core/domain/port/ILogger";
 import type { PostIngester } from "@/core/domain/service/PostIngester";
@@ -13,18 +14,17 @@ import type { ThreadIngester } from "@/core/domain/service/ThreadIngester";
  * gossip 受信と sync 受信で同一インスタンスを共有することで、
  * どちらの経路から届いても重複保存を防ぐ。
  */
-export class ReceiveMessageUseCase {
+export class ReceiveGossipUseCase {
 	private readonly ingester: PostIngester;
 	private readonly threadIngester: ThreadIngester;
-	/** タブごとのランダム UUID（Peer ID）。OD ID ではない。 */
-	private readonly selfId: string;
+	private readonly selfId: PeerId;
 	private readonly gateway: IGossipMessageGateway;
 	private readonly logger: ILogger;
 
 	constructor(
 		ingester: PostIngester,
 		threadIngester: ThreadIngester,
-		selfId: string,
+		selfId: PeerId,
 		gateway: IGossipMessageGateway,
 		logger: ILogger,
 	) {

@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import { GossipController } from "@/core/controller/GossipController";
 import type { GossipMessage } from "@/core/domain/model/GossipMessage";
-import type { ReceiveMessageUseCase } from "@/core/usecase/ReceiveMessageUseCase";
+import type { ReceiveGossipUseCase } from "@/core/usecase/ReceiveGossipUseCase";
 import { makeGossipMessage } from "../helpers/fixtures";
 
 /**
  * GossipController の配線テスト。
  * GossipController はルーティングのみ担当するため、テストは「正しい相手に正しく繋ぐか」に絞る。
- * ReceiveMessageUseCase はモックで十分。実装詳細に依存しない。
+ * ReceiveGossipUseCase はモックで十分。実装詳細に依存しない。
  */
 function makeController() {
 	const unsubscribe = vi.fn();
@@ -24,7 +24,7 @@ function makeController() {
 	const executeSpy = vi.fn().mockResolvedValue(undefined);
 	const receiveUseCase = {
 		execute: executeSpy,
-	} as unknown as ReceiveMessageUseCase;
+	} as unknown as ReceiveGossipUseCase;
 
 	const controller = new GossipController(gateway, receiveUseCase);
 

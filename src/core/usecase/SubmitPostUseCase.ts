@@ -5,6 +5,7 @@ import {
 } from "@/core/config/constants";
 import { NchError } from "@/core/domain/error/NchError";
 import type { GossipMessage } from "@/core/domain/model/GossipMessage";
+import type { OdId, PeerId } from "@/core/domain/model/ids";
 import type { IGossipMessageGateway } from "@/core/domain/port/IGossipMessageGateway";
 import type { IPostStore } from "@/core/domain/port/IPostStore";
 import type { CryptoService } from "@/core/domain/service/CryptoService";
@@ -17,12 +18,10 @@ type PostInput = {
 	threadId: string;
 };
 
-export type PostMessageConfig = {
+export type SubmitPostConfig = {
 	publicKey: string;
-	/** 投稿者の表示用 ID（公開鍵ハッシュ先頭8文字）。 */
-	odId: string;
-	/** ゴシップ path に使うタブごとのランダム UUID（Peer ID）。 */
-	peerId: string;
+	odId: OdId;
+	peerId: PeerId;
 	boardId: string;
 };
 
@@ -30,18 +29,18 @@ export type PostMessageConfig = {
  * レスを投稿する UseCase。署名してローカルに保存し、ゴシップで伝播する。
  * 投稿先スレは execute の引数で受け取る（複数スレ対応）。
  */
-export class PostMessageUseCase {
+export class SubmitPostUseCase {
 	private readonly postStore: IPostStore;
 	private readonly crypto: CryptoService;
 	private readonly clockMap: LamportClockMap;
-	private readonly config: PostMessageConfig;
+	private readonly config: SubmitPostConfig;
 	private readonly gateway: IGossipMessageGateway;
 
 	constructor(
 		postStore: IPostStore,
 		crypto: CryptoService,
 		clockMap: LamportClockMap,
-		config: PostMessageConfig,
+		config: SubmitPostConfig,
 		gateway: IGossipMessageGateway,
 	) {
 		this.postStore = postStore;

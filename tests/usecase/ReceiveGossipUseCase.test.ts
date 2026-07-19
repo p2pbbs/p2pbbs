@@ -5,7 +5,7 @@ import { CryptoService } from "@/core/domain/service/CryptoService";
 import { LamportClockMap } from "@/core/domain/service/LamportClockMap";
 import { PostIngester } from "@/core/domain/service/PostIngester";
 import { ThreadIngester } from "@/core/domain/service/ThreadIngester";
-import { ReceiveMessageUseCase } from "@/core/usecase/ReceiveMessageUseCase";
+import { ReceiveGossipUseCase } from "@/core/usecase/ReceiveGossipUseCase";
 import { TEST_BOARD_ID, TEST_THREAD_ID } from "../helpers/constants";
 import {
 	makeGossipMessage,
@@ -54,7 +54,7 @@ function makeUsecase(options?: {
 		send: vi.fn(),
 		onReceive: vi.fn().mockReturnValue(vi.fn()),
 	};
-	const usecase = new ReceiveMessageUseCase(
+	const usecase = new ReceiveGossipUseCase(
 		ingester,
 		threadIngester,
 		SELF_ID,
@@ -75,7 +75,7 @@ function makeUsecase(options?: {
 	};
 }
 
-describe("ReceiveMessageUseCase", () => {
+describe("ReceiveGossipUseCase", () => {
 	// --- 正常系 ---
 
 	it("test_execute_ValidMessage_SavesPost", async () => {

@@ -53,7 +53,7 @@ function useAlreadyRead(
  * ないため。
  *
  * @param selfPublicKey このノードの公開鍵。自分の投稿を未読判定から除外する。
- * @param readHistory 既読履歴ストア。Session 経由でセッション全体で共有する単一
+ * @param readHistory 既読履歴ストア。NodeContext 経由でノード全体で共有する単一
  *                    インスタンスを渡す。テストでは独自インスタンスを渡して分離する。
  */
 export function usePostList(

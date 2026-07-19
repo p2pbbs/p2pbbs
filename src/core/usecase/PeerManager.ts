@@ -4,6 +4,7 @@ import {
 	MAX_ACTIVE_PEERS,
 } from "@/core/config/constants";
 import { DataChannelMessageSchema } from "@/core/domain/model/DataChannelMessage";
+import type { PeerId } from "@/core/domain/model/ids";
 import type { SignalingEnvelope } from "@/core/domain/model/SignalingEnvelope";
 import type { IDataChannel } from "@/core/domain/port/IDataChannel";
 import type { IDataChannelEvents } from "@/core/domain/port/IDataChannelEvents";
@@ -14,33 +15,39 @@ import { HeartbeatTracker } from "@/core/domain/service/HeartbeatTracker";
 import { PeerSession } from "./PeerSession";
 
 /**
- * シグナリングメッセージを振り分け、PeerSession のライフサイクルを管理する Mediator。
- * ロジックは持たず PeerSession に委譲する。
+ * ピア接続の台帳。以下の4者を仲介し、自身はWebRTCの手順を持たない。
+ * - シグナリング受信 → 該当ピアの PeerSession へ振り分け
+ * - PeerSession → チャンネル開通を検知し channels 台帳へ登録
+ * - HeartbeatTracker → 死亡判定を受けて台帳から除去
+ * - 外部(bootstrap) → 開通済みチャンネルを onChannel で引き渡す
+ *
+ * 不変条件: channels ⊆ sessions。sessions は握手中を含み、
+ * channels は開通済みのみ。全ての切断経路は removeSession に収束する。
  */
 export class PeerManager {
 	private readonly signaling: ISignalingTransport;
 	private readonly factory: IPeerConnectionFactory;
-	private readonly selfId: string;
+	private readonly selfId: PeerId;
 	/** DataChannel open 時に呼ばれる外部コールバック（Story 8 で WebRTCGateway に渡す）。 */
 	private readonly onChannel: (
-		peerId: string,
+		peerId: PeerId,
 		dc: IDataChannel & IDataChannelEvents,
 	) => void;
 	private readonly logger: ILogger;
 
-	private readonly sessions = new Map<string, PeerSession>();
+	private readonly sessions = new Map<PeerId, PeerSession>();
 	/** heartbeat 送信用。send のみ必要なので IDataChannel で保持する。 */
-	private readonly channels = new Map<string, IDataChannel>();
+	private readonly channels = new Map<PeerId, IDataChannel>();
 	/** onMessage / onClose の unsubscribe 関数。removeSession 時に呼ぶ。 */
-	private readonly channelCleanups = new Map<string, () => void>();
+	private readonly channelCleanups = new Map<PeerId, () => void>();
 	private readonly heartbeat: HeartbeatTracker;
 	private readonly unsubSignaling: () => void;
 
 	constructor(
 		signaling: ISignalingTransport,
 		factory: IPeerConnectionFactory,
-		selfId: string,
-		onChannel: (peerId: string, dc: IDataChannel & IDataChannelEvents) => void,
+		selfId: PeerId,
+		onChannel: (peerId: PeerId, dc: IDataChannel & IDataChannelEvents) => void,
 		logger: ILogger,
 		intervalMs = HEARTBEAT_INTERVAL_MS,
 		timeoutMs = HEARTBEAT_TIMEOUT_MS,
@@ -64,11 +71,13 @@ export class PeerManager {
 			timeoutMs,
 		);
 		this.heartbeat.start(() => [...this.channels.keys()]);
-		this.unsubSignaling = signaling.onMessage((env) => this.route(env));
+		this.unsubSignaling = signaling.onMessage((env) =>
+			this.onSignalingMessage(env),
+		);
 	}
 
 	/** discover で得たピアへの接続を開始する。 */
-	connectTo(targetId: string): void {
+	connectTo(targetId: PeerId): void {
 		if (this.sessions.size >= MAX_ACTIVE_PEERS) {
 			this.logger.warn("peer_manager.max_peers_reached", { targetId });
 			return;
@@ -86,7 +95,7 @@ export class PeerManager {
 	}
 
 	/** セッションを除去してリソースを解放する。 */
-	removeSession(peerId: string): void {
+	removeSession(peerId: PeerId): void {
 		const session = this.sessions.get(peerId);
 		if (!session) return;
 		session.close();
@@ -111,7 +120,7 @@ export class PeerManager {
 		}
 	}
 
-	private route(env: SignalingEnvelope): void {
+	private onSignalingMessage(env: SignalingEnvelope): void {
 		const { from, payload } = env;
 
 		if (payload.type === "offer") {
@@ -158,7 +167,7 @@ export class PeerManager {
 		}
 	}
 
-	private createSession(peerId: string): PeerSession {
+	private createSession(peerId: PeerId): PeerSession {
 		const pc = this.factory.create();
 		const session = new PeerSession(
 			this.selfId,
@@ -177,7 +186,7 @@ export class PeerManager {
 	 * gossip メッセージの内容には触らず、外部の onChannel コールバックに委譲する。
 	 */
 	private onChannelReady(
-		peerId: string,
+		peerId: PeerId,
 		dc: IDataChannel & IDataChannelEvents,
 	): void {
 		this.channels.set(peerId, dc);
@@ -196,7 +205,7 @@ export class PeerManager {
 		this.onChannel(peerId, dc);
 	}
 
-	private handleHeartbeat(peerId: string, raw: string): void {
+	private handleHeartbeat(peerId: PeerId, raw: string): void {
 		try {
 			const result = DataChannelMessageSchema.safeParse(JSON.parse(raw));
 			if (!result.success) return;

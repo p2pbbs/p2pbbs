@@ -1,6 +1,6 @@
 /**
  * Lamport clock。スレ単位で1インスタンス生成して使う。
- * PostMessageUseCase と ReceiveMessageUseCase で共有する。
+ * SubmitPostUseCase と ReceiveGossipUseCase で共有する。
  */
 export class LamportClock {
 	/** スレ最大レス数。この値を超える Lamport 値は safeMerge で拒否する。 */

@@ -4,7 +4,7 @@ import { SignalingTimeoutError } from "@/core/adapter/signaling/WebSocketSignali
 import { BOARDS } from "@/core/config/constants";
 import type { BoardSession } from "@/ui/bootstrap";
 import { bootstrapBoard } from "@/ui/bootstrap";
-import { BoardSessionProvider, useSession } from "@/ui/session";
+import { BoardSessionProvider, useNodeContext } from "@/ui/nodeContext";
 import { NotFound } from "./NotFound";
 
 type ConnectState =
@@ -21,7 +21,7 @@ type ConnectState =
  * WebSocket 接続自体は使い回す（board に依存しない）。
  */
 export function BoardLayout() {
-	const session = useSession();
+	const nodeCtx = useNodeContext();
 	const { boardId } = useParams();
 	const board = BOARDS.find((b) => b.boardId === boardId);
 	const [state, setState] = useState<ConnectState>({ status: "connecting" });
@@ -32,10 +32,10 @@ export function BoardLayout() {
 		let active = true;
 		setState({ status: "connecting" });
 
-		const bs = bootstrapBoard(board.boardId, session);
+		const bs = bootstrapBoard(board.boardId, nodeCtx);
 		bs.controller.start();
 
-		session
+		nodeCtx
 			.discoverPeers(board.boardId)
 			.then((peers) => {
 				if (!active) return;
@@ -47,11 +47,11 @@ export function BoardLayout() {
 			.catch((err: unknown) => {
 				if (!active) return;
 				if (err instanceof SignalingTimeoutError) {
-					session.logger.warn("board_layout.discover_timeout", {
+					nodeCtx.logger.warn("board_layout.discover_timeout", {
 						boardId: board.boardId,
 					});
 				} else {
-					session.logger.error("board_layout.discover_error", {
+					nodeCtx.logger.error("board_layout.discover_error", {
 						boardId: board.boardId,
 						err: String(err),
 					});
@@ -63,7 +63,7 @@ export function BoardLayout() {
 			active = false;
 			bs.dispose();
 		};
-	}, [board, session]);
+	}, [board, nodeCtx]);
 
 	if (!board) {
 		return <NotFound message="板が見つかりません" />;

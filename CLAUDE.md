@@ -116,6 +116,13 @@ lamport は署名ペイロードおよびコンテンツハッシュの計算に
 ドメインの意図を表現する。ユビキタス言語に従う。
 `handleClick` → `postMessage`。`DataList` → `ThreadView`。
 
+命名規則:
+
+1. **Session は必ず修飾語付き**で「〜との接続・参加の生存期間を管理するオブジェクト」にのみ使う。裸の Session は禁止（`PeerSession` / `BoardSession` は適合。タブ起動時の資源束は `NodeContext`）
+2. **Post は常に名詞**（ドメインエンティティ「レス」）。動詞の post は使わない（投稿する UseCase は `SubmitPostUseCase`）
+3. **Message は通信レイヤの封筒**（`GossipMessage` / `SignalingMessage` / `DataChannelMessage`）にのみ使う
+4. 意味はまず**名前で**表現する。名前で表現しきれない場合や、ワイヤフォーマット上の都合で改名できない場合（`peerId` / `odId` が該当）に、**型エイリアス+docコメント**で補助する（`PeerId` / `OdId`）
+
 ### Error Handling
 
 エラーは回復戦略で3種に分類する。

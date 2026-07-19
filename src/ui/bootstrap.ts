@@ -6,12 +6,13 @@ import { ThreadIngester } from "@/core/domain/service/ThreadIngester";
 import { CreateThreadUseCase } from "@/core/usecase/CreateThreadUseCase";
 import { ExchangeDigestUseCase } from "@/core/usecase/ExchangeDigestUseCase";
 import { PeerManager } from "@/core/usecase/PeerManager";
-import { ReceiveMessageUseCase } from "@/core/usecase/ReceiveMessageUseCase";
-import type { Session } from "./session";
+import { ReceiveGossipUseCase } from "@/core/usecase/ReceiveGossipUseCase";
+import type { NodeContext } from "./nodeContext";
 
 /**
- * 板単位の P2P セッション。1 板 = 1 ゴシップスワームとして扱い、
- * 板切り替え時に dispose() で破棄して別の板用に作り直す。
+ * 自ノードの、1つの板への参加セッション。
+ * 板配下にいる間だけ生存し、板切り替えで dispose → 作り直す。
+ * WebRTC接続・ユースケース・タイマーはすべてこのセッションに属する。
  */
 export type BoardSession = {
 	boardId: string;
@@ -33,9 +34,9 @@ export type BoardSession = {
  */
 export function bootstrapBoard(
 	boardId: string,
-	session: Session,
+	nodeCtx: NodeContext,
 ): BoardSession {
-	const { postStore, threadStore, crypto, clockMap, peerId, logger } = session;
+	const { postStore, threadStore, crypto, clockMap, peerId, logger } = nodeCtx;
 
 	// 接続先板の各スレの LamportClock を保存済み投稿の最大値で初期化する。
 	// lamport はスレ単位で独立するため、スレごとに最大値で merge する。
@@ -50,8 +51,8 @@ export function bootstrapBoard(
 	let exchangeDigestUseCase: ExchangeDigestUseCase;
 
 	const peerManager = new PeerManager(
-		session.signaling,
-		session.factory,
+		nodeCtx.signaling,
+		nodeCtx.factory,
 		peerId,
 		(remotePeerId, dc) => {
 			dc.onMessage((raw) => gateway.handleIncoming(remotePeerId, raw));
@@ -67,7 +68,7 @@ export function bootstrapBoard(
 	const postIngester = new PostIngester(postStore, crypto, clockMap, logger);
 	const threadIngester = new ThreadIngester(threadStore, crypto, logger);
 
-	const receiveUseCase = new ReceiveMessageUseCase(
+	const receiveUseCase = new ReceiveGossipUseCase(
 		postIngester,
 		threadIngester,
 		peerId,
@@ -82,8 +83,8 @@ export function bootstrapBoard(
 		clockMap,
 		threadIngester,
 		{
-			publicKey: session.publicKey,
-			odId: session.odId,
+			publicKey: nodeCtx.publicKey,
+			odId: nodeCtx.odId,
 			peerId,
 			boardId,
 		},

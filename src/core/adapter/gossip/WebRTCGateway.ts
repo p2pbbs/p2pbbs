@@ -1,5 +1,6 @@
 import { DataChannelMessageSchema } from "@/core/domain/model/DataChannelMessage";
 import type { GossipMessage } from "@/core/domain/model/GossipMessage";
+import type { PeerId } from "@/core/domain/model/ids";
 import type { Post } from "@/core/domain/model/Post";
 import type { Thread } from "@/core/domain/model/Thread";
 import type { ThreadDigest } from "@/core/domain/model/ThreadDigest";
@@ -14,15 +15,15 @@ import type { IGossipMessageGateway } from "@/core/domain/port/IGossipMessageGat
 export class WebRTCGateway implements IGossipMessageGateway, IDataSyncGateway {
 	private readonly gossipHandlers = new Set<(msg: GossipMessage) => void>();
 	private readonly digestHandlers = new Set<
-		(peerId: string, boardId: string, threads: ThreadDigest[]) => void
+		(peerId: PeerId, boardId: string, threads: ThreadDigest[]) => void
 	>();
 	private readonly syncHandlers = new Set<
-		(peerId: string, boardId: string, posts: Post[], threads: Thread[]) => void
+		(peerId: PeerId, boardId: string, posts: Post[], threads: Thread[]) => void
 	>();
 	/** PeerManager が所有する Map への参照。send 時に毎回最新の接続先を読む。 */
-	private readonly channelsRef: ReadonlyMap<string, IDataChannel>;
+	private readonly channelsRef: ReadonlyMap<PeerId, IDataChannel>;
 
-	constructor(channelsRef: ReadonlyMap<string, IDataChannel>) {
+	constructor(channelsRef: ReadonlyMap<PeerId, IDataChannel>) {
 		this.channelsRef = channelsRef;
 	}
 
@@ -44,7 +45,7 @@ export class WebRTCGateway implements IGossipMessageGateway, IDataSyncGateway {
 	}
 
 	/** digest を特定ピアへ送信する。 */
-	sendDigest(peerId: string, boardId: string, threads: ThreadDigest[]): void {
+	sendDigest(peerId: PeerId, boardId: string, threads: ThreadDigest[]): void {
 		const dc = this.channelsRef.get(peerId);
 		if (!dc) return;
 		try {
@@ -55,7 +56,7 @@ export class WebRTCGateway implements IGossipMessageGateway, IDataSyncGateway {
 	}
 
 	onDigestReceive(
-		handler: (peerId: string, boardId: string, threads: ThreadDigest[]) => void,
+		handler: (peerId: PeerId, boardId: string, threads: ThreadDigest[]) => void,
 	): () => void {
 		this.digestHandlers.add(handler);
 		return () => this.digestHandlers.delete(handler);
@@ -63,7 +64,7 @@ export class WebRTCGateway implements IGossipMessageGateway, IDataSyncGateway {
 
 	/** sync を特定ピアへ送信する。threads を渡すと同梱される。 */
 	sendSync(
-		peerId: string,
+		peerId: PeerId,
 		boardId: string,
 		posts: Post[],
 		threads?: Thread[],
@@ -86,7 +87,7 @@ export class WebRTCGateway implements IGossipMessageGateway, IDataSyncGateway {
 
 	onSyncReceive(
 		handler: (
-			peerId: string,
+			peerId: PeerId,
 			boardId: string,
 			posts: Post[],
 			threads: Thread[],
@@ -97,7 +98,7 @@ export class WebRTCGateway implements IGossipMessageGateway, IDataSyncGateway {
 	}
 
 	/** DC から来た生データを解釈してタイプ別に振り分ける。 */
-	handleIncoming(peerId: string, raw: string): void {
+	handleIncoming(peerId: PeerId, raw: string): void {
 		try {
 			const result = DataChannelMessageSchema.safeParse(JSON.parse(raw));
 			if (!result.success) return;

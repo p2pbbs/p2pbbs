@@ -1,3 +1,4 @@
+import type { PeerId } from "@/core/domain/model/ids";
 import type { SignalingEnvelope } from "@/core/domain/model/SignalingEnvelope";
 import type { IDataChannel } from "@/core/domain/port/IDataChannel";
 import type { IDataChannelEvents } from "@/core/domain/port/IDataChannelEvents";
@@ -8,8 +9,8 @@ import type { IPeerConnection } from "@/core/domain/port/IPeerConnection";
  * offer/answer/ICE ハンドシェイク手順を閉じ込める。
  */
 export class PeerSession {
-	private readonly selfId: string;
-	private readonly peerId: string;
+	private readonly selfId: PeerId;
+	private readonly peerId: PeerId;
 	private readonly pc: IPeerConnection;
 	private readonly sendSignal: (envelope: SignalingEnvelope) => void;
 	private readonly onChannelReady: (
@@ -18,8 +19,8 @@ export class PeerSession {
 	private readonly cleanups: (() => void)[] = [];
 
 	constructor(
-		selfId: string,
-		peerId: string,
+		selfId: PeerId,
+		peerId: PeerId,
 		pc: IPeerConnection,
 		sendSignal: (envelope: SignalingEnvelope) => void,
 		onChannelReady: (dc: IDataChannel & IDataChannelEvents) => void,

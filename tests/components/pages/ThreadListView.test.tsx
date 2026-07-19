@@ -5,8 +5,8 @@ import { InMemoryPostStore } from "@/core/adapter/storage/InMemoryPostStore";
 import { InMemoryReadHistoryStore } from "@/core/adapter/storage/InMemoryReadHistoryStore";
 import type { BoardSession } from "@/ui/bootstrap";
 import { ThreadListView } from "@/ui/components/pages/ThreadListView";
-import type { Session } from "@/ui/session";
-import { BoardSessionProvider, SessionProvider } from "@/ui/session";
+import type { NodeContext } from "@/ui/nodeContext";
+import { BoardSessionProvider, NodeContextProvider } from "@/ui/nodeContext";
 import { TEST_BOARD_ID } from "../../helpers/constants";
 import {
 	makeControllableDigest,
@@ -15,19 +15,19 @@ import {
 	makeThreadStore,
 } from "../../helpers/fixtures";
 
-function renderView(opts: { session: Session; board: BoardSession }) {
+function renderView(opts: { nodeCtx: NodeContext; board: BoardSession }) {
 	return render(
 		<MemoryRouter>
-			<SessionProvider value={opts.session}>
+			<NodeContextProvider value={opts.nodeCtx}>
 				<BoardSessionProvider value={opts.board}>
 					<ThreadListView />
 				</BoardSessionProvider>
-			</SessionProvider>
+			</NodeContextProvider>
 		</MemoryRouter>,
 	);
 }
 
-function makeSession(overrides: Partial<Session>): Session {
+function makeNodeContext(overrides: Partial<NodeContext>): NodeContext {
 	return {
 		threadStore: makeThreadStore(),
 		postStore: new InMemoryPostStore(),
@@ -35,7 +35,7 @@ function makeSession(overrides: Partial<Session>): Session {
 		publicKey: "self-pk",
 		logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 		...overrides,
-	} as unknown as Session;
+	} as unknown as NodeContext;
 }
 
 function makeBoard(overrides: Partial<BoardSession>): BoardSession {
@@ -59,7 +59,7 @@ describe("ThreadListView", () => {
 			new Map([["t1", [makePost({ id: "p1", threadId: "t1", lamport: 1 })]]]),
 		);
 		renderView({
-			session: makeSession({ threadStore, postStore }),
+			nodeCtx: makeNodeContext({ threadStore, postStore }),
 			board: makeBoard({}),
 		});
 		expect(screen.getByText("既存スレ")).toBeTruthy();
@@ -83,7 +83,7 @@ describe("ThreadListView", () => {
 		);
 		// 既読履歴が空 = 未訪問 → 他人の投稿 2 件が未読
 		renderView({
-			session: makeSession({ threadStore, postStore }),
+			nodeCtx: makeNodeContext({ threadStore, postStore }),
 			board: makeBoard({}),
 		});
 		expect(screen.getByText("2")).toBeTruthy();
@@ -98,7 +98,7 @@ describe("ThreadListView", () => {
 		);
 		const readHistory = new InMemoryReadHistoryStore(new Map([["t1", ["p1"]]]));
 		renderView({
-			session: makeSession({ threadStore, postStore, readHistory }),
+			nodeCtx: makeNodeContext({ threadStore, postStore, readHistory }),
 			board: makeBoard({}),
 		});
 		// 既読のみ → 未読バッジ（"0"）は出ない。レス数バッジのみ。
@@ -108,7 +108,7 @@ describe("ThreadListView", () => {
 	it("test_ThreadListView_CreateForm_CallsCreateThreadUseCase", async () => {
 		const execute = vi.fn().mockResolvedValue(undefined);
 		renderView({
-			session: makeSession({}),
+			nodeCtx: makeNodeContext({}),
 			board: makeBoard({
 				createThreadUseCase: {
 					execute,
@@ -133,7 +133,7 @@ describe("ThreadListView", () => {
 
 	it("test_ThreadListView_NotPostable_DisablesCreateForm", () => {
 		renderView({
-			session: makeSession({}),
+			nodeCtx: makeNodeContext({}),
 			board: makeBoard({
 				exchangeDigestUseCase: {
 					canPost: () => false,
@@ -148,13 +148,13 @@ describe("ThreadListView", () => {
 	});
 
 	it("test_ThreadListView_FabClosed_FormNotVisible", () => {
-		renderView({ session: makeSession({}), board: makeBoard({}) });
+		renderView({ nodeCtx: makeNodeContext({}), board: makeBoard({}) });
 		// FAB を開くまでフォームは表示されない
 		expect(screen.queryByPlaceholderText("スレタイトル")).toBeNull();
 	});
 
 	it("test_ThreadListView_EmptyBoard_ShowsEmptyMessage", () => {
-		renderView({ session: makeSession({}), board: makeBoard({}) });
+		renderView({ nodeCtx: makeNodeContext({}), board: makeBoard({}) });
 		expect(screen.getByText(/まだスレがありません/)).toBeTruthy();
 	});
 
@@ -166,7 +166,7 @@ describe("ThreadListView", () => {
 			new Map([["t1", [makePost({ id: "p1", threadId: "t1", lamport: 1 })]]]),
 		);
 		renderView({
-			session: makeSession({ threadStore, postStore }),
+			nodeCtx: makeNodeContext({ threadStore, postStore }),
 			board: makeBoard({}),
 		});
 
@@ -201,7 +201,7 @@ describe("ThreadListView", () => {
 		const threadStore = makeThreadStore();
 		const postStore = new InMemoryPostStore();
 		renderView({
-			session: makeSession({ threadStore, postStore }),
+			nodeCtx: makeNodeContext({ threadStore, postStore }),
 			board: makeBoard({}),
 		});
 		expect(screen.getByText(/まだスレがありません/)).toBeTruthy();
@@ -238,7 +238,7 @@ describe("ThreadListView", () => {
 		const threadStore = makeThreadStore();
 		const postStore = new InMemoryPostStore();
 		renderView({
-			session: makeSession({ threadStore, postStore }),
+			nodeCtx: makeNodeContext({ threadStore, postStore }),
 			board: makeBoard({
 				exchangeDigestUseCase:
 					digest as unknown as BoardSession["exchangeDigestUseCase"],
@@ -286,7 +286,7 @@ describe("ThreadListView", () => {
 			);
 		});
 		renderView({
-			session: makeSession({ threadStore, postStore }),
+			nodeCtx: makeNodeContext({ threadStore, postStore }),
 			board: makeBoard({
 				createThreadUseCase: {
 					execute,

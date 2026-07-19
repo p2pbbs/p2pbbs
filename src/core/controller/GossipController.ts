@@ -1,20 +1,20 @@
 import type { IGossipMessageGateway } from "@/core/domain/port/IGossipMessageGateway";
-import type { ReceiveMessageUseCase } from "@/core/usecase/ReceiveMessageUseCase";
+import type { ReceiveGossipUseCase } from "@/core/usecase/ReceiveGossipUseCase";
 
 /**
  * GossipController: UseCase と Gateway の配線役。
  * App.tsx が start() / stop() を呼ぶ。
- * Gateway の onReceive を購読して ReceiveMessageUseCase.execute() を呼ぶ。
+ * Gateway の onReceive を購読して ReceiveGossipUseCase.execute() を呼ぶ。
  * Adapter は UseCase を知らない。UseCase は Adapter の具象を知らない。
  */
 export class GossipController {
 	private unsubscribe: (() => void) | null = null;
 	private readonly gateway: IGossipMessageGateway;
-	private readonly receiveUseCase: ReceiveMessageUseCase;
+	private readonly receiveUseCase: ReceiveGossipUseCase;
 
 	constructor(
 		gateway: IGossipMessageGateway,
-		receiveUseCase: ReceiveMessageUseCase,
+		receiveUseCase: ReceiveGossipUseCase,
 	) {
 		this.gateway = gateway;
 		this.receiveUseCase = receiveUseCase;

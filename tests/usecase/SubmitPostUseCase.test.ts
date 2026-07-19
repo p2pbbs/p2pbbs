@@ -4,7 +4,7 @@ import { NchError } from "@/core/domain/error/NchError";
 import type { Post } from "@/core/domain/model/Post";
 import { CryptoService } from "@/core/domain/service/CryptoService";
 import { LamportClockMap } from "@/core/domain/service/LamportClockMap";
-import { PostMessageUseCase } from "@/core/usecase/PostMessageUseCase";
+import { SubmitPostUseCase } from "@/core/usecase/SubmitPostUseCase";
 import { TEST_BOARD_ID, TEST_THREAD_ID } from "../helpers/constants";
 import { makePost } from "../helpers/fixtures";
 
@@ -39,7 +39,7 @@ function makeUsecase(options?: {
 	const clockMap = options?.clockMap ?? new LamportClockMap();
 	const gateway = { send: vi.fn(), onReceive: vi.fn() };
 	return {
-		usecase: new PostMessageUseCase(
+		usecase: new SubmitPostUseCase(
 			postStore,
 			crypto,
 			clockMap,
@@ -57,7 +57,7 @@ function makeUsecase(options?: {
 	};
 }
 
-describe("PostMessageUseCase", () => {
+describe("SubmitPostUseCase", () => {
 	it("test_execute_ValidInput_SavesPost", async () => {
 		const { usecase, postStore } = makeUsecase();
 		await usecase.execute({ name: "テスト", body: "本文", threadId: THREAD });
