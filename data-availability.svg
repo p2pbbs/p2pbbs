@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1000" viewBox="0 0 1080 1000" role="img" aria-labelledby="title desc">
+<title id="title">過去ログの伝播パターン</title><desc id="desc">参加者Aの過去ログが、参加したBへ自動で伝播する。AとBが離脱すると、新規参加者Cへ伝播しない。保存データを持つAが再参加するとCへ再び伝播する。離脱中もブラウザに保存された投稿は残る。</desc>
+<rect width="1080" height="1000" fill="#ffffff"/><g font-family="-apple-system, BlinkMacSystemFont, &apos;Hiragino Sans&apos;, &apos;Noto Sans CJK JP&apos;, &apos;Yu Gothic&apos;, sans-serif">
+<text x="24" y="39" font-size="28" fill="#0f172a" font-weight="700" text-anchor="start">過去ログの伝播パターン</text>
+<rect x="24" y="68" width="1032" height="274" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+<circle cx="58" cy="105" r="17" fill="#334155"/>
+<text x="58" y="112" font-size="21" fill="#ffffff" font-weight="700" text-anchor="middle">1</text>
+<text x="87" y="113" font-size="24" fill="#0f172a" font-weight="700" text-anchor="start">過去ログを持つ参加者に接続できる</text>
+<text x="540" y="320" font-size="17" fill="#334155" font-weight="400" text-anchor="middle">Aが保存していた過去ログが、参加したBへ自動で伝播する</text>
+<g><rect x="60" y="151" width="220" height="132" rx="9" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+<path d="M 60 178 H 280" stroke="#2563eb" stroke-width="2"/>
+<circle cx="75" cy="165" r="3" fill="#2563eb"/>
+<circle cx="87" cy="165" r="3" fill="#2563eb"/>
+<circle cx="99" cy="165" r="3" fill="#2563eb"/>
+<text x="170.0" y="208" font-size="21" fill="#0f172a" font-weight="700" text-anchor="middle">参加者A</text>
+<rect x="115.0" y="221" width="110" height="30" rx="5" fill="#dbeafe"/>
+<text x="170.0" y="242" font-size="17" fill="#1d4ed8" font-weight="700" text-anchor="middle">過去ログあり</text>
+<text x="170.0" y="271" font-size="14" fill="#64748b" font-weight="400" text-anchor="middle">ブラウザ内に保存</text>
+</g>
+<g><rect x="800" y="151" width="220" height="132" rx="9" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+<path d="M 800 178 H 1020" stroke="#2563eb" stroke-width="2"/>
+<circle cx="815" cy="165" r="3" fill="#2563eb"/>
+<circle cx="827" cy="165" r="3" fill="#2563eb"/>
+<circle cx="839" cy="165" r="3" fill="#2563eb"/>
+<text x="910.0" y="208" font-size="21" fill="#0f172a" font-weight="700" text-anchor="middle">参加者B</text>
+<rect x="855.0" y="221" width="110" height="30" rx="5" fill="#dbeafe"/>
+<text x="910.0" y="242" font-size="17" fill="#1d4ed8" font-weight="700" text-anchor="middle">過去ログあり</text>
+<text x="910.0" y="271" font-size="14" fill="#64748b" font-weight="400" text-anchor="middle">受信して保存</text>
+</g>
+<path d="M 296 213 H 782" stroke="#2563eb" stroke-width="3"/><path d="M 782 213 L 768 205 L 768 221 Z" fill="#2563eb"/>
+<text x="539.0" y="192" font-size="19" fill="#2563eb" font-weight="700" text-anchor="middle">過去ログが伝播する</text>
+<rect x="24" y="362" width="1032" height="274" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+<circle cx="58" cy="399" r="17" fill="#334155"/>
+<text x="58" y="406" font-size="21" fill="#ffffff" font-weight="700" text-anchor="middle">2</text>
+<text x="87" y="407" font-size="24" fill="#0f172a" font-weight="700" text-anchor="start">過去ログを持つ参加者が全員離脱している</text>
+<text x="540" y="614" font-size="17" fill="#334155" font-weight="400" text-anchor="middle">AとBには保存データがあるが、接続していないためCへ伝播しない</text>
+<g><rect x="60" y="445" width="200" height="132" rx="9" fill="#ffffff" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 4"/>
+<path d="M 60 472 H 260" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="75" cy="459" r="3" fill="#94a3b8"/>
+<circle cx="87" cy="459" r="3" fill="#94a3b8"/>
+<circle cx="99" cy="459" r="3" fill="#94a3b8"/>
+<text x="160.0" y="502" font-size="21" fill="#64748b" font-weight="700" text-anchor="middle">参加者A</text>
+<rect x="105.0" y="515" width="110" height="30" rx="5" fill="#f1f5f9"/>
+<text x="160.0" y="536" font-size="17" fill="#64748b" font-weight="700" text-anchor="middle">過去ログあり</text>
+<text x="160.0" y="565" font-size="14" fill="#64748b" font-weight="400" text-anchor="middle">離脱中・保存済み</text>
+</g>
+<g><rect x="290" y="445" width="200" height="132" rx="9" fill="#ffffff" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 4"/>
+<path d="M 290 472 H 490" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="305" cy="459" r="3" fill="#94a3b8"/>
+<circle cx="317" cy="459" r="3" fill="#94a3b8"/>
+<circle cx="329" cy="459" r="3" fill="#94a3b8"/>
+<text x="390.0" y="502" font-size="21" fill="#64748b" font-weight="700" text-anchor="middle">参加者B</text>
+<rect x="335.0" y="515" width="110" height="30" rx="5" fill="#f1f5f9"/>
+<text x="390.0" y="536" font-size="17" fill="#64748b" font-weight="700" text-anchor="middle">過去ログあり</text>
+<text x="390.0" y="565" font-size="14" fill="#64748b" font-weight="400" text-anchor="middle">離脱中・保存済み</text>
+</g>
+<g><rect x="800" y="445" width="220" height="132" rx="9" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+<path d="M 800 472 H 1020" stroke="#2563eb" stroke-width="2"/>
+<circle cx="815" cy="459" r="3" fill="#2563eb"/>
+<circle cx="827" cy="459" r="3" fill="#2563eb"/>
+<circle cx="839" cy="459" r="3" fill="#2563eb"/>
+<text x="910.0" y="502" font-size="21" fill="#0f172a" font-weight="700" text-anchor="middle">参加者C</text>
+<text x="910.0" y="536" font-size="17" fill="#64748b" font-weight="400" text-anchor="middle">過去ログなし</text>
+<text x="910.0" y="565" font-size="14" fill="#64748b" font-weight="400" text-anchor="middle">新しく参加</text>
+</g>
+<path d="M 510 507 H 782" stroke="#94a3b8" stroke-width="2.5" stroke-dasharray="7 6"/>
+<path d="M 637.0 498 L 655.0 516 M 655.0 498 L 637.0 516" stroke="#b45309" stroke-width="3.5"/>
+<text x="646.0" y="486" font-size="19" fill="#64748b" font-weight="700" text-anchor="middle">過去ログが伝播しない</text>
+<rect x="24" y="656" width="1032" height="274" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+<circle cx="58" cy="693" r="17" fill="#334155"/>
+<text x="58" y="700" font-size="21" fill="#ffffff" font-weight="700" text-anchor="middle">3</text>
+<text x="87" y="701" font-size="24" fill="#0f172a" font-weight="700" text-anchor="start">保存データを持つ参加者が再参加する</text>
+<text x="540" y="908" font-size="17" fill="#334155" font-weight="400" text-anchor="middle">Aが再参加すると、保存していた過去ログがCへ自動で伝播する</text>
+<g><rect x="60" y="739" width="220" height="132" rx="9" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+<path d="M 60 766 H 280" stroke="#2563eb" stroke-width="2"/>
+<circle cx="75" cy="753" r="3" fill="#2563eb"/>
+<circle cx="87" cy="753" r="3" fill="#2563eb"/>
+<circle cx="99" cy="753" r="3" fill="#2563eb"/>
+<text x="170.0" y="796" font-size="21" fill="#0f172a" font-weight="700" text-anchor="middle">参加者A</text>
+<rect x="115.0" y="809" width="110" height="30" rx="5" fill="#dbeafe"/>
+<text x="170.0" y="830" font-size="17" fill="#1d4ed8" font-weight="700" text-anchor="middle">過去ログあり</text>
+<text x="170.0" y="859" font-size="14" fill="#64748b" font-weight="400" text-anchor="middle">ブラウザ内に保存</text>
+</g>
+<g><rect x="800" y="739" width="220" height="132" rx="9" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+<path d="M 800 766 H 1020" stroke="#2563eb" stroke-width="2"/>
+<circle cx="815" cy="753" r="3" fill="#2563eb"/>
+<circle cx="827" cy="753" r="3" fill="#2563eb"/>
+<circle cx="839" cy="753" r="3" fill="#2563eb"/>
+<text x="910.0" y="796" font-size="21" fill="#0f172a" font-weight="700" text-anchor="middle">参加者C</text>
+<rect x="855.0" y="809" width="110" height="30" rx="5" fill="#dbeafe"/>
+<text x="910.0" y="830" font-size="17" fill="#1d4ed8" font-weight="700" text-anchor="middle">過去ログあり</text>
+<text x="910.0" y="859" font-size="14" fill="#64748b" font-weight="400" text-anchor="middle">受信して保存</text>
+</g>
+<path d="M 296 801 H 782" stroke="#2563eb" stroke-width="3"/><path d="M 782 801 L 768 793 L 768 809 Z" fill="#2563eb"/>
+<text x="539.0" y="780" font-size="19" fill="#2563eb" font-weight="700" text-anchor="middle">過去ログが再び伝播する</text>
+<text x="540" y="970" font-size="16" fill="#475569" font-weight="400" text-anchor="middle">同じ板で接続でき、ブラウザに投稿が保存されている場合の例です。</text>
+</g></svg>

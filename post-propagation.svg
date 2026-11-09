@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="380" viewBox="0 0 1080 380" role="img" aria-labelledby="title desc">
+<title id="title">新規投稿の伝播</title><desc id="desc">参加者Aの新規投稿が、接続先のBへ自動で伝播し、BからCへ伝播する。受信した参加者は、それぞれのブラウザに投稿を保存する。</desc>
+<rect width="1080" height="380" fill="#ffffff"/><g font-family="-apple-system, BlinkMacSystemFont, &apos;Hiragino Sans&apos;, &apos;Noto Sans CJK JP&apos;, &apos;Yu Gothic&apos;, sans-serif">
+<text x="24" y="39" font-size="28" fill="#0f172a" font-weight="700" text-anchor="start">新規投稿の伝播</text>
+<rect x="24" y="68" width="1032" height="260" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+<g><rect x="56" y="122" width="220" height="132" rx="9" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+<path d="M 56 149 H 276" stroke="#2563eb" stroke-width="2"/>
+<circle cx="71" cy="136" r="3" fill="#2563eb"/>
+<circle cx="83" cy="136" r="3" fill="#2563eb"/>
+<circle cx="95" cy="136" r="3" fill="#2563eb"/>
+<text x="166.0" y="179" font-size="21" fill="#0f172a" font-weight="700" text-anchor="middle">参加者A（投稿者）</text>
+<rect x="111.0" y="192" width="110" height="30" rx="5" fill="#dbeafe"/>
+<text x="166.0" y="213" font-size="17" fill="#1d4ed8" font-weight="700" text-anchor="middle">新規投稿</text>
+<text x="166.0" y="242" font-size="14" fill="#64748b" font-weight="400" text-anchor="middle">作成して保存</text>
+</g>
+<g><rect x="430" y="122" width="220" height="132" rx="9" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+<path d="M 430 149 H 650" stroke="#2563eb" stroke-width="2"/>
+<circle cx="445" cy="136" r="3" fill="#2563eb"/>
+<circle cx="457" cy="136" r="3" fill="#2563eb"/>
+<circle cx="469" cy="136" r="3" fill="#2563eb"/>
+<text x="540.0" y="179" font-size="21" fill="#0f172a" font-weight="700" text-anchor="middle">参加者B</text>
+<rect x="485.0" y="192" width="110" height="30" rx="5" fill="#dbeafe"/>
+<text x="540.0" y="213" font-size="17" fill="#1d4ed8" font-weight="700" text-anchor="middle">新規投稿</text>
+<text x="540.0" y="242" font-size="14" fill="#64748b" font-weight="400" text-anchor="middle">受信して保存</text>
+</g>
+<g><rect x="804" y="122" width="220" height="132" rx="9" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+<path d="M 804 149 H 1024" stroke="#2563eb" stroke-width="2"/>
+<circle cx="819" cy="136" r="3" fill="#2563eb"/>
+<circle cx="831" cy="136" r="3" fill="#2563eb"/>
+<circle cx="843" cy="136" r="3" fill="#2563eb"/>
+<text x="914.0" y="179" font-size="21" fill="#0f172a" font-weight="700" text-anchor="middle">参加者C</text>
+<rect x="859.0" y="192" width="110" height="30" rx="5" fill="#dbeafe"/>
+<text x="914.0" y="213" font-size="17" fill="#1d4ed8" font-weight="700" text-anchor="middle">新規投稿</text>
+<text x="914.0" y="242" font-size="14" fill="#64748b" font-weight="400" text-anchor="middle">受信して保存</text>
+</g>
+<path d="M 292 191 H 414" stroke="#2563eb" stroke-width="3"/><path d="M 414 191 L 400 183 L 400 199 Z" fill="#2563eb"/>
+<text x="353.0" y="170" font-size="19" fill="#2563eb" font-weight="700" text-anchor="middle">1. 伝播</text>
+<path d="M 666 191 H 788" stroke="#2563eb" stroke-width="3"/><path d="M 788 191 L 774 183 L 774 199 Z" fill="#2563eb"/>
+<text x="727.0" y="170" font-size="19" fill="#2563eb" font-weight="700" text-anchor="middle">2. 伝播</text>
+<text x="540" y="300" font-size="18" fill="#334155" font-weight="400" text-anchor="middle">新規投稿は、接続先へ自動で伝播する</text>
+<text x="540" y="359" font-size="16" fill="#475569" font-weight="400" text-anchor="middle">A–B、B–Cが接続している場合の例です。受信した投稿は各ブラウザに保存します。</text>
+</g></svg>

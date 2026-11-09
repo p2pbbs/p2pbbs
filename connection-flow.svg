@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="744" viewBox="0 0 1080 744" role="img" aria-labelledby="title desc">
+  <title id="title">nchの接続と投稿の伝播</title>
+  <desc id="desc">最初に自ノードとピアがシグナリングサーバーを介して接続を準備する。その後、新規投稿と過去ログがWebRTCで自ノードとピアの間を自動で伝播する。ブラウザはウィンドウ形、サーバーはラック形で表す。</desc>
+  <defs>
+    <g id="browser">
+      <rect width="240" height="124" rx="9" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+      <path d="M 0 30 H 240" stroke="#2563eb" stroke-width="2"/>
+      <circle cx="16" cy="15" r="3" fill="#93c5fd"/><circle cx="28" cy="15" r="3" fill="#93c5fd"/><circle cx="40" cy="15" r="3" fill="#93c5fd"/>
+    </g>
+  </defs>
+  <rect width="1080" height="744" fill="#ffffff"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans CJK JP', 'Yu Gothic', sans-serif" fill="#0f172a">
+    <text x="24" y="40" font-size="28" font-weight="700">nchの接続と投稿の伝播</text>
+    <rect x="24" y="70" width="1032" height="300" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+    <circle cx="58" cy="111" r="17" fill="#334155"/><text x="58" y="118" text-anchor="middle" font-size="21" font-weight="700" fill="#ffffff">1</text>
+    <text x="87" y="119" font-size="24" font-weight="700">相手を見つけ、接続を準備する</text>
+    <use href="#browser" x="60" y="177"/>
+    <text x="180" y="245" text-anchor="middle" font-size="24" font-weight="700">自ノード</text>
+    <text x="180" y="275" text-anchor="middle" font-size="16" fill="#475569">自分のブラウザタブ</text>
+    <use href="#browser" x="780" y="177"/>
+    <text x="900" y="245" text-anchor="middle" font-size="24" font-weight="700">ピア</text>
+    <text x="900" y="275" text-anchor="middle" font-size="16" fill="#475569">相手のブラウザタブ</text>
+    <g fill="#ffffff" stroke="#475569" stroke-width="2">
+      <rect x="466" y="175" width="148" height="27" rx="4"/>
+      <rect x="466" y="208" width="148" height="27" rx="4"/>
+      <rect x="466" y="241" width="148" height="27" rx="4"/>
+    </g>
+    <g fill="#64748b"><circle cx="480" cy="189" r="3"/><circle cx="480" cy="222" r="3"/><circle cx="480" cy="255" r="3"/></g>
+    <g stroke="#94a3b8" stroke-width="2"><path d="M 571 189 H 600"/><path d="M 571 222 H 600"/><path d="M 571 255 H 600"/></g>
+    <text x="540" y="296" text-anchor="middle" font-size="18" font-weight="700">シグナリングサーバー</text>
+    <path d="M 312 222 H 454" fill="none" stroke="#64748b" stroke-width="2.5"/>
+    <path d="M 626 222 H 768" fill="none" stroke="#64748b" stroke-width="2.5"/>
+    <g fill="#64748b">
+      <path d="M 312 222 L 324 215 L 324 229 Z"/><path d="M 454 222 L 442 215 L 442 229 Z"/>
+      <path d="M 626 222 L 638 215 L 638 229 Z"/><path d="M 768 222 L 756 215 L 756 229 Z"/>
+    </g>
+    <text x="383" y="204" text-anchor="middle" font-size="16" fill="#475569">接続情報</text>
+    <text x="697" y="204" text-anchor="middle" font-size="16" fill="#475569">接続情報</text>
+    <text x="383" y="251" text-anchor="middle" font-size="15" fill="#64748b">WebSocket</text>
+    <text x="697" y="251" text-anchor="middle" font-size="15" fill="#64748b">WebSocket</text>
+    <text x="540" y="343" text-anchor="middle" font-size="18" fill="#334155">サーバーがピアを紹介し、双方の接続情報を仲介する</text>
+    <rect x="24" y="390" width="1032" height="292" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+    <circle cx="58" cy="431" r="17" fill="#334155"/><text x="58" y="438" text-anchor="middle" font-size="21" font-weight="700" fill="#ffffff">2</text>
+    <text x="87" y="439" font-size="24" font-weight="700">ブラウザ間で投稿が伝播する</text>
+    <use href="#browser" x="60" y="488"/>
+    <text x="180" y="556" text-anchor="middle" font-size="24" font-weight="700">自ノード</text>
+    <text x="180" y="586" text-anchor="middle" font-size="16" fill="#475569">自分のブラウザタブ</text>
+    <use href="#browser" x="780" y="488"/>
+    <text x="900" y="556" text-anchor="middle" font-size="24" font-weight="700">ピア</text>
+    <text x="900" y="586" text-anchor="middle" font-size="16" fill="#475569">相手のブラウザタブ</text>
+    <text x="540" y="521" text-anchor="middle" font-size="22" font-weight="700" fill="#1d4ed8">新規投稿・過去ログ</text>
+    <path d="M 316 548 H 764" fill="none" stroke="#2563eb" stroke-width="3.5"/>
+    <g fill="#2563eb"><path d="M 316 548 L 332 539 L 332 557 Z"/><path d="M 764 548 L 748 539 L 748 557 Z"/></g>
+    <text x="540" y="581" text-anchor="middle" font-size="18" fill="#1d4ed8">WebRTC DataChannel</text>
+    <text x="540" y="652" text-anchor="middle" font-size="18" fill="#334155">投稿は双方のブラウザに保存。シグナリングサーバーは経由しない</text>
+    <text x="540" y="718" text-anchor="middle" font-size="16" fill="#475569">自ノードとピアは、同じアプリを実行する対等なノードです。</text>
+  </g>
+</svg>
