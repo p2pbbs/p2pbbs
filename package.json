@@ -43,14 +43,14 @@
 		"@types/react-dom": "^19.2.3",
 		"@types/ws": "^8.5.10",
 		"@vitejs/plugin-react": "^6.0.1",
-		"@vitest/coverage-v8": "^4.1.4",
+		"@vitest/coverage-v8": "^4.1.12",
 		"fake-indexeddb": "^6.2.5",
 		"husky": "^9.1.7",
 		"jsdom": "^29.0.2",
 		"lint-staged": "^16.4.0",
-		"tsx": "^4.7.0",
+		"tsx": "^4.23.15",
 		"typescript": "~5.9.3",
 		"vite": "^8.0.1",
-		"vitest": "^4.1.4"
+		"vitest": "^4.1.12"
 	}
 }
